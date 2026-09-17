@@ -1,5 +1,4 @@
 using DKRandomizeAIImagePromptGenerator.Models;
-using DKRandomizeAIImagePromptGenerator.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.Storage.Pickers;
@@ -13,10 +12,6 @@ public sealed partial class SettingsPage : Page
     public SettingsPage()
     {
         InitializeComponent();
-        if (Content is ScrollViewer pageScrollViewer)
-        {
-            MouseWheelScrollService.Attach(pageScrollViewer);
-        }
         Loaded += SettingsPage_Loaded;
         SizeChanged += SettingsPage_SizeChanged;
     }
@@ -36,10 +31,8 @@ public sealed partial class SettingsPage : Page
             : $"버전 {version.Major}.{version.Minor}.{version.Build}";
     }
 
-    private void SettingsPage_SizeChanged(object sender, SizeChangedEventArgs e)
-    {
+    private void SettingsPage_SizeChanged(object sender, SizeChangedEventArgs e) =>
         ApplyResponsiveLayout(e.NewSize.Width);
-    }
 
     private void ApplyResponsiveLayout(double availableWidth)
     {
@@ -53,7 +46,6 @@ public sealed partial class SettingsPage : Page
                 themeGrid.RowSpacing = 12;
                 themeGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
                 themeGrid.ColumnDefinitions[1].Width = new GridLength(0);
-
                 Grid.SetRow(ThemeComboBox, 1);
                 Grid.SetColumn(ThemeComboBox, 0);
                 Grid.SetColumnSpan(ThemeComboBox, 2);
@@ -65,7 +57,6 @@ public sealed partial class SettingsPage : Page
                 themeGrid.RowSpacing = 0;
                 themeGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
                 themeGrid.ColumnDefinitions[1].Width = new GridLength(220);
-
                 Grid.SetRow(ThemeComboBox, 0);
                 Grid.SetColumn(ThemeComboBox, 1);
                 Grid.SetColumnSpan(ThemeComboBox, 1);
@@ -82,7 +73,6 @@ public sealed partial class SettingsPage : Page
                 backupGrid.RowSpacing = 12;
                 backupGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
                 backupGrid.ColumnDefinitions[1].Width = new GridLength(0);
-
                 Grid.SetRow(BackupButtons, 1);
                 Grid.SetColumn(BackupButtons, 0);
                 Grid.SetColumnSpan(BackupButtons, 2);
@@ -93,7 +83,6 @@ public sealed partial class SettingsPage : Page
                 backupGrid.RowSpacing = 0;
                 backupGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
                 backupGrid.ColumnDefinitions[1].Width = GridLength.Auto;
-
                 Grid.SetRow(BackupButtons, 0);
                 Grid.SetColumn(BackupButtons, 1);
                 Grid.SetColumnSpan(BackupButtons, 1);
@@ -103,32 +92,21 @@ public sealed partial class SettingsPage : Page
 
     private static void EnsureTwoRows(Grid grid)
     {
-        if (grid.RowDefinitions.Count >= 2)
-        {
-            return;
-        }
-
+        if (grid.RowDefinitions.Count >= 2) return;
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
     }
 
     private async void ThemeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_syncingTheme || ThemeComboBox.SelectedIndex < 0)
-        {
-            return;
-        }
+        if (_syncingTheme || ThemeComboBox.SelectedIndex < 0) return;
 
         try
         {
             var theme = (AppTheme)ThemeComboBox.SelectedIndex;
             var app = (App)Application.Current;
             await app.Settings.SetThemeAsync(theme);
-
-            if (app.MainWindowInstance is MainWindow window)
-            {
-                window.ApplyTheme(theme);
-            }
+            if (app.MainWindowInstance is MainWindow window) window.ApplyTheme(theme);
         }
         catch (Exception ex)
         {
@@ -139,10 +117,7 @@ public sealed partial class SettingsPage : Page
     private async void Backup_Click(object sender, RoutedEventArgs e)
     {
         var app = (App)Application.Current;
-        if (app.MainWindowInstance is not MainWindow window)
-        {
-            return;
-        }
+        if (app.MainWindowInstance is not MainWindow window) return;
 
         try
         {
@@ -152,18 +127,11 @@ public sealed partial class SettingsPage : Page
                 SuggestedFileName = $"DK-Prompt-Backup-{DateTime.Now:yyyyMMdd-HHmmss}",
                 CommitButtonText = "백업",
                 DefaultFileExtension = ".zip",
-                FileTypeChoices =
-                {
-                    { "DK Prompt Generator Backup", new List<string> { ".zip" } }
-                }
+                FileTypeChoices = { { "DK Prompt Generator Backup", new List<string> { ".zip" } } }
             };
 
             var result = await picker.PickSaveFileAsync();
-            if (result is null)
-            {
-                return;
-            }
-
+            if (result is null) return;
             await app.Backup.CreateAsync(result.Path);
             ShowStatus("백업 완료", "로컬 데이터 백업 파일을 저장했습니다.", InfoBarSeverity.Success);
         }
@@ -176,10 +144,7 @@ public sealed partial class SettingsPage : Page
     private async void Restore_Click(object sender, RoutedEventArgs e)
     {
         var app = (App)Application.Current;
-        if (app.MainWindowInstance is not MainWindow window)
-        {
-            return;
-        }
+        if (app.MainWindowInstance is not MainWindow window) return;
 
         try
         {
@@ -192,10 +157,7 @@ public sealed partial class SettingsPage : Page
             };
 
             var result = await picker.PickSingleFileAsync();
-            if (result is null)
-            {
-                return;
-            }
+            if (result is null) return;
 
             var dialog = new ContentDialog
             {
@@ -207,10 +169,7 @@ public sealed partial class SettingsPage : Page
                 DefaultButton = ContentDialogButton.Close
             };
 
-            if (await dialog.ShowAsync() != ContentDialogResult.Primary)
-            {
-                return;
-            }
+            if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
 
             await app.Backup.RestoreAsync(result.Path);
             await app.Database.InitializeAsync();
@@ -220,7 +179,6 @@ public sealed partial class SettingsPage : Page
             _syncingTheme = true;
             ThemeComboBox.SelectedIndex = (int)app.Settings.Current.Theme;
             _syncingTheme = false;
-
             ShowStatus("복원 완료", "백업 데이터를 복원했습니다. 다른 화면으로 이동하면 복원된 데이터가 표시됩니다.", InfoBarSeverity.Success);
         }
         catch (Exception ex)
