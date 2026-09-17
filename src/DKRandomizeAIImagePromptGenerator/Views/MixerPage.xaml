@@ -9,7 +9,7 @@
         <converters:ImagePathConverter x:Key="ImagePathConverter" />
 
         <DataTemplate x:Key="PromptPickerItemTemplate" x:DataType="models:PromptItem">
-            <Grid Padding="4" ColumnSpacing="10" MinHeight="58">
+            <Grid Padding="4" ColumnSpacing="10" MinHeight="64">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="52" />
                     <ColumnDefinition Width="*" />
@@ -28,7 +28,7 @@
                     </Grid>
                 </Border>
 
-                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
                     <TextBlock
                         Text="{x:Bind Title}"
                         FontWeight="SemiBold"
@@ -40,6 +40,26 @@
                         TextWrapping="Wrap"
                         TextTrimming="CharacterEllipsis"
                         MaxLines="2" />
+                    <ItemsControl ItemsSource="{x:Bind Tags}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="4" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border
+                                    Padding="6,2"
+                                    CornerRadius="8"
+                                    Background="{ThemeResource ControlFillColorSecondaryBrush}">
+                                    <TextBlock
+                                        Text="{Binding}"
+                                        FontSize="11"
+                                        Opacity="0.72" />
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </StackPanel>
             </Grid>
         </DataTemplate>
@@ -62,9 +82,7 @@
 
             <StackPanel Spacing="6">
                 <TextBlock Text="프롬프트 조합" Style="{StaticResource PageTitleTextStyle}" />
-                <TextBlock
-                    Opacity="0.7"
-                    Text="캐릭터, 작가, 추가 프롬프트를 고정하거나 랜덤으로 조합합니다." />
+                <TextBlock Opacity="0.7" Text="캐릭터, 작가, 추가 프롬프트를 고정하거나 랜덤으로 조합합니다." />
             </StackPanel>
 
             <Grid Grid.Row="1" Margin="0,24,0,0" ColumnSpacing="12">
@@ -83,18 +101,8 @@
                                 <Image x:Name="CharacterImage" Stretch="Uniform" />
                             </Grid>
                         </Border>
-                        <TextBlock
-                            x:Name="CharacterTitle"
-                            Text="선택된 캐릭터 없음"
-                            FontWeight="SemiBold"
-                            TextTrimming="CharacterEllipsis" />
-                        <TextBlock
-                            x:Name="CharacterMemo"
-                            Opacity="0.62"
-                            FontSize="12"
-                            TextWrapping="Wrap"
-                            TextTrimming="CharacterEllipsis"
-                            MaxLines="2" />
+                        <TextBlock x:Name="CharacterTitle" Text="선택된 캐릭터 없음" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="CharacterMemo" Opacity="0.62" FontSize="12" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" />
                         <ComboBox
                             x:Name="CharacterPromptCombo"
                             Header="직접 선택"
@@ -108,20 +116,12 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <ComboBox
-                                x:Name="CharacterModeCombo"
-                                SelectedIndex="1"
-                                HorizontalAlignment="Stretch"
-                                SelectionChanged="CharacterModeCombo_SelectionChanged">
+                            <ComboBox x:Name="CharacterModeCombo" SelectedIndex="1" HorizontalAlignment="Stretch" SelectionChanged="CharacterModeCombo_SelectionChanged">
                                 <ComboBoxItem Content="고정" />
                                 <ComboBoxItem Content="랜덤" />
                                 <ComboBoxItem Content="미사용" />
                             </ComboBox>
-                            <Button
-                                x:Name="CharacterRandomButton"
-                                Grid.Column="1"
-                                Content="다시"
-                                Click="CharacterRandom_Click" />
+                            <Button x:Name="CharacterRandomButton" Grid.Column="1" Content="다시" Click="CharacterRandom_Click" />
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -135,18 +135,8 @@
                                 <Image x:Name="ArtistImage" Stretch="Uniform" />
                             </Grid>
                         </Border>
-                        <TextBlock
-                            x:Name="ArtistTitle"
-                            Text="선택된 작가 없음"
-                            FontWeight="SemiBold"
-                            TextTrimming="CharacterEllipsis" />
-                        <TextBlock
-                            x:Name="ArtistMemo"
-                            Opacity="0.62"
-                            FontSize="12"
-                            TextWrapping="Wrap"
-                            TextTrimming="CharacterEllipsis"
-                            MaxLines="2" />
+                        <TextBlock x:Name="ArtistTitle" Text="선택된 작가 없음" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="ArtistMemo" Opacity="0.62" FontSize="12" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" />
                         <ComboBox
                             x:Name="ArtistPromptCombo"
                             Header="직접 선택"
@@ -160,20 +150,12 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <ComboBox
-                                x:Name="ArtistModeCombo"
-                                SelectedIndex="1"
-                                HorizontalAlignment="Stretch"
-                                SelectionChanged="ArtistModeCombo_SelectionChanged">
+                            <ComboBox x:Name="ArtistModeCombo" SelectedIndex="1" HorizontalAlignment="Stretch" SelectionChanged="ArtistModeCombo_SelectionChanged">
                                 <ComboBoxItem Content="고정" />
                                 <ComboBoxItem Content="랜덤" />
                                 <ComboBoxItem Content="미사용" />
                             </ComboBox>
-                            <Button
-                                x:Name="ArtistRandomButton"
-                                Grid.Column="1"
-                                Content="다시"
-                                Click="ArtistRandom_Click" />
+                            <Button x:Name="ArtistRandomButton" Grid.Column="1" Content="다시" Click="ArtistRandom_Click" />
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -187,18 +169,8 @@
                                 <Image x:Name="AdditionalImage" Stretch="Uniform" />
                             </Grid>
                         </Border>
-                        <TextBlock
-                            x:Name="AdditionalTitle"
-                            Text="선택된 추가 프롬프트 없음"
-                            FontWeight="SemiBold"
-                            TextTrimming="CharacterEllipsis" />
-                        <TextBlock
-                            x:Name="AdditionalMemo"
-                            Opacity="0.62"
-                            FontSize="12"
-                            TextWrapping="Wrap"
-                            TextTrimming="CharacterEllipsis"
-                            MaxLines="2" />
+                        <TextBlock x:Name="AdditionalTitle" Text="선택된 추가 프롬프트 없음" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="AdditionalMemo" Opacity="0.62" FontSize="12" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" />
                         <ComboBox
                             x:Name="AdditionalPromptCombo"
                             Header="직접 선택"
@@ -212,31 +184,18 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <ComboBox
-                                x:Name="AdditionalModeCombo"
-                                SelectedIndex="1"
-                                HorizontalAlignment="Stretch"
-                                SelectionChanged="AdditionalModeCombo_SelectionChanged">
+                            <ComboBox x:Name="AdditionalModeCombo" SelectedIndex="1" HorizontalAlignment="Stretch" SelectionChanged="AdditionalModeCombo_SelectionChanged">
                                 <ComboBoxItem Content="고정" />
                                 <ComboBoxItem Content="랜덤" />
                                 <ComboBoxItem Content="미사용" />
                             </ComboBox>
-                            <Button
-                                x:Name="AdditionalRandomButton"
-                                Grid.Column="1"
-                                Content="다시"
-                                Click="AdditionalRandom_Click" />
+                            <Button x:Name="AdditionalRandomButton" Grid.Column="1" Content="다시" Click="AdditionalRandom_Click" />
                         </Grid>
                     </StackPanel>
                 </Border>
             </Grid>
 
-            <Button
-                Grid.Row="2"
-                Margin="0,16,0,0"
-                HorizontalAlignment="Right"
-                Style="{StaticResource AccentButtonStyle}"
-                Click="RandomizeAll_Click">
+            <Button Grid.Row="2" Margin="0,16,0,0" HorizontalAlignment="Right" Style="{StaticResource AccentButtonStyle}" Click="RandomizeAll_Click">
                 <StackPanel Orientation="Horizontal" Spacing="7">
                     <FontIcon Glyph="&#xE14B;" FontSize="14" />
                     <TextBlock Text="전체 다시 조합" />
@@ -248,47 +207,25 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-
                 <StackPanel Spacing="8">
                     <Grid>
                         <TextBlock Text="Positive" Style="{StaticResource SectionTitleTextStyle}" />
                         <Button HorizontalAlignment="Right" Content="복사" Click="CopyPositive_Click" />
                     </Grid>
-                    <TextBox
-                        x:Name="PositiveOutput"
-                        AcceptsReturn="True"
-                        MinHeight="190"
-                        TextWrapping="Wrap"
-                        VerticalContentAlignment="Top"
-                        PlaceholderText="조합된 Positive 프롬프트가 여기에 표시됩니다." />
+                    <TextBox x:Name="PositiveOutput" AcceptsReturn="True" MinHeight="190" TextWrapping="Wrap" VerticalContentAlignment="Top" PlaceholderText="조합된 Positive 프롬프트가 여기에 표시됩니다." />
                 </StackPanel>
-
                 <StackPanel Grid.Row="1" Spacing="8">
                     <Grid>
                         <TextBlock Text="Negative" Style="{StaticResource SectionTitleTextStyle}" />
                         <Button HorizontalAlignment="Right" Content="복사" Click="CopyNegative_Click" />
                     </Grid>
-                    <TextBox
-                        x:Name="NegativeOutput"
-                        AcceptsReturn="True"
-                        MinHeight="150"
-                        TextWrapping="Wrap"
-                        VerticalContentAlignment="Top"
-                        PlaceholderText="조합된 Negative 프롬프트가 여기에 표시됩니다." />
+                    <TextBox x:Name="NegativeOutput" AcceptsReturn="True" MinHeight="150" TextWrapping="Wrap" VerticalContentAlignment="Top" PlaceholderText="조합된 Negative 프롬프트가 여기에 표시됩니다." />
                 </StackPanel>
             </Grid>
 
             <Grid Grid.Row="4" Margin="0,16,0,32">
-                <InfoBar
-                    x:Name="HistorySavedInfoBar"
-                    IsOpen="False"
-                    Severity="Success"
-                    Title="최근 기록에 저장했습니다."
-                    IsClosable="True" />
-                <Button
-                    HorizontalAlignment="Right"
-                    Content="현재 결과 기록 저장"
-                    Click="SaveHistory_Click" />
+                <InfoBar x:Name="HistorySavedInfoBar" IsOpen="False" Severity="Success" Title="최근 기록에 저장했습니다." IsClosable="True" />
+                <Button HorizontalAlignment="Right" Content="현재 결과 기록 저장" Click="SaveHistory_Click" />
             </Grid>
         </Grid>
     </ScrollViewer>
