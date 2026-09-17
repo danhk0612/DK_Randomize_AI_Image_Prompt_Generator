@@ -65,25 +65,48 @@
             </TextBox>
         </Grid>
 
-        <StackPanel Grid.Row="2" Margin="0,18,0,0" Orientation="Horizontal" Spacing="18">
-            <RadioButton
-                x:Name="CharacterCategoryButton"
-                GroupName="PromptCategory"
-                Content="캐릭터"
-                Tag="Character"
-                IsChecked="True"
-                Checked="Category_Checked" />
-            <RadioButton
-                GroupName="PromptCategory"
-                Content="작가 / 스타일"
-                Tag="Artist"
-                Checked="Category_Checked" />
-            <RadioButton
-                GroupName="PromptCategory"
-                Content="추가"
-                Tag="Additional"
-                Checked="Category_Checked" />
-        </StackPanel>
+        <Grid Grid.Row="2" Margin="0,18,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal" Spacing="18">
+                <RadioButton
+                    x:Name="CharacterCategoryButton"
+                    GroupName="PromptCategory"
+                    Content="캐릭터"
+                    Tag="Character"
+                    IsChecked="True"
+                    Checked="Category_Checked" />
+                <RadioButton
+                    GroupName="PromptCategory"
+                    Content="작가 / 스타일"
+                    Tag="Artist"
+                    Checked="Category_Checked" />
+                <RadioButton
+                    GroupName="PromptCategory"
+                    Content="추가"
+                    Tag="Additional"
+                    Checked="Category_Checked" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                <ToggleButton
+                    x:Name="GalleryViewButton"
+                    IsChecked="True"
+                    Checked="GalleryView_Checked"
+                    ToolTipService.ToolTip="갤러리 보기">
+                    <FontIcon Glyph="&#xF0E2;" FontSize="16" />
+                </ToggleButton>
+                <ToggleButton
+                    x:Name="ListViewButton"
+                    Checked="ListView_Checked"
+                    ToolTipService.ToolTip="목록 보기">
+                    <FontIcon Glyph="&#xEA37;" FontSize="16" />
+                </ToggleButton>
+            </StackPanel>
+        </Grid>
 
         <Grid Grid.Row="3" Margin="0,20,0,32" ColumnSpacing="20">
             <Grid.ColumnDefinitions>
@@ -153,6 +176,56 @@
                     </GridView.ItemTemplate>
                 </GridView>
 
+                <ListView
+                    x:Name="PromptListView"
+                    ItemsSource="{x:Bind ViewModel.Items, Mode=OneWay}"
+                    IsItemClickEnabled="True"
+                    SelectionMode="None"
+                    ItemClick="PromptGridView_ItemClick"
+                    Visibility="Collapsed">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:PromptItem">
+                            <Grid Padding="8" ColumnSpacing="14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="72" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border
+                                    Width="72"
+                                    Height="72"
+                                    CornerRadius="8"
+                                    Background="{ThemeResource ControlFillColorSecondaryBrush}">
+                                    <Grid>
+                                        <FontIcon Glyph="&#xE91B;" FontSize="24" Opacity="0.3" />
+                                        <Image
+                                            Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}}"
+                                            Stretch="UniformToFill" />
+                                    </Grid>
+                                </Border>
+
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                                    <TextBlock
+                                        Text="{x:Bind Title}"
+                                        FontWeight="SemiBold"
+                                        FontSize="16"
+                                        TextTrimming="CharacterEllipsis" />
+                                    <TextBlock
+                                        Text="{x:Bind PositivePrompt}"
+                                        Opacity="0.65"
+                                        TextTrimming="CharacterEllipsis"
+                                        MaxLines="1" />
+                                    <TextBlock
+                                        Text="{x:Bind NegativePrompt}"
+                                        Opacity="0.5"
+                                        TextTrimming="CharacterEllipsis"
+                                        MaxLines="1" />
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
                 <StackPanel
                     x:Name="EmptyState"
                     HorizontalAlignment="Center"
@@ -165,7 +238,7 @@
                         FontWeight="SemiBold"
                         HorizontalAlignment="Center" />
                     <TextBlock
-                        Text="새 프롬프트를 추가하면 이곳에 카드로 표시됩니다."
+                        Text="새 프롬프트를 추가하면 이곳에 표시됩니다."
                         Opacity="0.65"
                         HorizontalAlignment="Center" />
                 </StackPanel>
