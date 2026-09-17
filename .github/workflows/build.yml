@@ -1,0 +1,29 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+      - feature/**
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore DK_Randomize_AI_Image_Prompt_Generator.sln -p:Platform=x64
+
+      - name: Build
+        run: dotnet build DK_Randomize_AI_Image_Prompt_Generator.sln -c Release -p:Platform=x64 --no-restore
