@@ -16,7 +16,7 @@ public sealed partial class MainWindow : Window
         InitializeComponent();
 
         _contentFrame = new Frame();
-        _mixerNavigationItem = CreateNavigationItem("조합", "Mixer", Symbol.Shuffle);
+        _mixerNavigationItem = CreateNavigationItem("조합", "Mixer");
 
         _rootNavigationView = new NavigationView
         {
@@ -28,9 +28,9 @@ public sealed partial class MainWindow : Window
         };
 
         _rootNavigationView.MenuItems.Add(_mixerNavigationItem);
-        _rootNavigationView.MenuItems.Add(CreateNavigationItem("프롬프트", "Library", Symbol.Document));
-        _rootNavigationView.MenuItems.Add(CreateNavigationItem("최근 기록", "History", Symbol.Clock));
-        _rootNavigationView.FooterMenuItems.Add(CreateNavigationItem("설정", "Settings", Symbol.Setting));
+        _rootNavigationView.MenuItems.Add(CreateNavigationItem("프롬프트", "Library"));
+        _rootNavigationView.MenuItems.Add(CreateNavigationItem("최근 기록", "History"));
+        _rootNavigationView.FooterMenuItems.Add(CreateNavigationItem("설정", "Settings"));
         _rootNavigationView.SelectionChanged += RootNavigationView_SelectionChanged;
 
         RootGrid.Children.Add(_rootNavigationView);
@@ -55,12 +55,11 @@ public sealed partial class MainWindow : Window
         };
     }
 
-    private static NavigationViewItem CreateNavigationItem(string content, string tag, Symbol symbol) =>
+    private static NavigationViewItem CreateNavigationItem(string content, string tag) =>
         new()
         {
             Content = content,
-            Tag = tag,
-            Icon = new SymbolIcon(symbol)
+            Tag = tag
         };
 
     private void RootNavigationView_SelectionChanged(
