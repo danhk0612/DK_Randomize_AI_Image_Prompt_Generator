@@ -191,6 +191,7 @@ public sealed partial class PromptLibraryPage : Page
         DeleteButton.Visibility = Visibility.Collapsed;
         ClearImagePreview();
         EditorPane.Visibility = Visibility.Visible;
+        ResetEditorScroll();
         TitleBox.Focus(FocusState.Programmatic);
     }
 
@@ -215,6 +216,7 @@ public sealed partial class PromptLibraryPage : Page
         DeleteButton.Visibility = Visibility.Visible;
         ShowStoredImage(item.ImagePath);
         EditorPane.Visibility = Visibility.Visible;
+        ResetEditorScroll();
     }
 
     private async void ChooseImage_Click(object sender, RoutedEventArgs e)
@@ -340,6 +342,7 @@ public sealed partial class PromptLibraryPage : Page
             TagsBox.Text = string.Join(", ", copy.Tags);
             MemoBox.Text = copy.Memo;
             ShowStoredImage(copy.ImagePath);
+            ResetEditorScroll();
             UpdateEmptyState();
         }
         catch (Exception ex)
@@ -414,9 +417,22 @@ public sealed partial class PromptLibraryPage : Page
         _editingItem = null;
         _pendingImageSourcePath = null;
         _removeImage = false;
+        ResetEditorScroll();
         EditorPane.Visibility = Visibility.Collapsed;
         TitleValidationText.Visibility = Visibility.Collapsed;
         ClearImagePreview();
+    }
+
+    private void ResetEditorScroll()
+    {
+        if (EditorPane.Child is not ScrollViewer scrollViewer)
+        {
+            return;
+        }
+
+        scrollViewer.ChangeView(null, 0, null, disableAnimation: true);
+        DispatcherQueue.TryEnqueue(() =>
+            scrollViewer.ChangeView(null, 0, null, disableAnimation: true));
     }
 
     private void ShowStoredImage(string? relativePath)
