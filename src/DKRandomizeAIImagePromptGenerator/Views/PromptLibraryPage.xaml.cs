@@ -126,16 +126,23 @@ public sealed partial class PromptLibraryPage : Page
             return;
         }
 
-        var category = tag switch
+        try
         {
-            "Artist" => PromptCategory.Artist,
-            "Additional" => PromptCategory.Additional,
-            _ => PromptCategory.Character
-        };
+            var category = tag switch
+            {
+                "Artist" => PromptCategory.Artist,
+                "Additional" => PromptCategory.Additional,
+                _ => PromptCategory.Character
+            };
 
-        HideEditor();
-        await ViewModel.SetCategoryAsync(category);
-        UpdateEmptyState();
+            HideEditor();
+            await ViewModel.SetCategoryAsync(category);
+            UpdateEmptyState();
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorAsync("분류 변경 실패", ex);
+        }
     }
 
     private void GalleryView_Checked(object sender, RoutedEventArgs e)
@@ -218,23 +225,30 @@ public sealed partial class PromptLibraryPage : Page
             return;
         }
 
-        var picker = new FileOpenPicker(window.AppWindow.Id)
+        try
         {
-            SuggestedStartLocation = PickerLocationId.PicturesLibrary,
-            CommitButtonText = "선택",
-            ViewMode = PickerViewMode.Thumbnail,
-            FileTypeFilter = { ".png", ".jpg", ".jpeg", ".webp", ".bmp" }
-        };
+            var picker = new FileOpenPicker(window.AppWindow.Id)
+            {
+                SuggestedStartLocation = PickerLocationId.PicturesLibrary,
+                CommitButtonText = "선택",
+                ViewMode = PickerViewMode.Thumbnail,
+                FileTypeFilter = { ".png", ".jpg", ".jpeg", ".webp", ".bmp" }
+            };
 
-        var result = await picker.PickSingleFileAsync();
-        if (result is null)
-        {
-            return;
+            var result = await picker.PickSingleFileAsync();
+            if (result is null)
+            {
+                return;
+            }
+
+            _pendingImageSourcePath = result.Path;
+            _removeImage = false;
+            ShowImagePreview(result.Path);
         }
-
-        _pendingImageSourcePath = result.Path;
-        _removeImage = false;
-        ShowImagePreview(result.Path);
+        catch (Exception ex)
+        {
+            await ShowErrorAsync("이미지 선택 실패", ex);
+        }
     }
 
     private void RemoveImage_Click(object sender, RoutedEventArgs e)
@@ -253,50 +267,57 @@ public sealed partial class PromptLibraryPage : Page
             return;
         }
 
-        var app = (App)Application.Current;
-        var previousImagePath = _editingItem?.ImagePath;
-        var imagePath = previousImagePath;
-
-        if (_pendingImageSourcePath is not null)
+        try
         {
-            imagePath = await app.Images.ImportAsync(_pendingImageSourcePath);
-        }
-        else if (_removeImage)
-        {
-            imagePath = null;
-        }
+            var app = (App)Application.Current;
+            var previousImagePath = _editingItem?.ImagePath;
+            var imagePath = previousImagePath;
 
-        var tags = ParseTags(TagsBox.Text);
+            if (_pendingImageSourcePath is not null)
+            {
+                imagePath = await app.Images.ImportAsync(_pendingImageSourcePath);
+            }
+            else if (_removeImage)
+            {
+                imagePath = null;
+            }
 
-        if (_editingItem is null)
-        {
-            await ViewModel.CreateAsync(
-                TitleBox.Text,
-                PositiveBox.Text,
-                NegativeBox.Text,
-                MemoBox.Text,
-                imagePath,
-                tags);
-        }
-        else
-        {
-            await ViewModel.UpdateAsync(
-                _editingItem,
-                TitleBox.Text,
-                PositiveBox.Text,
-                NegativeBox.Text,
-                MemoBox.Text,
-                imagePath,
-                tags);
-        }
+            var tags = ParseTags(TagsBox.Text);
 
-        if (previousImagePath is not null && previousImagePath != imagePath)
-        {
-            await app.Images.DeleteIfUnreferencedAsync(previousImagePath);
-        }
+            if (_editingItem is null)
+            {
+                await ViewModel.CreateAsync(
+                    TitleBox.Text,
+                    PositiveBox.Text,
+                    NegativeBox.Text,
+                    MemoBox.Text,
+                    imagePath,
+                    tags);
+            }
+            else
+            {
+                await ViewModel.UpdateAsync(
+                    _editingItem,
+                    TitleBox.Text,
+                    PositiveBox.Text,
+                    NegativeBox.Text,
+                    MemoBox.Text,
+                    imagePath,
+                    tags);
+            }
 
-        HideEditor();
-        UpdateEmptyState();
+            if (previousImagePath is not null && previousImagePath != imagePath)
+            {
+                await app.Images.DeleteIfUnreferencedAsync(previousImagePath);
+            }
+
+            HideEditor();
+            UpdateEmptyState();
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorAsync("프롬프트 저장 실패", ex);
+        }
     }
 
     private async void DuplicatePrompt_Click(object sender, RoutedEventArgs e)
@@ -306,18 +327,25 @@ public sealed partial class PromptLibraryPage : Page
             return;
         }
 
-        var copy = await ViewModel.DuplicateAsync(_editingItem);
-        _editingItem = copy;
-        _pendingImageSourcePath = null;
-        _removeImage = false;
-        EditorTitleText.Text = "프롬프트 편집";
-        TitleBox.Text = copy.Title;
-        PositiveBox.Text = copy.PositivePrompt;
-        NegativeBox.Text = copy.NegativePrompt;
-        TagsBox.Text = string.Join(", ", copy.Tags);
-        MemoBox.Text = copy.Memo;
-        ShowStoredImage(copy.ImagePath);
-        UpdateEmptyState();
+        try
+        {
+            var copy = await ViewModel.DuplicateAsync(_editingItem);
+            _editingItem = copy;
+            _pendingImageSourcePath = null;
+            _removeImage = false;
+            EditorTitleText.Text = "프롬프트 편집";
+            TitleBox.Text = copy.Title;
+            PositiveBox.Text = copy.PositivePrompt;
+            NegativeBox.Text = copy.NegativePrompt;
+            TagsBox.Text = string.Join(", ", copy.Tags);
+            MemoBox.Text = copy.Memo;
+            ShowStoredImage(copy.ImagePath);
+            UpdateEmptyState();
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorAsync("프롬프트 복제 실패", ex);
+        }
     }
 
     private async void DeletePrompt_Click(object sender, RoutedEventArgs e)
@@ -327,26 +355,33 @@ public sealed partial class PromptLibraryPage : Page
             return;
         }
 
-        var item = _editingItem;
-        var dialog = new ContentDialog
+        try
         {
-            XamlRoot = XamlRoot,
-            Title = "프롬프트 삭제",
-            Content = $"'{item.Title}' 프롬프트를 삭제합니다. 최근 기록의 최종 텍스트는 유지됩니다.",
-            PrimaryButtonText = "삭제",
-            CloseButtonText = "취소",
-            DefaultButton = ContentDialogButton.Close
-        };
+            var item = _editingItem;
+            var dialog = new ContentDialog
+            {
+                XamlRoot = XamlRoot,
+                Title = "프롬프트 삭제",
+                Content = $"'{item.Title}' 프롬프트를 삭제합니다. 최근 기록의 최종 텍스트는 유지됩니다.",
+                PrimaryButtonText = "삭제",
+                CloseButtonText = "취소",
+                DefaultButton = ContentDialogButton.Close
+            };
 
-        if (await dialog.ShowAsync() != ContentDialogResult.Primary)
-        {
-            return;
+            if (await dialog.ShowAsync() != ContentDialogResult.Primary)
+            {
+                return;
+            }
+
+            await ViewModel.DeleteAsync(item);
+            await ((App)Application.Current).Images.DeleteIfUnreferencedAsync(item.ImagePath);
+            HideEditor();
+            UpdateEmptyState();
         }
-
-        await ViewModel.DeleteAsync(item);
-        await ((App)Application.Current).Images.DeleteIfUnreferencedAsync(item.ImagePath);
-        HideEditor();
-        UpdateEmptyState();
+        catch (Exception ex)
+        {
+            await ShowErrorAsync("프롬프트 삭제 실패", ex);
+        }
     }
 
     private void CancelEdit_Click(object sender, RoutedEventArgs e)
@@ -356,8 +391,15 @@ public sealed partial class PromptLibraryPage : Page
 
     private async Task RefreshAsync()
     {
-        await ViewModel.RefreshAsync();
-        UpdateEmptyState();
+        try
+        {
+            await ViewModel.RefreshAsync();
+            UpdateEmptyState();
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorAsync("프롬프트 불러오기 실패", ex);
+        }
     }
 
     private void UpdateEmptyState()
@@ -385,8 +427,15 @@ public sealed partial class PromptLibraryPage : Page
             return;
         }
 
-        var fullPath = ((App)Application.Current).Images.ResolvePath(relativePath);
-        ShowImagePreview(fullPath);
+        try
+        {
+            var fullPath = ((App)Application.Current).Images.ResolvePath(relativePath);
+            ShowImagePreview(fullPath);
+        }
+        catch
+        {
+            ClearImagePreview();
+        }
     }
 
     private void ShowImagePreview(string path)
@@ -403,6 +452,22 @@ public sealed partial class PromptLibraryPage : Page
         EditorImagePreview.Visibility = Visibility.Collapsed;
         EditorImagePlaceholder.Visibility = Visibility.Visible;
         RemoveImageButton.IsEnabled = false;
+    }
+
+    private async Task ShowErrorAsync(string title, Exception exception)
+    {
+        var dialog = new ContentDialog
+        {
+            XamlRoot = XamlRoot,
+            Title = title,
+            Content = string.IsNullOrWhiteSpace(exception.Message)
+                ? "작업 중 알 수 없는 오류가 발생했습니다."
+                : exception.Message,
+            CloseButtonText = "확인",
+            DefaultButton = ContentDialogButton.Close
+        };
+
+        await dialog.ShowAsync();
     }
 
     private static IReadOnlyList<string> ParseTags(string value) =>
