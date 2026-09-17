@@ -4,13 +4,13 @@ Updated: 2026-09-17
 
 ## Repository
 
-The repository is initialized and active development is on `feature/bootstrap`.
+Active development is on `feature/bootstrap`. The branch contains the complete V1 implementation candidate and is ready for Windows smoke testing before merge/release.
 
 ## Decisions fixed for V1
 
 - Windows desktop application
 - C# / .NET 10
-- WinUI 3 using Windows App SDK 2.5 stable line
+- WinUI 3 using Windows App SDK 2.5.1
 - Minimum OS target: Windows 10 1809+
 - Local-first architecture
 - SQLite for structured data
@@ -30,8 +30,9 @@ The repository is initialized and active development is on `feature/bootstrap`.
 - Fluent-style `NavigationView` shell
 - Mixer, Prompt Library, History, and Settings pages
 - Shared card/title styles and system/light/dark themes
-- Vector icon design source based on three prompt cards and shuffle flow
-- GitHub Actions restore/build/test workflow
+- Vector icon source based on three prompt cards and shuffle flow
+- Windows executable ICO asset embedded through `ApplicationIcon`
+- Accessibility names for icon-only Prompt Library controls
 
 ### Prompt domain and combination core
 
@@ -83,16 +84,30 @@ The repository is initialized and active development is on `feature/bootstrap`.
 - Runtime application-version display
 - Settings and backup round-trip tests
 
+### Distribution preparation
+
+- Self-contained unpackaged `win-x64` publish configuration validated in GitHub Actions
+- Published output uploaded as a GitHub Actions artifact
+- First-release distribution strategy documented as portable ZIP
+- Manual Windows release checklist added
+- First-release notes draft added; version/tag intentionally not chosen yet
+
 ## Verification status
 
-GitHub Actions has repeatedly validated the WinUI solution on Windows runners with .NET 10. The branch is currently being revalidated after the latest Settings and Prompt Library UI changes.
+The latest code validation on Windows completed successfully with:
 
-## Next milestone
+1. Solution restore
+2. Release build
+3. 12 automated tests
+4. Self-contained `win-x64` publish
+5. Published artifact upload
 
-Milestone 6 — polish and distribution:
+A release artifact is approximately 96 MB before the user-facing release ZIP is finalized.
 
-1. Produce final Windows application icon assets from the approved vector concept.
-2. Run keyboard/accessibility and empty/error-state passes.
-3. Validate a publish/release build.
-4. Choose the final packaging/installer strategy.
-5. Prepare the first distributable release.
+## Remaining before first release
+
+1. Run `docs/RELEASE_CHECKLIST.md` against the exact published artifact on a real Windows desktop.
+2. Decide whether additional user-facing error handling should be added for file/backup failures.
+3. Fix any issues found by the smoke test.
+4. Choose the release version/tag.
+5. Merge the implementation branch and publish the first GitHub Release.
