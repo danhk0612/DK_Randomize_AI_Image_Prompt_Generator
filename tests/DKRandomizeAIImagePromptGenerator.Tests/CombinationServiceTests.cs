@@ -1,5 +1,6 @@
 using DKRandomizeAIImagePromptGenerator.Models;
 using DKRandomizeAIImagePromptGenerator.Services;
+using Xunit;
 
 namespace DKRandomizeAIImagePromptGenerator.Tests;
 
