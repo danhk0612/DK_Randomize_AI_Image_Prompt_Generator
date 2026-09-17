@@ -66,7 +66,8 @@
 
 - [x] Final application icon assets
 - [x] Keyboard/accessibility code pass
-- [ ] Empty/error-state pass
+- [x] Empty/error-state pass
+- [x] Responsive layout pass
 - [x] Release build validation
 - [x] Select final packaging/installer strategy
 - [ ] Prepare first release
