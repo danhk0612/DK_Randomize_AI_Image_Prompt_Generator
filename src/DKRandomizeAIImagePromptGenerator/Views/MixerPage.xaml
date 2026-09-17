@@ -15,31 +15,16 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <Border
-                    Width="52"
-                    Height="52"
-                    CornerRadius="6"
-                    Background="{ThemeResource ControlFillColorSecondaryBrush}">
+                <Border Width="52" Height="52" CornerRadius="6" Background="{ThemeResource ControlFillColorSecondaryBrush}">
                     <Grid>
                         <FontIcon Glyph="&#xE91B;" FontSize="20" Opacity="0.3" />
-                        <Image
-                            Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}}"
-                            Stretch="Uniform" />
+                        <Image Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}}" Stretch="Uniform" />
                     </Grid>
                 </Border>
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
-                    <TextBlock
-                        Text="{x:Bind Title}"
-                        FontWeight="SemiBold"
-                        TextTrimming="CharacterEllipsis" />
-                    <TextBlock
-                        Text="{x:Bind Memo}"
-                        Opacity="0.62"
-                        FontSize="12"
-                        TextWrapping="Wrap"
-                        TextTrimming="CharacterEllipsis"
-                        MaxLines="2" />
+                    <TextBlock Text="{x:Bind Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{x:Bind Memo}" Opacity="0.62" FontSize="12" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" />
                     <ItemsControl ItemsSource="{x:Bind Tags}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -48,14 +33,8 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border
-                                    Padding="6,2"
-                                    CornerRadius="8"
-                                    Background="{ThemeResource ControlFillColorSecondaryBrush}">
-                                    <TextBlock
-                                        Text="{Binding}"
-                                        FontSize="11"
-                                        Opacity="0.72" />
+                                <Border Padding="6,2" CornerRadius="8" Background="{ThemeResource ControlFillColorSecondaryBrush}">
+                                    <TextBlock Text="{Binding}" FontSize="11" Opacity="0.72" />
                                 </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -69,7 +48,7 @@
         HorizontalScrollMode="Disabled"
         HorizontalScrollBarVisibility="Disabled"
         HorizontalContentAlignment="Stretch"
-        VerticalScrollMode="Auto"
+        VerticalScrollMode="Enabled"
         VerticalScrollBarVisibility="Auto">
         <Grid Padding="24,28,24,32" HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>
@@ -103,14 +82,7 @@
                         </Border>
                         <TextBlock x:Name="CharacterTitle" Text="선택된 캐릭터 없음" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                         <TextBlock x:Name="CharacterMemo" Opacity="0.62" FontSize="12" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" />
-                        <ComboBox
-                            x:Name="CharacterPromptCombo"
-                            Header="직접 선택"
-                            ItemsSource="{x:Bind ViewModel.CharacterItems, Mode=OneWay}"
-                            ItemTemplate="{StaticResource PromptPickerItemTemplate}"
-                            MaxDropDownHeight="420"
-                            HorizontalAlignment="Stretch"
-                            SelectionChanged="CharacterPromptCombo_SelectionChanged" />
+                        <ComboBox x:Name="CharacterPromptCombo" Header="직접 선택" ItemsSource="{x:Bind ViewModel.CharacterItems, Mode=OneWay}" ItemTemplate="{StaticResource PromptPickerItemTemplate}" MaxDropDownHeight="420" HorizontalAlignment="Stretch" SelectionChanged="CharacterPromptCombo_SelectionChanged" />
                         <Grid ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -137,14 +109,7 @@
                         </Border>
                         <TextBlock x:Name="ArtistTitle" Text="선택된 작가 없음" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                         <TextBlock x:Name="ArtistMemo" Opacity="0.62" FontSize="12" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" />
-                        <ComboBox
-                            x:Name="ArtistPromptCombo"
-                            Header="직접 선택"
-                            ItemsSource="{x:Bind ViewModel.ArtistItems, Mode=OneWay}"
-                            ItemTemplate="{StaticResource PromptPickerItemTemplate}"
-                            MaxDropDownHeight="420"
-                            HorizontalAlignment="Stretch"
-                            SelectionChanged="ArtistPromptCombo_SelectionChanged" />
+                        <ComboBox x:Name="ArtistPromptCombo" Header="직접 선택" ItemsSource="{x:Bind ViewModel.ArtistItems, Mode=OneWay}" ItemTemplate="{StaticResource PromptPickerItemTemplate}" MaxDropDownHeight="420" HorizontalAlignment="Stretch" SelectionChanged="ArtistPromptCombo_SelectionChanged" />
                         <Grid ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -171,14 +136,7 @@
                         </Border>
                         <TextBlock x:Name="AdditionalTitle" Text="선택된 추가 프롬프트 없음" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                         <TextBlock x:Name="AdditionalMemo" Opacity="0.62" FontSize="12" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxLines="2" />
-                        <ComboBox
-                            x:Name="AdditionalPromptCombo"
-                            Header="직접 선택"
-                            ItemsSource="{x:Bind ViewModel.AdditionalItems, Mode=OneWay}"
-                            ItemTemplate="{StaticResource PromptPickerItemTemplate}"
-                            MaxDropDownHeight="420"
-                            HorizontalAlignment="Stretch"
-                            SelectionChanged="AdditionalPromptCombo_SelectionChanged" />
+                        <ComboBox x:Name="AdditionalPromptCombo" Header="직접 선택" ItemsSource="{x:Bind ViewModel.AdditionalItems, Mode=OneWay}" ItemTemplate="{StaticResource PromptPickerItemTemplate}" MaxDropDownHeight="420" HorizontalAlignment="Stretch" SelectionChanged="AdditionalPromptCombo_SelectionChanged" />
                         <Grid ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
