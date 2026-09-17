@@ -48,11 +48,12 @@
             </Border>
 
             <Border x:Name="DetailPane" Grid.Column="1" Style="{StaticResource PromptCardStyle}" Visibility="Collapsed">
-                <ScrollViewer
+                <ScrollView
+                    ContentOrientation="Vertical"
                     VerticalScrollMode="Enabled"
                     VerticalScrollBarVisibility="Auto"
                     HorizontalScrollMode="Disabled"
-                    HorizontalScrollBarVisibility="Disabled"
+                    HorizontalScrollBarVisibility="Hidden"
                     HorizontalContentAlignment="Stretch">
                     <StackPanel Spacing="18">
                         <Grid>
@@ -99,7 +100,7 @@
                             <TextBox x:Name="NegativeTextBox" AcceptsReturn="True" IsReadOnly="True" MinHeight="150" TextWrapping="Wrap" VerticalContentAlignment="Top" />
                         </StackPanel>
                     </StackPanel>
-                </ScrollViewer>
+                </ScrollView>
             </Border>
         </Grid>
     </Grid>
