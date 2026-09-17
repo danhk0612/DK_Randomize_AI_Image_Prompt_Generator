@@ -17,6 +17,15 @@ public sealed partial class MixerPage : Page
         var app = (App)Application.Current;
         ViewModel = new MixerViewModel(app.Prompts, app.History, app.Combination);
         InitializeComponent();
+
+        var transparent = new SolidColorBrush(Microsoft.UI.Colors.Transparent);
+        Background = transparent;
+        MixerScrollViewer.Background = transparent;
+        if (MixerScrollViewer.Content is Panel scrollContent)
+        {
+            scrollContent.Background = transparent;
+        }
+
         _initialized = true;
         Loaded += MixerPage_Loaded;
         SizeChanged += MixerPage_SizeChanged;
