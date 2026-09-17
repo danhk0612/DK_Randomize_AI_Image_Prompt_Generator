@@ -1,4 +1,5 @@
 using DKRandomizeAIImagePromptGenerator.Models;
+using DKRandomizeAIImagePromptGenerator.Services;
 using DKRandomizeAIImagePromptGenerator.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -13,6 +14,11 @@ public sealed partial class HistoryPage : Page
     {
         ViewModel = new HistoryViewModel(((App)Application.Current).History);
         InitializeComponent();
+        MouseWheelScrollService.Attach(HistoryListView);
+        if (DetailPane.Child is ScrollViewer detailScrollViewer)
+        {
+            MouseWheelScrollService.Attach(detailScrollViewer);
+        }
         Loaded += HistoryPage_Loaded;
     }
 
