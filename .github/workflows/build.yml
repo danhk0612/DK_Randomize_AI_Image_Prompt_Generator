@@ -30,3 +30,13 @@ jobs:
 
       - name: Test
         run: dotnet test tests/DKRandomizeAIImagePromptGenerator.Tests/DKRandomizeAIImagePromptGenerator.Tests.csproj -c Release -p:Platform=x64 --no-build --no-restore
+
+      - name: Publish win-x64
+        run: dotnet publish src/DKRandomizeAIImagePromptGenerator/DKRandomizeAIImagePromptGenerator.csproj -c Release -r win-x64 -p:Platform=x64 --self-contained true --no-restore -o artifacts/win-x64
+
+      - name: Upload win-x64 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DK-Randomize-AI-Image-Prompt-Generator-win-x64
+          path: artifacts/win-x64
+          if-no-files-found: error
