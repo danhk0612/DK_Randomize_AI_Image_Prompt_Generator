@@ -17,6 +17,8 @@ public partial class App : Application
         Prompts = new PromptRepository(Database);
         History = new HistoryRepository(Database);
         Images = new ImageStorageService(paths, Database);
+        Combination = new CombinationService();
+        Clipboard = new ClipboardService();
     }
 
     public DatabaseService Database { get; }
@@ -26,6 +28,10 @@ public partial class App : Application
     public HistoryRepository History { get; }
 
     public ImageStorageService Images { get; }
+
+    public CombinationService Combination { get; }
+
+    public ClipboardService Clipboard { get; }
 
     public Window? MainWindowInstance => _window;
 
