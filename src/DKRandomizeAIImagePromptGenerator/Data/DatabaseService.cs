@@ -66,7 +66,7 @@ public sealed class DatabaseService
         SqliteConnection connection,
         CancellationToken cancellationToken)
     {
-        await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
+        using var transaction = connection.BeginTransaction();
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText = """
@@ -126,6 +126,6 @@ public sealed class DatabaseService
             """;
 
         await command.ExecuteNonQueryAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
+        transaction.Commit();
     }
 }
