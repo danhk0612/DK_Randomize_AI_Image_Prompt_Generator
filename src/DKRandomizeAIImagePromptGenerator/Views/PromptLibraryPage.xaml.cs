@@ -1,8 +1,8 @@
 using DKRandomizeAIImagePromptGenerator.Models;
+using DKRandomizeAIImagePromptGenerator.Services;
 using DKRandomizeAIImagePromptGenerator.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Windows.Storage.Pickers;
 
@@ -19,6 +19,9 @@ public sealed partial class PromptLibraryPage : Page
     {
         ViewModel = new PromptLibraryViewModel(((App)Application.Current).Prompts);
         InitializeComponent();
+        MouseWheelScrollService.Attach(PromptGridView);
+        MouseWheelScrollService.Attach(PromptListView);
+        MouseWheelScrollService.Attach(EditorScrollViewer);
         Loaded += PromptLibraryPage_Loaded;
         SizeChanged += PromptLibraryPage_SizeChanged;
     }
@@ -192,36 +195,14 @@ public sealed partial class PromptLibraryPage : Page
     private void OpenEditorAtTop()
     {
         EditorPane.Visibility = Visibility.Visible;
+        EditorScrollViewer.UpdateLayout();
+        EditorScrollViewer.ChangeView(null, 0, null, disableAnimation: true);
 
         DispatcherQueue.TryEnqueue(() =>
         {
-            var scrollViewer = FindDescendantScrollViewer(EditorPane);
-            scrollViewer?.ChangeView(null, 0, null, disableAnimation: true);
-
-            DispatcherQueue.TryEnqueue(() =>
-            {
-                scrollViewer?.ChangeView(null, 0, null, disableAnimation: true);
-                TitleBox.StartBringIntoView(new BringIntoViewOptions
-                {
-                    AnimationDesired = false,
-                    VerticalAlignmentRatio = 0
-                });
-                TitleBox.Focus(FocusState.Programmatic);
-            });
+            EditorScrollViewer.UpdateLayout();
+            EditorScrollViewer.ChangeView(null, 0, null, disableAnimation: true);
         });
-    }
-
-    private static ScrollViewer? FindDescendantScrollViewer(DependencyObject root)
-    {
-        var count = VisualTreeHelper.GetChildrenCount(root);
-        for (var index = 0; index < count; index++)
-        {
-            var child = VisualTreeHelper.GetChild(root, index);
-            if (child is ScrollViewer scrollViewer) return scrollViewer;
-            var nested = FindDescendantScrollViewer(child);
-            if (nested is not null) return nested;
-        }
-        return null;
     }
 
     private async void ChooseImage_Click(object sender, RoutedEventArgs e)
