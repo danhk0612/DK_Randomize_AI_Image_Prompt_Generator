@@ -48,6 +48,46 @@ public sealed partial class PromptLibraryPage : Page
             contentGrid.ColumnDefinitions[0].MinWidth = 0;
         }
 
+        if (SearchBox.Parent is Grid filterGrid && filterGrid.ColumnDefinitions.Count >= 2)
+        {
+            if (filterGrid.RowDefinitions.Count < 2)
+            {
+                filterGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                filterGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            }
+
+            if (availableWidth < 760)
+            {
+                filterGrid.ColumnSpacing = 0;
+                filterGrid.RowSpacing = 10;
+                filterGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+                filterGrid.ColumnDefinitions[1].Width = new GridLength(0);
+
+                Grid.SetRow(SearchBox, 0);
+                Grid.SetColumn(SearchBox, 0);
+                Grid.SetColumnSpan(SearchBox, 2);
+
+                Grid.SetRow(TagFilterBox, 1);
+                Grid.SetColumn(TagFilterBox, 0);
+                Grid.SetColumnSpan(TagFilterBox, 2);
+            }
+            else
+            {
+                filterGrid.ColumnSpacing = 10;
+                filterGrid.RowSpacing = 0;
+                filterGrid.ColumnDefinitions[0].Width = new GridLength(2, GridUnitType.Star);
+                filterGrid.ColumnDefinitions[1].Width = new GridLength(1, GridUnitType.Star);
+
+                Grid.SetRow(SearchBox, 0);
+                Grid.SetColumn(SearchBox, 0);
+                Grid.SetColumnSpan(SearchBox, 1);
+
+                Grid.SetRow(TagFilterBox, 0);
+                Grid.SetColumn(TagFilterBox, 1);
+                Grid.SetColumnSpan(TagFilterBox, 1);
+            }
+        }
+
         EditorPane.Width = availableWidth switch
         {
             >= 1350 => 400,
