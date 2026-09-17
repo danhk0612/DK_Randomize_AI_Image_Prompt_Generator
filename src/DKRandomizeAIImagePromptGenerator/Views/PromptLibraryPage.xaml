@@ -1,0 +1,58 @@
+<Page
+    x:Class="DKRandomizeAIImagePromptGenerator.Views.PromptLibraryPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Padding="32" MaxWidth="1180" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Spacing="6">
+            <TextBlock Text="프롬프트" Style="{StaticResource PageTitleTextStyle}" />
+            <TextBlock Opacity="0.7" Text="캐릭터, 작가, 추가 프롬프트를 한곳에서 관리합니다." />
+        </StackPanel>
+
+        <Grid Grid.Row="1" Margin="0,24,0,0" ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox PlaceholderText="제목, 메모, 태그 검색" />
+            <ComboBox Grid.Column="1" Width="150" SelectedIndex="0">
+                <ComboBoxItem Content="모든 태그" />
+            </ComboBox>
+            <Button Grid.Column="2" Style="{StaticResource AccentButtonStyle}" Content="새 프롬프트" />
+        </Grid>
+
+        <StackPanel Grid.Row="2" Margin="0,16,0,0" Orientation="Horizontal" Spacing="8">
+            <ToggleButton IsChecked="True" Content="캐릭터" />
+            <ToggleButton Content="작가" />
+            <ToggleButton Content="추가" />
+        </StackPanel>
+
+        <Grid Grid.Row="3" Margin="0,20,0,32" ColumnSpacing="12" RowSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border Style="{StaticResource PromptCardStyle}">
+                <StackPanel Spacing="10">
+                    <Border Height="170" CornerRadius="8" Background="{ThemeResource ControlFillColorSecondaryBrush}">
+                        <Grid>
+                            <FontIcon Glyph="&#xE91B;" FontSize="36" Opacity="0.4" />
+                        </Grid>
+                    </Border>
+                    <TextBlock Text="등록된 프롬프트 없음" FontWeight="SemiBold" />
+                    <TextBlock Opacity="0.65" Text="새 프롬프트를 추가하면 대표 이미지와 함께 표시됩니다." TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>
