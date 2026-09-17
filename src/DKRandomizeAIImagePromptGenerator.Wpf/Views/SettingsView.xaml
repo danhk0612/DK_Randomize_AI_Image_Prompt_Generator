@@ -1,0 +1,50 @@
+<UserControl x:Class="DKRandomizeAIImagePromptGenerator.Wpf.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer x:Name="RootScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="24" MaxWidth="920" HorizontalAlignment="Stretch">
+            <TextBlock Text="설정" Style="{StaticResource PageTitleStyle}" />
+            <TextBlock Text="앱 표시 방식과 로컬 데이터 관리를 설정합니다." Foreground="{DynamicResource TextSecondaryBrush}" />
+
+            <TextBlock x:Name="StatusText" Margin="0,14,0,0" Foreground="{DynamicResource TextSecondaryBrush}" />
+
+            <Border Style="{StaticResource CardStyle}" Margin="0,18,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="220" /></Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="테마" FontWeight="SemiBold" />
+                        <TextBlock Text="시스템 설정을 따르거나 라이트/다크 테마를 고정합니다." Margin="0,4,0,0" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <ComboBox x:Name="ThemeComboBox" Grid.Column="1" SelectionChanged="ThemeComboBox_SelectionChanged">
+                        <ComboBoxItem Content="시스템 설정 따름" />
+                        <ComboBoxItem Content="라이트" />
+                        <ComboBoxItem Content="다크" />
+                    </ComboBox>
+                </Grid>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}" Margin="0,14,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="데이터 백업" FontWeight="SemiBold" />
+                        <TextBlock Text="프롬프트, 최근 기록, 대표 이미지와 설정을 ZIP 파일 하나로 보관하거나 복원합니다." Margin="0,4,0,0" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                        <Button Content="백업" Click="Backup_Click" />
+                        <Button Content="복원" Margin="8,0,0,0" Click="Restore_Click" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}" Margin="0,14,0,0">
+                <StackPanel>
+                    <TextBlock Text="정보" FontWeight="SemiBold" />
+                    <TextBlock Text="DK Randomize AI Image Prompt Generator" Margin="0,5,0,0" />
+                    <TextBlock x:Name="VersionText" Margin="0,3,0,0" Foreground="{DynamicResource TextSecondaryBrush}" />
+                    <TextBlock Text="WPF UI" Margin="0,2,0,0" Foreground="{DynamicResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
