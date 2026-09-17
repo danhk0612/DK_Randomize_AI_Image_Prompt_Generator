@@ -1,0 +1,146 @@
+<UserControl x:Class="DKRandomizeAIImagePromptGenerator.Wpf.Views.MixerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:DKRandomizeAIImagePromptGenerator.Wpf.Converters">
+    <UserControl.Resources>
+        <conv:ImagePathConverter x:Key="ImagePathConverter" />
+        <DataTemplate x:Key="PromptPickerTemplate">
+            <Grid Margin="2" MinWidth="260">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="52" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border Width="48" Height="48" CornerRadius="6" Background="{DynamicResource SurfaceSecondaryBrush}">
+                    <Image Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}}" Stretch="Uniform" />
+                </Border>
+                <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding Memo}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" MaxHeight="34" />
+                    <ItemsControl ItemsSource="{Binding Tags}" Margin="0,3,0,0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{DynamicResource SurfaceSecondaryBrush}" CornerRadius="7" Padding="5,2" Margin="0,0,4,2">
+                                    <TextBlock Text="{Binding}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <ScrollViewer x:Name="RootScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="24,26,24,34">
+            <TextBlock Text="프롬프트 조합" Style="{StaticResource PageTitleStyle}" />
+            <TextBlock Text="캐릭터, 작가, 추가 프롬프트를 고정하거나 랜덤으로 조합합니다."
+                       Foreground="{DynamicResource TextSecondaryBrush}" />
+
+            <Grid Margin="0,22,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="캐릭터" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,12" />
+                        <Border Height="132" CornerRadius="8" Background="{DynamicResource SurfaceSecondaryBrush}">
+                            <Image x:Name="CharacterImage" Stretch="Uniform" />
+                        </Border>
+                        <TextBlock x:Name="CharacterTitle" Margin="0,10,0,0" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="CharacterMemo" Margin="0,4,0,0" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" MaxHeight="34" />
+                        <ItemsControl x:Name="CharacterTags" Margin="0,5,0,0">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate><DataTemplate><Border Background="{DynamicResource SurfaceSecondaryBrush}" CornerRadius="7" Padding="5,2" Margin="0,0,4,2"><TextBlock Text="{Binding}" FontSize="11" /></Border></DataTemplate></ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="직접 선택" Margin="0,10,0,4" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" />
+                        <ComboBox x:Name="CharacterPromptCombo" ItemTemplate="{StaticResource PromptPickerTemplate}" MaxDropDownHeight="430" SelectionChanged="CharacterPromptCombo_SelectionChanged" />
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <ComboBox x:Name="CharacterModeCombo" SelectionChanged="CharacterModeCombo_SelectionChanged">
+                                <ComboBoxItem Content="고정" /><ComboBoxItem Content="랜덤" /><ComboBoxItem Content="미사용" />
+                            </ComboBox>
+                            <Button x:Name="CharacterRandomButton" Grid.Column="1" Content="다시" Margin="8,0,0,0" Click="CharacterRandom_Click" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="작가 / 스타일" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,12" />
+                        <Border Height="132" CornerRadius="8" Background="{DynamicResource SurfaceSecondaryBrush}">
+                            <Image x:Name="ArtistImage" Stretch="Uniform" />
+                        </Border>
+                        <TextBlock x:Name="ArtistTitle" Margin="0,10,0,0" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="ArtistMemo" Margin="0,4,0,0" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" MaxHeight="34" />
+                        <ItemsControl x:Name="ArtistTags" Margin="0,5,0,0">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate><DataTemplate><Border Background="{DynamicResource SurfaceSecondaryBrush}" CornerRadius="7" Padding="5,2" Margin="0,0,4,2"><TextBlock Text="{Binding}" FontSize="11" /></Border></DataTemplate></ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="직접 선택" Margin="0,10,0,4" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" />
+                        <ComboBox x:Name="ArtistPromptCombo" ItemTemplate="{StaticResource PromptPickerTemplate}" MaxDropDownHeight="430" SelectionChanged="ArtistPromptCombo_SelectionChanged" />
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <ComboBox x:Name="ArtistModeCombo" SelectionChanged="ArtistModeCombo_SelectionChanged">
+                                <ComboBoxItem Content="고정" /><ComboBoxItem Content="랜덤" /><ComboBoxItem Content="미사용" />
+                            </ComboBox>
+                            <Button x:Name="ArtistRandomButton" Grid.Column="1" Content="다시" Margin="8,0,0,0" Click="ArtistRandom_Click" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="4" Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="추가" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,12" />
+                        <Border Height="132" CornerRadius="8" Background="{DynamicResource SurfaceSecondaryBrush}">
+                            <Image x:Name="AdditionalImage" Stretch="Uniform" />
+                        </Border>
+                        <TextBlock x:Name="AdditionalTitle" Margin="0,10,0,0" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="AdditionalMemo" Margin="0,4,0,0" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" MaxHeight="34" />
+                        <ItemsControl x:Name="AdditionalTags" Margin="0,5,0,0">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate><DataTemplate><Border Background="{DynamicResource SurfaceSecondaryBrush}" CornerRadius="7" Padding="5,2" Margin="0,0,4,2"><TextBlock Text="{Binding}" FontSize="11" /></Border></DataTemplate></ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="직접 선택" Margin="0,10,0,4" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" />
+                        <ComboBox x:Name="AdditionalPromptCombo" ItemTemplate="{StaticResource PromptPickerTemplate}" MaxDropDownHeight="430" SelectionChanged="AdditionalPromptCombo_SelectionChanged" />
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <ComboBox x:Name="AdditionalModeCombo" SelectionChanged="AdditionalModeCombo_SelectionChanged">
+                                <ComboBoxItem Content="고정" /><ComboBoxItem Content="랜덤" /><ComboBoxItem Content="미사용" />
+                            </ComboBox>
+                            <Button x:Name="AdditionalRandomButton" Grid.Column="1" Content="다시" Margin="8,0,0,0" Click="AdditionalRandom_Click" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Button Content="전체 다시 조합" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Right" Margin="0,16,0,0" Click="RandomizeAll_Click" />
+
+            <Grid Margin="0,24,0,0">
+                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                <Grid>
+                    <TextBlock Text="Positive" Style="{StaticResource SectionTitleStyle}" />
+                    <Button Content="복사" HorizontalAlignment="Right" Click="CopyPositive_Click" />
+                </Grid>
+                <TextBox x:Name="PositiveOutput" Grid.Row="1" Margin="0,8,0,0" Height="190" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" />
+                <Grid Grid.Row="2" Margin="0,20,0,0">
+                    <TextBlock Text="Negative" Style="{StaticResource SectionTitleStyle}" />
+                    <Button Content="복사" HorizontalAlignment="Right" Click="CopyNegative_Click" />
+                </Grid>
+                <TextBox x:Name="NegativeOutput" Grid.Row="3" Margin="0,8,0,0" Height="150" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" />
+            </Grid>
+
+            <DockPanel Margin="0,16,0,0">
+                <TextBlock x:Name="StatusText" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}" />
+                <Button Content="현재 결과 기록 저장" HorizontalAlignment="Right" DockPanel.Dock="Right" Click="SaveHistory_Click" />
+            </DockPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
