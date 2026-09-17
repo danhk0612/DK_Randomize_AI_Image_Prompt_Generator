@@ -1,5 +1,4 @@
 using DKRandomizeAIImagePromptGenerator.Models;
-using DKRandomizeAIImagePromptGenerator.Services;
 using DKRandomizeAIImagePromptGenerator.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -8,16 +7,9 @@ namespace DKRandomizeAIImagePromptGenerator;
 
 public sealed partial class MainWindow : Window
 {
-    private readonly ScrollDiagnosticsService _scrollDiagnostics;
-
     public MainWindow()
     {
         InitializeComponent();
-
-        _scrollDiagnostics = new ScrollDiagnosticsService(
-            this,
-            RootNavigationView,
-            ContentFrame);
 
         RootNavigationView.SelectedItem = MixerNavigationItem;
         NavigateTo("Mixer");
