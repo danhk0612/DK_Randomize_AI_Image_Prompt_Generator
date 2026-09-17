@@ -45,6 +45,7 @@
     </Page.Resources>
 
     <ScrollViewer
+        x:Name="MixerScrollViewer"
         HorizontalScrollMode="Disabled"
         HorizontalScrollBarVisibility="Disabled"
         HorizontalContentAlignment="Stretch"
