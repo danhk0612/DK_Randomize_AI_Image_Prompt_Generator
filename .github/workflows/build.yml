@@ -31,29 +31,18 @@ jobs:
       - name: Test
         run: dotnet test tests/DKRandomizeAIImagePromptGenerator.Tests/DKRandomizeAIImagePromptGenerator.Tests.csproj -c Release -p:Platform=x64 --no-build --no-restore
 
-      - name: Publish win-x64
-        run: dotnet publish src/DKRandomizeAIImagePromptGenerator/DKRandomizeAIImagePromptGenerator.csproj -c Release -r win-x64 -p:Platform=x64 --self-contained true --no-restore -o artifacts/win-x64
+      - name: Publish WPF win-x64
+        run: dotnet publish src/DKRandomizeAIImagePromptGenerator.Wpf/DKRandomizeAIImagePromptGenerator.Wpf.csproj -c Release -r win-x64 -p:Platform=x64 --self-contained true --no-restore -o artifacts/win-x64
 
       - name: Smoke test published app startup
         shell: pwsh
         run: |
-          $appData = Join-Path $env:LOCALAPPDATA "DK Randomize AI Image Prompt Generator"
-          $log = Join-Path $appData "startup-crash.log"
-          if (Test-Path $log) { Remove-Item $log -Force }
-
           $exe = Join-Path $PWD "artifacts/win-x64/DKRandomizeAIImagePromptGenerator.exe"
           $process = Start-Process -FilePath $exe -PassThru
           Start-Sleep -Seconds 5
 
-          if (Test-Path $log) {
-            Write-Host "Startup crash log:"
-            Get-Content $log
-            if (-not $process.HasExited) { Stop-Process -Id $process.Id -Force }
-            throw "Published application reported a startup crash."
-          }
-
           if ($process.HasExited) {
-            throw "Published application exited during startup smoke test. Exit code: $($process.ExitCode)"
+            throw "Published WPF application exited during startup smoke test. Exit code: $($process.ExitCode)"
           }
 
           Stop-Process -Id $process.Id -Force
@@ -61,6 +50,6 @@ jobs:
       - name: Upload win-x64 artifact
         uses: actions/upload-artifact@v4
         with:
-          name: DK-Randomize-AI-Image-Prompt-Generator-win-x64
+          name: DK-Randomize-AI-Image-Prompt-Generator-WPF-win-x64
           path: artifacts/win-x64
           if-no-files-found: error
