@@ -59,7 +59,7 @@
                     <StackPanel Spacing="4">
                         <TextBlock Text="정보" FontWeight="SemiBold" />
                         <TextBlock Text="DK Randomize AI Image Prompt Generator" />
-                        <TextBlock Opacity="0.65" Text="개발 버전" />
+                        <TextBlock x:Name="VersionText" Opacity="0.65" />
                     </StackPanel>
                 </Border>
             </StackPanel>
