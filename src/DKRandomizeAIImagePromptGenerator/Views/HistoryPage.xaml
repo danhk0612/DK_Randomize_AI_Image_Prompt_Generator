@@ -1,0 +1,20 @@
+<Page
+    x:Class="DKRandomizeAIImagePromptGenerator.Views.HistoryPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Padding="32" MaxWidth="1180" HorizontalAlignment="Stretch">
+        <StackPanel Spacing="6">
+            <TextBlock Text="최근 기록" Style="{StaticResource PageTitleTextStyle}" />
+            <TextBlock Opacity="0.7" Text="최종 편집된 Positive / Negative 조합 기록을 다시 불러옵니다." />
+
+            <Border Margin="0,24,0,0" Style="{StaticResource PromptCardStyle}">
+                <StackPanel HorizontalAlignment="Center" Spacing="10" Padding="24">
+                    <FontIcon Glyph="&#xE81C;" FontSize="36" Opacity="0.45" />
+                    <TextBlock Text="아직 저장된 조합 기록이 없습니다." FontWeight="SemiBold" />
+                    <TextBlock Opacity="0.65" Text="프롬프트를 조합하면 최근 사용 기록이 여기에 표시됩니다." />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Grid>
+</Page>
