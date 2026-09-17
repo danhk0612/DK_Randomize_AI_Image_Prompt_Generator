@@ -1,6 +1,7 @@
 using DKRandomizeAIImagePromptGenerator.Data;
 using DKRandomizeAIImagePromptGenerator.Models;
 using DKRandomizeAIImagePromptGenerator.Services;
+using Microsoft.Data.Sqlite;
 using Xunit;
 
 namespace DKRandomizeAIImagePromptGenerator.Tests;
@@ -96,6 +97,8 @@ public sealed class SettingsAndBackupTests
 
     private static void DeleteTemporaryRoot(string root)
     {
+        SqliteConnection.ClearAllPools();
+
         if (Directory.Exists(root))
         {
             Directory.Delete(root, recursive: true);
