@@ -4,13 +4,13 @@ Updated: 2026-09-17
 
 ## Repository
 
-Active development is on `feature/bootstrap`. The branch contains the complete V1 implementation candidate and is ready for Windows smoke testing before merge/release.
+Active development is on `feature/bootstrap`. The branch contains the complete V1 implementation candidate. Initial Windows launch has been confirmed on a real desktop, and the remaining work before release is final manual UI/feature smoke testing and release preparation.
 
 ## Decisions fixed for V1
 
 - Windows desktop application
 - C# / .NET 10
-- WinUI 3 using Windows App SDK 2.5.1
+- WinUI 3 using Windows App SDK 2.4.0
 - Minimum OS target: Windows 10 1809+
 - Local-first architecture
 - SQLite for structured data
@@ -33,6 +33,10 @@ Active development is on `feature/bootstrap`. The branch contains the complete V
 - Vector icon source based on three prompt cards and shuffle flow
 - Windows executable ICO asset embedded through `ApplicationIcon`
 - Accessibility names for icon-only Prompt Library controls
+- Responsive NavigationView pane sizing and page-width handling
+- Responsive Mixer card layout: 3 columns, 2 columns, or 1 column depending on available width
+- Responsive Prompt Library filters and editor width
+- Responsive History and Settings layouts
 
 ### Prompt domain and combination core
 
@@ -62,6 +66,7 @@ Active development is on `feature/bootstrap`. The branch contains the complete V
 - Positive / Negative / memo / tags fields
 - Representative image import, preview, replace, remove, and orphan cleanup
 - Application-owned image copies under local app data
+- User-visible error dialogs for load, image, save, duplicate, and delete failures
 
 ### Mixer
 
@@ -73,6 +78,7 @@ Active development is on `feature/bootstrap`. The branch contains the complete V
 - Editable Positive / Negative result areas
 - Independent copy actions
 - Save final edited output to history
+- User-visible error state when history saving fails
 
 ### History and settings
 
@@ -82,11 +88,14 @@ Active development is on `feature/bootstrap`. The branch contains the complete V
 - ZIP backup of SQLite data, representative images, and settings
 - ZIP restore flow with confirmation
 - Runtime application-version display
+- User-visible errors for theme persistence, backup, and restore failures
 - Settings and backup round-trip tests
 
 ### Distribution preparation
 
 - Self-contained unpackaged `win-x64` publish configuration validated in GitHub Actions
+- Explicit publish inclusion of the application PRI resource to avoid runtime XAML loading failure
+- Published EXE startup smoke test checks `startup-crash.log` and process survival
 - Published output uploaded as a GitHub Actions artifact
 - First-release distribution strategy documented as portable ZIP
 - Manual Windows release checklist added
@@ -94,20 +103,22 @@ Active development is on `feature/bootstrap`. The branch contains the complete V
 
 ## Verification status
 
-The latest code validation on Windows completed successfully with:
+The current automated Windows validation includes:
 
 1. Solution restore
 2. Release build
 3. 12 automated tests
 4. Self-contained `win-x64` publish
-5. Published artifact upload
+5. Published EXE startup smoke test
+6. Published artifact upload
 
-A release artifact is approximately 96 MB before the user-facing release ZIP is finalized.
+A real Windows desktop launch has also been confirmed after the PRI publish fix and Mixer initialization fix.
 
 ## Remaining before first release
 
-1. Run `docs/RELEASE_CHECKLIST.md` against the exact published artifact on a real Windows desktop.
-2. Decide whether additional user-facing error handling should be added for file/backup failures.
-3. Fix any issues found by the smoke test.
-4. Choose the release version/tag.
-5. Merge the implementation branch and publish the first GitHub Release.
+1. Run the remaining manual checks in `docs/RELEASE_CHECKLIST.md` against the current published artifact.
+2. Verify responsive layout while resizing the app and toggling the navigation pane.
+3. Verify Prompt Library CRUD and representative image handling with real data.
+4. Verify Mixer, History restore, theme, backup, and restore flows.
+5. Fix any issues found by the smoke test.
+6. Choose the release version/tag, merge the implementation branch, and publish the first GitHub Release.
