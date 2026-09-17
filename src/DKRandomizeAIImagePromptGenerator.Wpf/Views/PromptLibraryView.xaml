@@ -1,0 +1,151 @@
+<UserControl x:Class="DKRandomizeAIImagePromptGenerator.Wpf.Views.PromptLibraryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:DKRandomizeAIImagePromptGenerator.Wpf.Converters">
+    <UserControl.Resources>
+        <conv:ImagePathConverter x:Key="ImagePathConverter" />
+        <DataTemplate x:Key="GalleryTemplate">
+            <Border Width="238" Height="218" Margin="5" Style="{StaticResource CardStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="92" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Border CornerRadius="7" Background="{DynamicResource SurfaceSecondaryBrush}">
+                        <Image Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}}" Stretch="Uniform" />
+                    </Border>
+                    <TextBlock Grid.Row="1" Text="{Binding Title}" Margin="0,10,0,0" FontWeight="SemiBold" FontSize="15" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Row="2" Text="{Binding PositivePrompt}" Margin="0,5,0,0" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="48" />
+                    <ItemsControl Grid.Row="3" ItemsSource="{Binding Tags}" Margin="0,5,0,0">
+                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate><DataTemplate><Border Background="{DynamicResource SurfaceSecondaryBrush}" CornerRadius="7" Padding="5,2" Margin="0,0,4,2"><TextBlock Text="{Binding}" FontSize="10" /></Border></DataTemplate></ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ListTemplate">
+            <Grid Margin="6" MinHeight="78">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="72" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                <Border Width="68" Height="68" CornerRadius="7" Background="{DynamicResource SurfaceSecondaryBrush}">
+                    <Image Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}}" Stretch="Uniform" />
+                </Border>
+                <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="15" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding PositivePrompt}" Foreground="{DynamicResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,4,0,0" />
+                    <TextBlock Text="{Binding NegativePrompt}" Foreground="{DynamicResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid>
+            <StackPanel>
+                <TextBlock Text="프롬프트" Style="{StaticResource PageTitleStyle}" />
+                <TextBlock Text="캐릭터, 작가, 추가 프롬프트를 저장하고 빠르게 찾습니다." Foreground="{DynamicResource TextSecondaryBrush}" />
+            </StackPanel>
+            <Button Content="새 프롬프트" HorizontalAlignment="Right" VerticalAlignment="Top" Style="{StaticResource AccentButtonStyle}" Click="NewPrompt_Click" />
+        </Grid>
+
+        <Grid Grid.Row="1" Margin="0,20,0,0">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock Text="검색" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,4" />
+                <TextBox x:Name="SearchBox" TextChanged="SearchBox_TextChanged" />
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+                <TextBlock Text="태그 필터" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,4" />
+                <TextBox x:Name="TagFilterBox" TextChanged="TagFilterBox_TextChanged" />
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="2" Margin="0,14,0,0">
+            <StackPanel Orientation="Horizontal">
+                <RadioButton x:Name="CharacterCategoryButton" Content="캐릭터" Tag="Character" IsChecked="True" Margin="0,0,18,0" Checked="Category_Checked" />
+                <RadioButton Content="작가 / 스타일" Tag="Artist" Margin="0,0,18,0" Checked="Category_Checked" />
+                <RadioButton Content="추가" Tag="Additional" Checked="Category_Checked" />
+            </StackPanel>
+            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                <Button x:Name="GalleryViewButton" Content="갤러리" Click="GalleryView_Click" />
+                <Button x:Name="ListViewButton" Content="목록" Margin="6,0,0,0" Click="ListView_Click" />
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="3" Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="340" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition x:Name="EditorColumn" Width="0" />
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0">
+                <ListBox x:Name="GalleryListBox" ItemsSource="{Binding Items}" ItemTemplate="{StaticResource GalleryTemplate}" SelectionChanged="PromptList_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ListBox.ItemsPanel>
+                </ListBox>
+                <ListBox x:Name="DetailListBox" ItemsSource="{Binding Items}" ItemTemplate="{StaticResource ListTemplate}" SelectionChanged="PromptList_SelectionChanged" Visibility="Collapsed" />
+                <StackPanel x:Name="EmptyState" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="등록된 프롬프트가 없습니다." FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                    <TextBlock Text="새 프롬프트를 추가하면 이곳에 표시됩니다." Margin="0,6,0,0" Foreground="{DynamicResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Grid>
+
+            <Border x:Name="EditorPane" Grid.Column="2" Style="{StaticResource CardStyle}" Visibility="Collapsed">
+                <ScrollViewer x:Name="EditorScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel>
+                        <Grid>
+                            <TextBlock x:Name="EditorTitleText" Text="프롬프트 편집" Style="{StaticResource SectionTitleStyle}" />
+                            <Button Content="✕" HorizontalAlignment="Right" Padding="8,4" Click="CancelEdit_Click" />
+                        </Grid>
+
+                        <Border Height="170" Margin="0,14,0,0" CornerRadius="8" Background="{DynamicResource SurfaceSecondaryBrush}">
+                            <Grid>
+                                <TextBlock x:Name="EditorImagePlaceholder" Text="이미지 없음" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                <Image x:Name="EditorImagePreview" Stretch="Uniform" Visibility="Collapsed" />
+                            </Grid>
+                        </Border>
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <Button Content="대표 이미지 선택" Click="ChooseImage_Click" />
+                            <Button x:Name="RemoveImageButton" Content="이미지 제거" Margin="8,0,0,0" Click="RemoveImage_Click" IsEnabled="False" />
+                        </StackPanel>
+
+                        <TextBlock Text="제목" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,14,0,4" />
+                        <TextBox x:Name="TitleBox" />
+                        <TextBlock x:Name="TitleValidationText" Text="제목을 입력해야 합니다." Foreground="{DynamicResource DangerBrush}" Margin="0,4,0,0" Visibility="Collapsed" />
+
+                        <TextBlock Text="Positive Prompt" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,12,0,4" />
+                        <TextBox x:Name="PositiveBox" Height="130" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" />
+
+                        <TextBlock Text="Negative Prompt" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,12,0,4" />
+                        <TextBox x:Name="NegativeBox" Height="110" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" />
+
+                        <TextBlock Text="태그" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,12,0,4" />
+                        <TextBox x:Name="TagsBox" />
+
+                        <TextBlock Text="메모" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,12,0,4" />
+                        <TextBox x:Name="MemoBox" Height="88" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" />
+
+                        <Grid Margin="0,14,0,0">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <Button x:Name="DuplicateButton" Content="복제" Click="DuplicatePrompt_Click" />
+                            <Button x:Name="DeleteButton" Grid.Column="1" Content="삭제" Margin="8,0,0,0" Click="DeletePrompt_Click" />
+                            <Button Grid.Column="3" Content="저장" Style="{StaticResource AccentButtonStyle}" Click="SavePrompt_Click" />
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <TextBlock x:Name="StatusText" Grid.Row="4" Margin="0,10,0,0" Foreground="{DynamicResource TextSecondaryBrush}" />
+    </Grid>
+</UserControl>
