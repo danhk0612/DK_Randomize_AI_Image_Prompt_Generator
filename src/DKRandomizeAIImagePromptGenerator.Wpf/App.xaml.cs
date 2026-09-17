@@ -3,6 +3,7 @@ using System.Windows.Media;
 using DKRandomizeAIImagePromptGenerator.Data;
 using DKRandomizeAIImagePromptGenerator.Models;
 using DKRandomizeAIImagePromptGenerator.Services;
+using DKRandomizeAIImagePromptGenerator.Wpf.Services;
 using Microsoft.Win32;
 
 namespace DKRandomizeAIImagePromptGenerator.Wpf;
@@ -12,6 +13,13 @@ public partial class App : Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        if (e.Args.Any(arg => string.Equals(arg, "--scroll-smoke", StringComparison.OrdinalIgnoreCase)))
+        {
+            var succeeded = ScrollSmokeRunner.Run();
+            Shutdown(succeeded ? 0 : 2);
+            return;
+        }
 
         try
         {
