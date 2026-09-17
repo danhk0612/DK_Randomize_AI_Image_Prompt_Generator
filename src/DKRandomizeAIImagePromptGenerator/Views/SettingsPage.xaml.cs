@@ -13,10 +13,13 @@ public sealed partial class SettingsPage : Page
     {
         InitializeComponent();
         Loaded += SettingsPage_Loaded;
+        SizeChanged += SettingsPage_SizeChanged;
     }
 
     private void SettingsPage_Loaded(object sender, RoutedEventArgs e)
     {
+        ApplyResponsiveLayout(ActualWidth);
+
         var app = (App)Application.Current;
         _syncingTheme = true;
         ThemeComboBox.SelectedIndex = (int)app.Settings.Current.Theme;
@@ -26,6 +29,82 @@ public sealed partial class SettingsPage : Page
         VersionText.Text = version is null
             ? "버전 정보 없음"
             : $"버전 {version.Major}.{version.Minor}.{version.Build}";
+    }
+
+    private void SettingsPage_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        ApplyResponsiveLayout(e.NewSize.Width);
+    }
+
+    private void ApplyResponsiveLayout(double availableWidth)
+    {
+        if (ThemeComboBox.Parent is Grid themeGrid && themeGrid.ColumnDefinitions.Count >= 2)
+        {
+            EnsureTwoRows(themeGrid);
+
+            if (availableWidth < 700)
+            {
+                themeGrid.ColumnSpacing = 0;
+                themeGrid.RowSpacing = 12;
+                themeGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+                themeGrid.ColumnDefinitions[1].Width = new GridLength(0);
+
+                Grid.SetRow(ThemeComboBox, 1);
+                Grid.SetColumn(ThemeComboBox, 0);
+                Grid.SetColumnSpan(ThemeComboBox, 2);
+                ThemeComboBox.MaxWidth = double.PositiveInfinity;
+            }
+            else
+            {
+                themeGrid.ColumnSpacing = 20;
+                themeGrid.RowSpacing = 0;
+                themeGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+                themeGrid.ColumnDefinitions[1].Width = new GridLength(220);
+
+                Grid.SetRow(ThemeComboBox, 0);
+                Grid.SetColumn(ThemeComboBox, 1);
+                Grid.SetColumnSpan(ThemeComboBox, 1);
+            }
+        }
+
+        if (BackupButtons.Parent is Grid backupGrid && backupGrid.ColumnDefinitions.Count >= 2)
+        {
+            EnsureTwoRows(backupGrid);
+
+            if (availableWidth < 700)
+            {
+                backupGrid.ColumnSpacing = 0;
+                backupGrid.RowSpacing = 12;
+                backupGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+                backupGrid.ColumnDefinitions[1].Width = new GridLength(0);
+
+                Grid.SetRow(BackupButtons, 1);
+                Grid.SetColumn(BackupButtons, 0);
+                Grid.SetColumnSpan(BackupButtons, 2);
+            }
+            else
+            {
+                backupGrid.ColumnSpacing = 20;
+                backupGrid.RowSpacing = 0;
+                backupGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+                backupGrid.ColumnDefinitions[1].Width = GridLength.Auto;
+
+                Grid.SetRow(BackupButtons, 0);
+                Grid.SetColumn(BackupButtons, 1);
+                Grid.SetColumnSpan(BackupButtons, 1);
+            }
+        }
+    }
+
+    private static void EnsureTwoRows(Grid grid)
+    {
+        if (grid.RowDefinitions.Count >= 2)
+        {
+            return;
+        }
+
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
     }
 
     private async void ThemeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
