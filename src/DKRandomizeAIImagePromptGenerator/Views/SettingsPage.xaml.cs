@@ -1,4 +1,5 @@
 using DKRandomizeAIImagePromptGenerator.Models;
+using DKRandomizeAIImagePromptGenerator.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.Storage.Pickers;
@@ -12,6 +13,10 @@ public sealed partial class SettingsPage : Page
     public SettingsPage()
     {
         InitializeComponent();
+        if (Content is ScrollViewer pageScrollViewer)
+        {
+            MouseWheelScrollService.Attach(pageScrollViewer);
+        }
         Loaded += SettingsPage_Loaded;
         SizeChanged += SettingsPage_SizeChanged;
     }
