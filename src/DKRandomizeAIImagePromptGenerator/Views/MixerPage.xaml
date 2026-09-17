@@ -38,7 +38,7 @@
                         <Border Height="132" CornerRadius="8" Background="{ThemeResource ControlFillColorSecondaryBrush}">
                             <Grid>
                                 <FontIcon Glyph="&#xE91B;" FontSize="32" Opacity="0.38" />
-                                <Image x:Name="CharacterImage" Stretch="UniformToFill" />
+                                <Image x:Name="CharacterImage" Stretch="Uniform" />
                             </Grid>
                         </Border>
                         <TextBlock
@@ -81,7 +81,7 @@
                         <Border Height="132" CornerRadius="8" Background="{ThemeResource ControlFillColorSecondaryBrush}">
                             <Grid>
                                 <FontIcon Glyph="&#xE790;" FontSize="32" Opacity="0.38" />
-                                <Image x:Name="ArtistImage" Stretch="UniformToFill" />
+                                <Image x:Name="ArtistImage" Stretch="Uniform" />
                             </Grid>
                         </Border>
                         <TextBlock
@@ -124,7 +124,7 @@
                         <Border Height="132" CornerRadius="8" Background="{ThemeResource ControlFillColorSecondaryBrush}">
                             <Grid>
                                 <FontIcon Glyph="&#xE710;" FontSize="32" Opacity="0.38" />
-                                <Image x:Name="AdditionalImage" Stretch="UniformToFill" />
+                                <Image x:Name="AdditionalImage" Stretch="Uniform" />
                             </Grid>
                         </Border>
                         <TextBlock
