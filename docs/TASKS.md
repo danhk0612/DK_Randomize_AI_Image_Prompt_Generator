@@ -65,7 +65,7 @@
 ## Milestone 6 — Polish and distribution
 
 - [x] Final application icon assets
-- [ ] Keyboard/accessibility pass
+- [x] Keyboard/accessibility code pass
 - [ ] Empty/error-state pass
 - [x] Release build validation
 - [x] Select final packaging/installer strategy
