@@ -5,7 +5,7 @@
 - Language: C#
 - Runtime: .NET 10
 - UI: WinUI 3 / XAML
-- Windows App SDK: 2.4.x stable line
+- Windows App SDK: 2.5.x stable line
 - Pattern: MVVM
 - Local database: SQLite
 - Minimum OS: Windows 10 1809 (build 17763)
