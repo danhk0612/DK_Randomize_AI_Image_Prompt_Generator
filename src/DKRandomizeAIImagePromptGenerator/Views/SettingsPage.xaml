@@ -11,6 +11,11 @@
                     <TextBlock Opacity="0.7" Text="앱 표시 방식과 로컬 데이터 관리를 설정합니다." />
                 </StackPanel>
 
+                <InfoBar
+                    x:Name="StatusInfoBar"
+                    IsOpen="False"
+                    IsClosable="True" />
+
                 <Border Style="{StaticResource PromptCardStyle}">
                     <Grid ColumnSpacing="20">
                         <Grid.ColumnDefinitions>
@@ -21,7 +26,11 @@
                             <TextBlock Text="테마" FontWeight="SemiBold" />
                             <TextBlock Opacity="0.65" Text="시스템 설정을 따르거나 라이트/다크 테마를 고정합니다." TextWrapping="Wrap" />
                         </StackPanel>
-                        <ComboBox Grid.Column="1" SelectedIndex="0" HorizontalAlignment="Stretch">
+                        <ComboBox
+                            x:Name="ThemeComboBox"
+                            Grid.Column="1"
+                            HorizontalAlignment="Stretch"
+                            SelectionChanged="ThemeComboBox_SelectionChanged">
                             <ComboBoxItem Content="시스템 설정 따름" />
                             <ComboBoxItem Content="라이트" />
                             <ComboBoxItem Content="다크" />
@@ -37,11 +46,11 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Spacing="4">
                             <TextBlock Text="데이터 백업" FontWeight="SemiBold" />
-                            <TextBlock Opacity="0.65" Text="프롬프트 데이터와 대표 이미지를 하나의 백업 파일로 보관합니다." TextWrapping="Wrap" />
+                            <TextBlock Opacity="0.65" Text="프롬프트, 최근 기록, 대표 이미지와 설정을 ZIP 파일 하나로 보관하거나 복원합니다." TextWrapping="Wrap" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                            <Button Content="백업" />
-                            <Button Content="복원" />
+                            <Button Content="백업" Click="Backup_Click" />
+                            <Button Content="복원" Click="Restore_Click" />
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -50,7 +59,7 @@
                     <StackPanel Spacing="4">
                         <TextBlock Text="정보" FontWeight="SemiBold" />
                         <TextBlock Text="DK Randomize AI Image Prompt Generator" />
-                        <TextBlock Opacity="0.65" Text="초기 개발 버전" />
+                        <TextBlock Opacity="0.65" Text="개발 버전" />
                     </StackPanel>
                 </Border>
             </StackPanel>
