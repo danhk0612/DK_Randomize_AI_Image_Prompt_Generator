@@ -2,12 +2,16 @@ using DKRandomizeAIImagePromptGenerator.Models;
 using DKRandomizeAIImagePromptGenerator.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.Windows.Storage.Pickers;
 
 namespace DKRandomizeAIImagePromptGenerator.Views;
 
 public sealed partial class PromptLibraryPage : Page
 {
     private PromptItem? _editingItem;
+    private string? _pendingImageSourcePath;
+    private bool _removeImage;
 
     public PromptLibraryPage()
     {
@@ -67,6 +71,8 @@ public sealed partial class PromptLibraryPage : Page
     private void NewPrompt_Click(object sender, RoutedEventArgs e)
     {
         _editingItem = null;
+        _pendingImageSourcePath = null;
+        _removeImage = false;
         EditorTitleText.Text = "새 프롬프트";
         TitleBox.Text = string.Empty;
         PositiveBox.Text = string.Empty;
@@ -76,6 +82,7 @@ public sealed partial class PromptLibraryPage : Page
         TitleValidationText.Visibility = Visibility.Collapsed;
         DuplicateButton.Visibility = Visibility.Collapsed;
         DeleteButton.Visibility = Visibility.Collapsed;
+        ClearImagePreview();
         EditorPane.Visibility = Visibility.Visible;
         TitleBox.Focus(FocusState.Programmatic);
     }
@@ -88,6 +95,8 @@ public sealed partial class PromptLibraryPage : Page
         }
 
         _editingItem = item;
+        _pendingImageSourcePath = null;
+        _removeImage = false;
         EditorTitleText.Text = "프롬프트 편집";
         TitleBox.Text = item.Title;
         PositiveBox.Text = item.PositivePrompt;
@@ -97,7 +106,42 @@ public sealed partial class PromptLibraryPage : Page
         TitleValidationText.Visibility = Visibility.Collapsed;
         DuplicateButton.Visibility = Visibility.Visible;
         DeleteButton.Visibility = Visibility.Visible;
+        ShowStoredImage(item.ImagePath);
         EditorPane.Visibility = Visibility.Visible;
+    }
+
+    private async void ChooseImage_Click(object sender, RoutedEventArgs e)
+    {
+        var window = ((App)Application.Current).MainWindowInstance;
+        if (window is null)
+        {
+            return;
+        }
+
+        var picker = new FileOpenPicker(window.AppWindow.Id)
+        {
+            SuggestedStartLocation = PickerLocationId.PicturesLibrary,
+            CommitButtonText = "선택",
+            ViewMode = PickerViewMode.Thumbnail,
+            FileTypeFilter = { ".png", ".jpg", ".jpeg", ".webp", ".bmp" }
+        };
+
+        var result = await picker.PickSingleFileAsync();
+        if (result is null)
+        {
+            return;
+        }
+
+        _pendingImageSourcePath = result.Path;
+        _removeImage = false;
+        ShowImagePreview(result.Path);
+    }
+
+    private void RemoveImage_Click(object sender, RoutedEventArgs e)
+    {
+        _pendingImageSourcePath = null;
+        _removeImage = true;
+        ClearImagePreview();
     }
 
     private async void SavePrompt_Click(object sender, RoutedEventArgs e)
@@ -109,6 +153,19 @@ public sealed partial class PromptLibraryPage : Page
             return;
         }
 
+        var app = (App)Application.Current;
+        var previousImagePath = _editingItem?.ImagePath;
+        var imagePath = previousImagePath;
+
+        if (_pendingImageSourcePath is not null)
+        {
+            imagePath = await app.Images.ImportAsync(_pendingImageSourcePath);
+        }
+        else if (_removeImage)
+        {
+            imagePath = null;
+        }
+
         var tags = ParseTags(TagsBox.Text);
 
         if (_editingItem is null)
@@ -118,7 +175,7 @@ public sealed partial class PromptLibraryPage : Page
                 PositiveBox.Text,
                 NegativeBox.Text,
                 MemoBox.Text,
-                imagePath: null,
+                imagePath,
                 tags);
         }
         else
@@ -129,8 +186,13 @@ public sealed partial class PromptLibraryPage : Page
                 PositiveBox.Text,
                 NegativeBox.Text,
                 MemoBox.Text,
-                _editingItem.ImagePath,
+                imagePath,
                 tags);
+        }
+
+        if (previousImagePath is not null && previousImagePath != imagePath)
+        {
+            await app.Images.DeleteIfUnreferencedAsync(previousImagePath);
         }
 
         HideEditor();
@@ -146,12 +208,15 @@ public sealed partial class PromptLibraryPage : Page
 
         var copy = await ViewModel.DuplicateAsync(_editingItem);
         _editingItem = copy;
+        _pendingImageSourcePath = null;
+        _removeImage = false;
         EditorTitleText.Text = "프롬프트 편집";
         TitleBox.Text = copy.Title;
         PositiveBox.Text = copy.PositivePrompt;
         NegativeBox.Text = copy.NegativePrompt;
         TagsBox.Text = string.Join(", ", copy.Tags);
         MemoBox.Text = copy.Memo;
+        ShowStoredImage(copy.ImagePath);
         UpdateEmptyState();
     }
 
@@ -162,11 +227,12 @@ public sealed partial class PromptLibraryPage : Page
             return;
         }
 
+        var item = _editingItem;
         var dialog = new ContentDialog
         {
             XamlRoot = XamlRoot,
             Title = "프롬프트 삭제",
-            Content = $"'{_editingItem.Title}' 프롬프트를 삭제합니다. 최근 기록의 최종 텍스트는 유지됩니다.",
+            Content = $"'{item.Title}' 프롬프트를 삭제합니다. 최근 기록의 최종 텍스트는 유지됩니다.",
             PrimaryButtonText = "삭제",
             CloseButtonText = "취소",
             DefaultButton = ContentDialogButton.Close
@@ -177,7 +243,8 @@ public sealed partial class PromptLibraryPage : Page
             return;
         }
 
-        await ViewModel.DeleteAsync(_editingItem);
+        await ViewModel.DeleteAsync(item);
+        await ((App)Application.Current).Images.DeleteIfUnreferencedAsync(item.ImagePath);
         HideEditor();
         UpdateEmptyState();
     }
@@ -203,8 +270,39 @@ public sealed partial class PromptLibraryPage : Page
     private void HideEditor()
     {
         _editingItem = null;
+        _pendingImageSourcePath = null;
+        _removeImage = false;
         EditorPane.Visibility = Visibility.Collapsed;
         TitleValidationText.Visibility = Visibility.Collapsed;
+        ClearImagePreview();
+    }
+
+    private void ShowStoredImage(string? relativePath)
+    {
+        if (string.IsNullOrWhiteSpace(relativePath))
+        {
+            ClearImagePreview();
+            return;
+        }
+
+        var fullPath = ((App)Application.Current).Images.ResolvePath(relativePath);
+        ShowImagePreview(fullPath);
+    }
+
+    private void ShowImagePreview(string path)
+    {
+        EditorImagePreview.Source = new BitmapImage(new Uri(path));
+        EditorImagePreview.Visibility = Visibility.Visible;
+        EditorImagePlaceholder.Visibility = Visibility.Collapsed;
+        RemoveImageButton.IsEnabled = true;
+    }
+
+    private void ClearImagePreview()
+    {
+        EditorImagePreview.Source = null;
+        EditorImagePreview.Visibility = Visibility.Collapsed;
+        EditorImagePlaceholder.Visibility = Visibility.Visible;
+        RemoveImageButton.IsEnabled = false;
     }
 
     private static IReadOnlyList<string> ParseTags(string value) =>
