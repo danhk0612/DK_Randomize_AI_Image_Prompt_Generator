@@ -1,5 +1,4 @@
 using DKRandomizeAIImagePromptGenerator.Models;
-using DKRandomizeAIImagePromptGenerator.Services;
 using DKRandomizeAIImagePromptGenerator.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -14,11 +13,6 @@ public sealed partial class HistoryPage : Page
     {
         ViewModel = new HistoryViewModel(((App)Application.Current).History);
         InitializeComponent();
-        MouseWheelScrollService.Attach(HistoryListView);
-        if (DetailPane.Child is ScrollViewer detailScrollViewer)
-        {
-            MouseWheelScrollService.Attach(detailScrollViewer);
-        }
         Loaded += HistoryPage_Loaded;
     }
 
@@ -37,26 +31,16 @@ public sealed partial class HistoryPage : Page
 
     private void Restore_Click(object sender, RoutedEventArgs e)
     {
-        if (_selectedHistory is null)
-        {
-            return;
-        }
+        if (_selectedHistory is null) return;
 
         var app = (App)Application.Current;
         app.PendingHistoryRestore = _selectedHistory;
-
-        if (app.MainWindowInstance is MainWindow window)
-        {
-            window.NavigateToMixer();
-        }
+        if (app.MainWindowInstance is MainWindow window) window.NavigateToMixer();
     }
 
     private async void Delete_Click(object sender, RoutedEventArgs e)
     {
-        if (_selectedHistory is null)
-        {
-            return;
-        }
+        if (_selectedHistory is null) return;
 
         var history = _selectedHistory;
         var dialog = new ContentDialog
@@ -69,10 +53,7 @@ public sealed partial class HistoryPage : Page
             DefaultButton = ContentDialogButton.Close
         };
 
-        if (await dialog.ShowAsync() != ContentDialogResult.Primary)
-        {
-            return;
-        }
+        if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
 
         await ViewModel.DeleteAsync(history);
         _selectedHistory = null;
@@ -87,12 +68,8 @@ public sealed partial class HistoryPage : Page
         UpdateEmptyState();
     }
 
-    private void UpdateEmptyState()
-    {
-        EmptyState.Visibility = ViewModel.Items.Count == 0
-            ? Visibility.Visible
-            : Visibility.Collapsed;
-    }
+    private void UpdateEmptyState() =>
+        EmptyState.Visibility = ViewModel.Items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
 
     private void UpdateDetail()
     {
@@ -108,8 +85,7 @@ public sealed partial class HistoryPage : Page
         ArtistTitleText.Text = _selectedHistory.ArtistTitleSnapshot ?? "없음";
         AdditionalTitleText.Text = _selectedHistory.AdditionalItems.Count == 0
             ? "없음"
-            : string.Join(", ", _selectedHistory.AdditionalItems
-                .Select(item => item.TitleSnapshot ?? "삭제된 프롬프트"));
+            : string.Join(", ", _selectedHistory.AdditionalItems.Select(item => item.TitleSnapshot ?? "삭제된 프롬프트"));
         PositiveTextBox.Text = _selectedHistory.PositiveText;
         NegativeTextBox.Text = _selectedHistory.NegativeText;
     }
