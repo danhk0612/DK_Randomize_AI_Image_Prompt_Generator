@@ -2,6 +2,7 @@ using DKRandomizeAIImagePromptGenerator.Models;
 using DKRandomizeAIImagePromptGenerator.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 
@@ -18,13 +19,10 @@ public sealed partial class MixerPage : Page
         ViewModel = new MixerViewModel(app.Prompts, app.History, app.Combination);
         InitializeComponent();
 
-        var transparent = new SolidColorBrush(Microsoft.UI.Colors.Transparent);
-        Background = transparent;
-        MixerScrollViewer.Background = transparent;
-        if (MixerScrollViewer.Content is Panel scrollContent)
-        {
-            scrollContent.Background = transparent;
-        }
+        AddHandler(
+            UIElement.PointerWheelChangedEvent,
+            new PointerEventHandler(MixerPage_PointerWheelChanged),
+            handledEventsToo: true);
 
         _initialized = true;
         Loaded += MixerPage_Loaded;
@@ -32,6 +30,33 @@ public sealed partial class MixerPage : Page
     }
 
     public MixerViewModel ViewModel { get; }
+
+    private void MixerPage_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
+    {
+        var delta = e.GetCurrentPoint(this).Properties.MouseWheelDelta;
+        if (delta == 0 || MixerScrollViewer.ScrollableHeight <= 0)
+        {
+            return;
+        }
+
+        var targetOffset = Math.Clamp(
+            MixerScrollViewer.VerticalOffset - (delta * 0.8),
+            0,
+            MixerScrollViewer.ScrollableHeight);
+
+        if (Math.Abs(targetOffset - MixerScrollViewer.VerticalOffset) < 0.5)
+        {
+            return;
+        }
+
+        MixerScrollViewer.ChangeView(
+            horizontalOffset: null,
+            verticalOffset: targetOffset,
+            zoomFactor: null,
+            disableAnimation: true);
+
+        e.Handled = true;
+    }
 
     private async void MixerPage_Loaded(object sender, RoutedEventArgs e)
     {
