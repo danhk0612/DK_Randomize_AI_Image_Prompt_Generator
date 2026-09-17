@@ -2,7 +2,7 @@ using DKRandomizeAIImagePromptGenerator.Models;
 using DKRandomizeAIImagePromptGenerator.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Windows.Storage.Pickers;
 
@@ -20,19 +20,63 @@ public sealed partial class PromptLibraryPage : Page
         ViewModel = new PromptLibraryViewModel(((App)Application.Current).Prompts);
         InitializeComponent();
 
-        var transparent = new SolidColorBrush(Microsoft.UI.Colors.Transparent);
-        Background = transparent;
-        EditorScrollViewer.Background = transparent;
-        if (Content is Panel rootPanel)
-        {
-            rootPanel.Background = transparent;
-        }
+        AddHandler(
+            UIElement.PointerWheelChangedEvent,
+            new PointerEventHandler(PromptLibraryPage_PointerWheelChanged),
+            handledEventsToo: true);
 
         Loaded += PromptLibraryPage_Loaded;
         SizeChanged += PromptLibraryPage_SizeChanged;
     }
 
     public PromptLibraryViewModel ViewModel { get; }
+
+    private void PromptLibraryPage_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
+    {
+        if (EditorPane.Visibility != Visibility.Visible || EditorScrollViewer.ScrollableHeight <= 0)
+        {
+            return;
+        }
+
+        var pointer = e.GetCurrentPoint(this).Position;
+        var editorOrigin = EditorPane.TransformToVisual(this)
+            .TransformPoint(new Windows.Foundation.Point(0, 0));
+
+        var insideEditor =
+            pointer.X >= editorOrigin.X &&
+            pointer.X <= editorOrigin.X + EditorPane.ActualWidth &&
+            pointer.Y >= editorOrigin.Y &&
+            pointer.Y <= editorOrigin.Y + EditorPane.ActualHeight;
+
+        if (!insideEditor)
+        {
+            return;
+        }
+
+        var delta = e.GetCurrentPoint(this).Properties.MouseWheelDelta;
+        if (delta == 0)
+        {
+            return;
+        }
+
+        var targetOffset = Math.Clamp(
+            EditorScrollViewer.VerticalOffset - (delta * 0.8),
+            0,
+            EditorScrollViewer.ScrollableHeight);
+
+        if (Math.Abs(targetOffset - EditorScrollViewer.VerticalOffset) < 0.5)
+        {
+            return;
+        }
+
+        EditorScrollViewer.ChangeView(
+            horizontalOffset: null,
+            verticalOffset: targetOffset,
+            zoomFactor: null,
+            disableAnimation: true);
+
+        e.Handled = true;
+    }
 
     private async void PromptLibraryPage_Loaded(object sender, RoutedEventArgs e)
     {
