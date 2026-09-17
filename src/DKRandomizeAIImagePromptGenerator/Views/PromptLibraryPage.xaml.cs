@@ -2,6 +2,7 @@ using DKRandomizeAIImagePromptGenerator.Models;
 using DKRandomizeAIImagePromptGenerator.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Windows.Storage.Pickers;
 
@@ -30,10 +31,8 @@ public sealed partial class PromptLibraryPage : Page
         await RefreshAsync();
     }
 
-    private void PromptLibraryPage_SizeChanged(object sender, SizeChangedEventArgs e)
-    {
+    private void PromptLibraryPage_SizeChanged(object sender, SizeChangedEventArgs e) =>
         ApplyResponsiveLayout(e.NewSize.Width);
-    }
 
     private void ApplyResponsiveLayout(double availableWidth)
     {
@@ -62,11 +61,9 @@ public sealed partial class PromptLibraryPage : Page
                 filterGrid.RowSpacing = 10;
                 filterGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
                 filterGrid.ColumnDefinitions[1].Width = new GridLength(0);
-
                 Grid.SetRow(SearchBox, 0);
                 Grid.SetColumn(SearchBox, 0);
                 Grid.SetColumnSpan(SearchBox, 2);
-
                 Grid.SetRow(TagFilterBox, 1);
                 Grid.SetColumn(TagFilterBox, 0);
                 Grid.SetColumnSpan(TagFilterBox, 2);
@@ -77,11 +74,9 @@ public sealed partial class PromptLibraryPage : Page
                 filterGrid.RowSpacing = 0;
                 filterGrid.ColumnDefinitions[0].Width = new GridLength(2, GridUnitType.Star);
                 filterGrid.ColumnDefinitions[1].Width = new GridLength(1, GridUnitType.Star);
-
                 Grid.SetRow(SearchBox, 0);
                 Grid.SetColumn(SearchBox, 0);
                 Grid.SetColumnSpan(SearchBox, 1);
-
                 Grid.SetRow(TagFilterBox, 0);
                 Grid.SetColumn(TagFilterBox, 1);
                 Grid.SetColumnSpan(TagFilterBox, 1);
@@ -99,32 +94,21 @@ public sealed partial class PromptLibraryPage : Page
 
     private async void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        if (!IsLoaded)
-        {
-            return;
-        }
-
+        if (!IsLoaded) return;
         ViewModel.SearchText = SearchBox.Text;
         await RefreshAsync();
     }
 
     private async void TagFilterBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        if (!IsLoaded)
-        {
-            return;
-        }
-
+        if (!IsLoaded) return;
         ViewModel.TagFilter = TagFilterBox.Text;
         await RefreshAsync();
     }
 
     private async void Category_Checked(object sender, RoutedEventArgs e)
     {
-        if (!IsLoaded || sender is not RadioButton button || button.Tag is not string tag)
-        {
-            return;
-        }
+        if (!IsLoaded || sender is not RadioButton button || button.Tag is not string tag) return;
 
         try
         {
@@ -147,11 +131,7 @@ public sealed partial class PromptLibraryPage : Page
 
     private void GalleryView_Checked(object sender, RoutedEventArgs e)
     {
-        if (!IsLoaded || _syncingViewMode)
-        {
-            return;
-        }
-
+        if (!IsLoaded || _syncingViewMode) return;
         _syncingViewMode = true;
         GalleryViewButton.IsChecked = true;
         ListViewButton.IsChecked = false;
@@ -162,11 +142,7 @@ public sealed partial class PromptLibraryPage : Page
 
     private void ListView_Checked(object sender, RoutedEventArgs e)
     {
-        if (!IsLoaded || _syncingViewMode)
-        {
-            return;
-        }
-
+        if (!IsLoaded || _syncingViewMode) return;
         _syncingViewMode = true;
         GalleryViewButton.IsChecked = false;
         ListViewButton.IsChecked = true;
@@ -190,17 +166,12 @@ public sealed partial class PromptLibraryPage : Page
         DuplicateButton.Visibility = Visibility.Collapsed;
         DeleteButton.Visibility = Visibility.Collapsed;
         ClearImagePreview();
-        EditorPane.Visibility = Visibility.Visible;
-        ResetEditorScroll();
-        TitleBox.Focus(FocusState.Programmatic);
+        OpenEditorAtTop();
     }
 
     private void PromptGridView_ItemClick(object sender, ItemClickEventArgs e)
     {
-        if (e.ClickedItem is not PromptItem item)
-        {
-            return;
-        }
+        if (e.ClickedItem is not PromptItem item) return;
 
         _editingItem = item;
         _pendingImageSourcePath = null;
@@ -215,17 +186,48 @@ public sealed partial class PromptLibraryPage : Page
         DuplicateButton.Visibility = Visibility.Visible;
         DeleteButton.Visibility = Visibility.Visible;
         ShowStoredImage(item.ImagePath);
+        OpenEditorAtTop();
+    }
+
+    private void OpenEditorAtTop()
+    {
         EditorPane.Visibility = Visibility.Visible;
-        ResetEditorScroll();
+
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            var scrollViewer = FindDescendantScrollViewer(EditorPane);
+            scrollViewer?.ChangeView(null, 0, null, disableAnimation: true);
+
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                scrollViewer?.ChangeView(null, 0, null, disableAnimation: true);
+                TitleBox.StartBringIntoView(new BringIntoViewOptions
+                {
+                    AnimationDesired = false,
+                    VerticalAlignmentRatio = 0
+                });
+                TitleBox.Focus(FocusState.Programmatic);
+            });
+        });
+    }
+
+    private static ScrollViewer? FindDescendantScrollViewer(DependencyObject root)
+    {
+        var count = VisualTreeHelper.GetChildrenCount(root);
+        for (var index = 0; index < count; index++)
+        {
+            var child = VisualTreeHelper.GetChild(root, index);
+            if (child is ScrollViewer scrollViewer) return scrollViewer;
+            var nested = FindDescendantScrollViewer(child);
+            if (nested is not null) return nested;
+        }
+        return null;
     }
 
     private async void ChooseImage_Click(object sender, RoutedEventArgs e)
     {
         var window = ((App)Application.Current).MainWindowInstance;
-        if (window is null)
-        {
-            return;
-        }
+        if (window is null) return;
 
         try
         {
@@ -236,13 +238,8 @@ public sealed partial class PromptLibraryPage : Page
                 ViewMode = PickerViewMode.Thumbnail,
                 FileTypeFilter = { ".png", ".jpg", ".jpeg", ".webp", ".bmp" }
             };
-
             var result = await picker.PickSingleFileAsync();
-            if (result is null)
-            {
-                return;
-            }
-
+            if (result is null) return;
             _pendingImageSourcePath = result.Path;
             _removeImage = false;
             ShowImagePreview(result.Path);
@@ -285,27 +282,13 @@ public sealed partial class PromptLibraryPage : Page
             }
 
             var tags = ParseTags(TagsBox.Text);
-
             if (_editingItem is null)
             {
-                await ViewModel.CreateAsync(
-                    TitleBox.Text,
-                    PositiveBox.Text,
-                    NegativeBox.Text,
-                    MemoBox.Text,
-                    imagePath,
-                    tags);
+                await ViewModel.CreateAsync(TitleBox.Text, PositiveBox.Text, NegativeBox.Text, MemoBox.Text, imagePath, tags);
             }
             else
             {
-                await ViewModel.UpdateAsync(
-                    _editingItem,
-                    TitleBox.Text,
-                    PositiveBox.Text,
-                    NegativeBox.Text,
-                    MemoBox.Text,
-                    imagePath,
-                    tags);
+                await ViewModel.UpdateAsync(_editingItem, TitleBox.Text, PositiveBox.Text, NegativeBox.Text, MemoBox.Text, imagePath, tags);
             }
 
             if (previousImagePath is not null && previousImagePath != imagePath)
@@ -324,10 +307,7 @@ public sealed partial class PromptLibraryPage : Page
 
     private async void DuplicatePrompt_Click(object sender, RoutedEventArgs e)
     {
-        if (_editingItem is null)
-        {
-            return;
-        }
+        if (_editingItem is null) return;
 
         try
         {
@@ -342,8 +322,8 @@ public sealed partial class PromptLibraryPage : Page
             TagsBox.Text = string.Join(", ", copy.Tags);
             MemoBox.Text = copy.Memo;
             ShowStoredImage(copy.ImagePath);
-            ResetEditorScroll();
             UpdateEmptyState();
+            OpenEditorAtTop();
         }
         catch (Exception ex)
         {
@@ -353,10 +333,7 @@ public sealed partial class PromptLibraryPage : Page
 
     private async void DeletePrompt_Click(object sender, RoutedEventArgs e)
     {
-        if (_editingItem is null)
-        {
-            return;
-        }
+        if (_editingItem is null) return;
 
         try
         {
@@ -370,12 +347,7 @@ public sealed partial class PromptLibraryPage : Page
                 CloseButtonText = "취소",
                 DefaultButton = ContentDialogButton.Close
             };
-
-            if (await dialog.ShowAsync() != ContentDialogResult.Primary)
-            {
-                return;
-            }
-
+            if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
             await ViewModel.DeleteAsync(item);
             await ((App)Application.Current).Images.DeleteIfUnreferencedAsync(item.ImagePath);
             HideEditor();
@@ -387,10 +359,7 @@ public sealed partial class PromptLibraryPage : Page
         }
     }
 
-    private void CancelEdit_Click(object sender, RoutedEventArgs e)
-    {
-        HideEditor();
-    }
+    private void CancelEdit_Click(object sender, RoutedEventArgs e) => HideEditor();
 
     private async Task RefreshAsync()
     {
@@ -405,34 +374,17 @@ public sealed partial class PromptLibraryPage : Page
         }
     }
 
-    private void UpdateEmptyState()
-    {
-        EmptyState.Visibility = ViewModel.Items.Count == 0
-            ? Visibility.Visible
-            : Visibility.Collapsed;
-    }
+    private void UpdateEmptyState() =>
+        EmptyState.Visibility = ViewModel.Items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
 
     private void HideEditor()
     {
         _editingItem = null;
         _pendingImageSourcePath = null;
         _removeImage = false;
-        ResetEditorScroll();
         EditorPane.Visibility = Visibility.Collapsed;
         TitleValidationText.Visibility = Visibility.Collapsed;
         ClearImagePreview();
-    }
-
-    private void ResetEditorScroll()
-    {
-        if (EditorPane.Child is not ScrollViewer scrollViewer)
-        {
-            return;
-        }
-
-        scrollViewer.ChangeView(null, 0, null, disableAnimation: true);
-        DispatcherQueue.TryEnqueue(() =>
-            scrollViewer.ChangeView(null, 0, null, disableAnimation: true));
     }
 
     private void ShowStoredImage(string? relativePath)
@@ -442,11 +394,9 @@ public sealed partial class PromptLibraryPage : Page
             ClearImagePreview();
             return;
         }
-
         try
         {
-            var fullPath = ((App)Application.Current).Images.ResolvePath(relativePath);
-            ShowImagePreview(fullPath);
+            ShowImagePreview(((App)Application.Current).Images.ResolvePath(relativePath));
         }
         catch
         {
@@ -482,7 +432,6 @@ public sealed partial class PromptLibraryPage : Page
             CloseButtonText = "확인",
             DefaultButton = ContentDialogButton.Close
         };
-
         await dialog.ShowAsync();
     }
 
