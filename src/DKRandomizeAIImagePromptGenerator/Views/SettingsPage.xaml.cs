@@ -21,6 +21,11 @@ public sealed partial class SettingsPage : Page
         _syncingTheme = true;
         ThemeComboBox.SelectedIndex = (int)app.Settings.Current.Theme;
         _syncingTheme = false;
+
+        var version = typeof(App).Assembly.GetName().Version;
+        VersionText.Text = version is null
+            ? "버전 정보 없음"
+            : $"버전 {version.Major}.{version.Minor}.{version.Build}";
     }
 
     private async void ThemeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
