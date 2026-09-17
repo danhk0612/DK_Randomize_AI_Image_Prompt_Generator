@@ -141,7 +141,14 @@
             </Grid>
 
             <Border x:Name="EditorPane" Grid.Column="1" Width="400" Style="{StaticResource PromptCardStyle}" Visibility="Collapsed">
-                <ScrollViewer x:Name="EditorScrollViewer" VerticalScrollBarVisibility="Auto" VerticalScrollMode="Enabled">
+                <ScrollView
+                    x:Name="EditorScrollView"
+                    ContentOrientation="Vertical"
+                    HorizontalScrollMode="Disabled"
+                    HorizontalScrollBarVisibility="Hidden"
+                    HorizontalContentAlignment="Stretch"
+                    VerticalScrollMode="Enabled"
+                    VerticalScrollBarVisibility="Auto">
                     <StackPanel Spacing="14">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -190,7 +197,7 @@
                             <Button Grid.Column="3" Style="{StaticResource AccentButtonStyle}" Content="저장" Click="SavePrompt_Click" />
                         </Grid>
                     </StackPanel>
-                </ScrollViewer>
+                </ScrollView>
             </Border>
         </Grid>
     </Grid>
