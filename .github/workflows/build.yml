@@ -10,7 +10,7 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-test:
     runs-on: windows-latest
 
     steps:
@@ -27,3 +27,6 @@ jobs:
 
       - name: Build
         run: dotnet build DK_Randomize_AI_Image_Prompt_Generator.sln -c Release -p:Platform=x64 --no-restore
+
+      - name: Test
+        run: dotnet test tests/DKRandomizeAIImagePromptGenerator.Tests/DKRandomizeAIImagePromptGenerator.Tests.csproj -c Release -p:Platform=x64 --no-build --no-restore
