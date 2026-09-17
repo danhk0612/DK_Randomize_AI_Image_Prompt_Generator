@@ -10,6 +10,8 @@
             IsBackButtonVisible="Collapsed"
             IsSettingsVisible="False"
             PaneDisplayMode="Left"
+            CompactPaneLength="40"
+            OpenPaneLength="240"
             PaneTitle="Prompt Generator"
             SelectionChanged="RootNavigationView_SelectionChanged">
 
