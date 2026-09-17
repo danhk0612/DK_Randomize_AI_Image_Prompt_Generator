@@ -1,3 +1,4 @@
+using DKRandomizeAIImagePromptGenerator.Models;
 using DKRandomizeAIImagePromptGenerator.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -18,6 +19,16 @@ public sealed partial class MainWindow : Window
     {
         RootNavigationView.SelectedItem = MixerNavigationItem;
         NavigateTo("Mixer");
+    }
+
+    public void ApplyTheme(AppTheme theme)
+    {
+        RootNavigationView.RequestedTheme = theme switch
+        {
+            AppTheme.Light => ElementTheme.Light,
+            AppTheme.Dark => ElementTheme.Dark,
+            _ => ElementTheme.Default
+        };
     }
 
     private void RootNavigationView_SelectionChanged(
