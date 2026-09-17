@@ -22,7 +22,15 @@ public sealed partial class MixerPage : Page
 
     private async void MixerPage_Loaded(object sender, RoutedEventArgs e)
     {
+        var app = (App)Application.Current;
         await ViewModel.LoadAsync();
+
+        if (app.PendingHistoryRestore is CombinationHistory history)
+        {
+            ViewModel.RestoreFromHistory(history);
+            app.PendingHistoryRestore = null;
+        }
+
         SyncControls();
     }
 
