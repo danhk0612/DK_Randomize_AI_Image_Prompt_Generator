@@ -12,6 +12,7 @@ public sealed partial class PromptLibraryPage : Page
     private PromptItem? _editingItem;
     private string? _pendingImageSourcePath;
     private bool _removeImage;
+    private bool _syncingViewMode;
 
     public PromptLibraryPage()
     {
@@ -66,6 +67,36 @@ public sealed partial class PromptLibraryPage : Page
         HideEditor();
         await ViewModel.SetCategoryAsync(category);
         UpdateEmptyState();
+    }
+
+    private void GalleryView_Checked(object sender, RoutedEventArgs e)
+    {
+        if (!IsLoaded || _syncingViewMode)
+        {
+            return;
+        }
+
+        _syncingViewMode = true;
+        GalleryViewButton.IsChecked = true;
+        ListViewButton.IsChecked = false;
+        PromptGridView.Visibility = Visibility.Visible;
+        PromptListView.Visibility = Visibility.Collapsed;
+        _syncingViewMode = false;
+    }
+
+    private void ListView_Checked(object sender, RoutedEventArgs e)
+    {
+        if (!IsLoaded || _syncingViewMode)
+        {
+            return;
+        }
+
+        _syncingViewMode = true;
+        GalleryViewButton.IsChecked = false;
+        ListViewButton.IsChecked = true;
+        PromptGridView.Visibility = Visibility.Collapsed;
+        PromptListView.Visibility = Visibility.Visible;
+        _syncingViewMode = false;
     }
 
     private void NewPrompt_Click(object sender, RoutedEventArgs e)
