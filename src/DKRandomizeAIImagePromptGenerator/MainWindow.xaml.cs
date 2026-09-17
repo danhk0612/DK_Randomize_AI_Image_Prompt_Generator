@@ -14,6 +14,12 @@ public sealed partial class MainWindow : Window
         NavigateTo("Mixer");
     }
 
+    public void NavigateToMixer()
+    {
+        RootNavigationView.SelectedItem = MixerNavigationItem;
+        NavigateTo("Mixer");
+    }
+
     private void RootNavigationView_SelectionChanged(
         NavigationView sender,
         NavigationViewSelectionChangedEventArgs args)
