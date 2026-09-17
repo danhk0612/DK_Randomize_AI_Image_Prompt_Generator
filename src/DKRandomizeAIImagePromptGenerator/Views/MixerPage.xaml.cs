@@ -1,5 +1,4 @@
 using DKRandomizeAIImagePromptGenerator.Models;
-using DKRandomizeAIImagePromptGenerator.Services;
 using DKRandomizeAIImagePromptGenerator.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -18,10 +17,6 @@ public sealed partial class MixerPage : Page
         var app = (App)Application.Current;
         ViewModel = new MixerViewModel(app.Prompts, app.History, app.Combination);
         InitializeComponent();
-        if (Content is ScrollViewer pageScrollViewer)
-        {
-            MouseWheelScrollService.Attach(pageScrollViewer);
-        }
         _initialized = true;
         Loaded += MixerPage_Loaded;
         SizeChanged += MixerPage_SizeChanged;
@@ -65,7 +60,6 @@ public sealed partial class MixerPage : Page
         }
 
         EnsureCardRows(cardGrid);
-
         Grid.SetColumnSpan(characterCard, 1);
         Grid.SetColumnSpan(artistCard, 1);
         Grid.SetColumnSpan(additionalCard, 1);
@@ -76,7 +70,6 @@ public sealed partial class MixerPage : Page
             cardGrid.ColumnDefinitions[1].Width = new GridLength(1, GridUnitType.Star);
             cardGrid.ColumnDefinitions[2].Width = new GridLength(1, GridUnitType.Star);
             cardGrid.RowSpacing = 0;
-
             PositionCard(characterCard, 0, 0);
             PositionCard(artistCard, 0, 1);
             PositionCard(additionalCard, 0, 2);
@@ -87,7 +80,6 @@ public sealed partial class MixerPage : Page
             cardGrid.ColumnDefinitions[1].Width = new GridLength(1, GridUnitType.Star);
             cardGrid.ColumnDefinitions[2].Width = new GridLength(0);
             cardGrid.RowSpacing = 12;
-
             PositionCard(characterCard, 0, 0);
             PositionCard(artistCard, 0, 1);
             PositionCard(additionalCard, 1, 0);
@@ -99,7 +91,6 @@ public sealed partial class MixerPage : Page
             cardGrid.ColumnDefinitions[1].Width = new GridLength(0);
             cardGrid.ColumnDefinitions[2].Width = new GridLength(0);
             cardGrid.RowSpacing = 12;
-
             PositionCard(characterCard, 0, 0);
             PositionCard(artistCard, 1, 0);
             PositionCard(additionalCard, 2, 0);
@@ -136,57 +127,19 @@ public sealed partial class MixerPage : Page
         return null;
     }
 
-    private void CharacterModeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) =>
-        SetMode(PromptCategory.Character, CharacterModeCombo.SelectedIndex);
+    private void CharacterModeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) => SetMode(PromptCategory.Character, CharacterModeCombo.SelectedIndex);
+    private void ArtistModeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) => SetMode(PromptCategory.Artist, ArtistModeCombo.SelectedIndex);
+    private void AdditionalModeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) => SetMode(PromptCategory.Additional, AdditionalModeCombo.SelectedIndex);
+    private void CharacterPromptCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) => SetSelected(PromptCategory.Character, CharacterPromptCombo.SelectedItem as PromptItem);
+    private void ArtistPromptCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) => SetSelected(PromptCategory.Artist, ArtistPromptCombo.SelectedItem as PromptItem);
+    private void AdditionalPromptCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) => SetSelected(PromptCategory.Additional, AdditionalPromptCombo.SelectedItem as PromptItem);
 
-    private void ArtistModeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) =>
-        SetMode(PromptCategory.Artist, ArtistModeCombo.SelectedIndex);
-
-    private void AdditionalModeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) =>
-        SetMode(PromptCategory.Additional, AdditionalModeCombo.SelectedIndex);
-
-    private void CharacterPromptCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) =>
-        SetSelected(PromptCategory.Character, CharacterPromptCombo.SelectedItem as PromptItem);
-
-    private void ArtistPromptCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) =>
-        SetSelected(PromptCategory.Artist, ArtistPromptCombo.SelectedItem as PromptItem);
-
-    private void AdditionalPromptCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) =>
-        SetSelected(PromptCategory.Additional, AdditionalPromptCombo.SelectedItem as PromptItem);
-
-    private void CharacterRandom_Click(object sender, RoutedEventArgs e)
-    {
-        ViewModel.RandomizeCategory(PromptCategory.Character);
-        SyncControls();
-    }
-
-    private void ArtistRandom_Click(object sender, RoutedEventArgs e)
-    {
-        ViewModel.RandomizeCategory(PromptCategory.Artist);
-        SyncControls();
-    }
-
-    private void AdditionalRandom_Click(object sender, RoutedEventArgs e)
-    {
-        ViewModel.RandomizeCategory(PromptCategory.Additional);
-        SyncControls();
-    }
-
-    private void RandomizeAll_Click(object sender, RoutedEventArgs e)
-    {
-        ViewModel.RandomizeAll();
-        SyncControls();
-    }
-
-    private void CopyPositive_Click(object sender, RoutedEventArgs e)
-    {
-        ((App)Application.Current).Clipboard.CopyText(PositiveOutput.Text);
-    }
-
-    private void CopyNegative_Click(object sender, RoutedEventArgs e)
-    {
-        ((App)Application.Current).Clipboard.CopyText(NegativeOutput.Text);
-    }
+    private void CharacterRandom_Click(object sender, RoutedEventArgs e) { ViewModel.RandomizeCategory(PromptCategory.Character); SyncControls(); }
+    private void ArtistRandom_Click(object sender, RoutedEventArgs e) { ViewModel.RandomizeCategory(PromptCategory.Artist); SyncControls(); }
+    private void AdditionalRandom_Click(object sender, RoutedEventArgs e) { ViewModel.RandomizeCategory(PromptCategory.Additional); SyncControls(); }
+    private void RandomizeAll_Click(object sender, RoutedEventArgs e) { ViewModel.RandomizeAll(); SyncControls(); }
+    private void CopyPositive_Click(object sender, RoutedEventArgs e) => ((App)Application.Current).Clipboard.CopyText(PositiveOutput.Text);
+    private void CopyNegative_Click(object sender, RoutedEventArgs e) => ((App)Application.Current).Clipboard.CopyText(NegativeOutput.Text);
 
     private async void SaveHistory_Click(object sender, RoutedEventArgs e)
     {
@@ -209,32 +162,21 @@ public sealed partial class MixerPage : Page
 
     private void SetMode(PromptCategory category, int selectedIndex)
     {
-        if (!_initialized || _syncingControls || selectedIndex < 0)
-        {
-            return;
-        }
-
+        if (!_initialized || _syncingControls || selectedIndex < 0) return;
         ViewModel.SetMode(category, (PromptSelectionMode)selectedIndex);
         SyncControls();
     }
 
     private void SetSelected(PromptCategory category, PromptItem? item)
     {
-        if (!_initialized || _syncingControls)
-        {
-            return;
-        }
-
+        if (!_initialized || _syncingControls) return;
         ViewModel.SetSelectedItem(category, item);
         SyncControls();
     }
 
     private void SyncControls()
     {
-        if (!_initialized)
-        {
-            return;
-        }
+        if (!_initialized) return;
 
         _syncingControls = true;
         try
@@ -242,31 +184,24 @@ public sealed partial class MixerPage : Page
             CharacterModeCombo.SelectedIndex = (int)ViewModel.CharacterMode;
             ArtistModeCombo.SelectedIndex = (int)ViewModel.ArtistMode;
             AdditionalModeCombo.SelectedIndex = (int)ViewModel.AdditionalMode;
-
             CharacterPromptCombo.SelectedItem = ViewModel.SelectedCharacter;
             ArtistPromptCombo.SelectedItem = ViewModel.SelectedArtist;
             AdditionalPromptCombo.SelectedItem = ViewModel.SelectedAdditional;
-
             CharacterPromptCombo.IsEnabled = ViewModel.CharacterMode == PromptSelectionMode.Fixed;
             ArtistPromptCombo.IsEnabled = ViewModel.ArtistMode == PromptSelectionMode.Fixed;
             AdditionalPromptCombo.IsEnabled = ViewModel.AdditionalMode == PromptSelectionMode.Fixed;
-
             CharacterRandomButton.IsEnabled = ViewModel.CharacterMode == PromptSelectionMode.Random;
             ArtistRandomButton.IsEnabled = ViewModel.ArtistMode == PromptSelectionMode.Random;
             AdditionalRandomButton.IsEnabled = ViewModel.AdditionalMode == PromptSelectionMode.Random;
-
             CharacterTitle.Text = ViewModel.SelectedCharacter?.Title ?? "선택된 캐릭터 없음";
             ArtistTitle.Text = ViewModel.SelectedArtist?.Title ?? "선택된 작가 없음";
             AdditionalTitle.Text = ViewModel.SelectedAdditional?.Title ?? "선택된 추가 프롬프트 없음";
-
             CharacterMemo.Text = ViewModel.SelectedCharacter?.Memo ?? string.Empty;
             ArtistMemo.Text = ViewModel.SelectedArtist?.Memo ?? string.Empty;
             AdditionalMemo.Text = ViewModel.SelectedAdditional?.Memo ?? string.Empty;
-
             SetImage(CharacterImage, ViewModel.SelectedCharacter);
             SetImage(ArtistImage, ViewModel.SelectedArtist);
             SetImage(AdditionalImage, ViewModel.SelectedAdditional);
-
             PositiveOutput.Text = ViewModel.PositiveText;
             NegativeOutput.Text = ViewModel.NegativeText;
         }
