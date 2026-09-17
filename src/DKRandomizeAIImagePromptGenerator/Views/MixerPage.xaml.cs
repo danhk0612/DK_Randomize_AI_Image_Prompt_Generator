@@ -8,6 +8,7 @@ namespace DKRandomizeAIImagePromptGenerator.Views;
 
 public sealed partial class MixerPage : Page
 {
+    private bool _initialized;
     private bool _syncingControls;
 
     public MixerPage()
@@ -15,6 +16,7 @@ public sealed partial class MixerPage : Page
         var app = (App)Application.Current;
         ViewModel = new MixerViewModel(app.Prompts, app.History, app.Combination);
         InitializeComponent();
+        _initialized = true;
         Loaded += MixerPage_Loaded;
     }
 
@@ -94,7 +96,7 @@ public sealed partial class MixerPage : Page
 
     private void SetMode(PromptCategory category, int selectedIndex)
     {
-        if (_syncingControls || selectedIndex < 0)
+        if (!_initialized || _syncingControls || selectedIndex < 0)
         {
             return;
         }
@@ -105,7 +107,7 @@ public sealed partial class MixerPage : Page
 
     private void SetSelected(PromptCategory category, PromptItem? item)
     {
-        if (_syncingControls)
+        if (!_initialized || _syncingControls)
         {
             return;
         }
@@ -116,36 +118,45 @@ public sealed partial class MixerPage : Page
 
     private void SyncControls()
     {
+        if (!_initialized)
+        {
+            return;
+        }
+
         _syncingControls = true;
+        try
+        {
+            CharacterModeCombo.SelectedIndex = (int)ViewModel.CharacterMode;
+            ArtistModeCombo.SelectedIndex = (int)ViewModel.ArtistMode;
+            AdditionalModeCombo.SelectedIndex = (int)ViewModel.AdditionalMode;
 
-        CharacterModeCombo.SelectedIndex = (int)ViewModel.CharacterMode;
-        ArtistModeCombo.SelectedIndex = (int)ViewModel.ArtistMode;
-        AdditionalModeCombo.SelectedIndex = (int)ViewModel.AdditionalMode;
+            CharacterPromptCombo.SelectedItem = ViewModel.SelectedCharacter;
+            ArtistPromptCombo.SelectedItem = ViewModel.SelectedArtist;
+            AdditionalPromptCombo.SelectedItem = ViewModel.SelectedAdditional;
 
-        CharacterPromptCombo.SelectedItem = ViewModel.SelectedCharacter;
-        ArtistPromptCombo.SelectedItem = ViewModel.SelectedArtist;
-        AdditionalPromptCombo.SelectedItem = ViewModel.SelectedAdditional;
+            CharacterPromptCombo.IsEnabled = ViewModel.CharacterMode == PromptSelectionMode.Fixed;
+            ArtistPromptCombo.IsEnabled = ViewModel.ArtistMode == PromptSelectionMode.Fixed;
+            AdditionalPromptCombo.IsEnabled = ViewModel.AdditionalMode == PromptSelectionMode.Fixed;
 
-        CharacterPromptCombo.IsEnabled = ViewModel.CharacterMode == PromptSelectionMode.Fixed;
-        ArtistPromptCombo.IsEnabled = ViewModel.ArtistMode == PromptSelectionMode.Fixed;
-        AdditionalPromptCombo.IsEnabled = ViewModel.AdditionalMode == PromptSelectionMode.Fixed;
+            CharacterRandomButton.IsEnabled = ViewModel.CharacterMode == PromptSelectionMode.Random;
+            ArtistRandomButton.IsEnabled = ViewModel.ArtistMode == PromptSelectionMode.Random;
+            AdditionalRandomButton.IsEnabled = ViewModel.AdditionalMode == PromptSelectionMode.Random;
 
-        CharacterRandomButton.IsEnabled = ViewModel.CharacterMode == PromptSelectionMode.Random;
-        ArtistRandomButton.IsEnabled = ViewModel.ArtistMode == PromptSelectionMode.Random;
-        AdditionalRandomButton.IsEnabled = ViewModel.AdditionalMode == PromptSelectionMode.Random;
+            CharacterTitle.Text = ViewModel.SelectedCharacter?.Title ?? "선택된 캐릭터 없음";
+            ArtistTitle.Text = ViewModel.SelectedArtist?.Title ?? "선택된 작가 없음";
+            AdditionalTitle.Text = ViewModel.SelectedAdditional?.Title ?? "선택된 추가 프롬프트 없음";
 
-        CharacterTitle.Text = ViewModel.SelectedCharacter?.Title ?? "선택된 캐릭터 없음";
-        ArtistTitle.Text = ViewModel.SelectedArtist?.Title ?? "선택된 작가 없음";
-        AdditionalTitle.Text = ViewModel.SelectedAdditional?.Title ?? "선택된 추가 프롬프트 없음";
+            SetImage(CharacterImage, ViewModel.SelectedCharacter);
+            SetImage(ArtistImage, ViewModel.SelectedArtist);
+            SetImage(AdditionalImage, ViewModel.SelectedAdditional);
 
-        SetImage(CharacterImage, ViewModel.SelectedCharacter);
-        SetImage(ArtistImage, ViewModel.SelectedArtist);
-        SetImage(AdditionalImage, ViewModel.SelectedAdditional);
-
-        PositiveOutput.Text = ViewModel.PositiveText;
-        NegativeOutput.Text = ViewModel.NegativeText;
-
-        _syncingControls = false;
+            PositiveOutput.Text = ViewModel.PositiveText;
+            NegativeOutput.Text = ViewModel.NegativeText;
+        }
+        finally
+        {
+            _syncingControls = false;
+        }
     }
 
     private static void SetImage(Image image, PromptItem? item)
