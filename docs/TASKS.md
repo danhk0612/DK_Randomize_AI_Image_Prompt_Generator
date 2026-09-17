@@ -64,11 +64,11 @@
 
 ## Milestone 6 — Polish and distribution
 
-- [ ] Final application icon assets
+- [x] Final application icon assets
 - [ ] Keyboard/accessibility pass
 - [ ] Empty/error-state pass
-- [ ] Release build validation
-- [ ] Select final packaging/installer strategy
+- [x] Release build validation
+- [x] Select final packaging/installer strategy
 - [ ] Prepare first release
 
 ## Deferred
