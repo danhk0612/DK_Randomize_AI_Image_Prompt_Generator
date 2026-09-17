@@ -48,7 +48,12 @@
             </Border>
 
             <Border x:Name="DetailPane" Grid.Column="1" Style="{StaticResource PromptCardStyle}" Visibility="Collapsed">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch">
+                <ScrollViewer
+                    VerticalScrollMode="Enabled"
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollMode="Disabled"
+                    HorizontalScrollBarVisibility="Disabled"
+                    HorizontalContentAlignment="Stretch">
                     <StackPanel Spacing="18">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -70,7 +75,6 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-
                             <StackPanel Spacing="4">
                                 <TextBlock Text="캐릭터" FontWeight="SemiBold" />
                                 <TextBlock x:Name="CharacterTitleText" Text="없음" TextWrapping="Wrap" />
