@@ -20,6 +20,8 @@ public partial class App : Application
         Images = new ImageStorageService(paths, Database);
         Combination = new CombinationService();
         Clipboard = new ClipboardService();
+        Settings = new SettingsService(paths);
+        Backup = new BackupService(paths);
     }
 
     public DatabaseService Database { get; }
@@ -34,6 +36,10 @@ public partial class App : Application
 
     public ClipboardService Clipboard { get; }
 
+    public SettingsService Settings { get; }
+
+    public BackupService Backup { get; }
+
     public Window? MainWindowInstance => _window;
 
     public CombinationHistory? PendingHistoryRestore { get; set; }
@@ -41,8 +47,11 @@ public partial class App : Application
     protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
         await Database.InitializeAsync();
+        await Settings.LoadAsync();
 
-        _window = new MainWindow();
+        var window = new MainWindow();
+        window.ApplyTheme(Settings.Current.Theme);
+        _window = window;
         _window.Activate();
     }
 }
