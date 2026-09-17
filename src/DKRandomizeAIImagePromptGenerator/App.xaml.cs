@@ -16,7 +16,7 @@ public partial class App : Application
         Database = new DatabaseService(paths);
         Prompts = new PromptRepository(Database);
         History = new HistoryRepository(Database);
-        Images = new ImageStorageService(paths);
+        Images = new ImageStorageService(paths, Database);
     }
 
     public DatabaseService Database { get; }
