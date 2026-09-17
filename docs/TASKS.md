@@ -14,53 +14,53 @@
 
 ## Milestone 1 — Domain and mixer core
 
-- [ ] Add prompt domain models and enums
-- [ ] Add combination models
-- [ ] Implement `CombinationService`
-- [ ] Add unit tests for Fixed / Random / Disabled
-- [ ] Add unit tests for Positive / Negative composition
-- [ ] Add unit tests for empty prompt sections
+- [x] Add prompt domain models and enums
+- [x] Add combination models
+- [x] Implement `CombinationService`
+- [x] Add unit tests for Fixed / Random / Disabled
+- [x] Add unit tests for Positive / Negative composition
+- [x] Add unit tests for empty prompt sections
 
 ## Milestone 2 — Local persistence
 
-- [ ] Add SQLite package and database initialization
-- [ ] Implement schema version 1
-- [ ] Implement prompt CRUD repository
-- [ ] Implement tags and search
-- [ ] Implement history persistence
-- [ ] Add repository tests
+- [x] Add SQLite package and database initialization
+- [x] Implement schema version 1
+- [x] Implement prompt CRUD repository
+- [x] Implement tags and search
+- [x] Implement history persistence
+- [x] Add repository tests
 
 ## Milestone 3 — Prompt Library UI
 
-- [ ] Gallery/list switch
-- [ ] Category tabs
-- [ ] Search
-- [ ] Tag filter
-- [ ] Create prompt
-- [ ] Edit prompt
-- [ ] Duplicate prompt
-- [ ] Delete prompt
-- [ ] Representative image management
+- [x] Gallery/list switch
+- [x] Category tabs
+- [x] Search
+- [x] Tag filter
+- [x] Create prompt
+- [x] Edit prompt
+- [x] Duplicate prompt
+- [x] Delete prompt
+- [x] Representative image management
 
 ## Milestone 4 — Mixer UI
 
-- [ ] Fixed / Random / Disabled controls
-- [ ] Item selection UI
-- [ ] Per-category randomize
-- [ ] Randomize all
-- [ ] Editable Positive result
-- [ ] Editable Negative result
-- [ ] Copy actions
-- [ ] Save final output to history
+- [x] Fixed / Random / Disabled controls
+- [x] Item selection UI
+- [x] Per-category randomize
+- [x] Randomize all
+- [x] Editable Positive result
+- [x] Editable Negative result
+- [x] Copy actions
+- [x] Save final output to history
 
 ## Milestone 5 — History / Settings
 
-- [ ] History list and detail
-- [ ] Restore history to mixer
-- [ ] Theme setting
-- [ ] Backup
-- [ ] Restore
-- [ ] About/version
+- [x] History list and detail
+- [x] Restore history to mixer
+- [x] Theme setting
+- [x] Backup
+- [x] Restore
+- [x] About/version
 
 ## Milestone 6 — Polish and distribution
 
