@@ -51,6 +51,34 @@ public sealed class MixerViewModel
         RandomizeAll();
     }
 
+    public void RestoreFromHistory(CombinationHistory history)
+    {
+        SelectedCharacter = history.CharacterPromptId is Guid characterId
+            ? CharacterItems.FirstOrDefault(item => item.Id == characterId)
+            : null;
+        SelectedArtist = history.ArtistPromptId is Guid artistId
+            ? ArtistItems.FirstOrDefault(item => item.Id == artistId)
+            : null;
+
+        var additionalId = history.AdditionalItems.FirstOrDefault()?.PromptId;
+        SelectedAdditional = additionalId is Guid promptId
+            ? AdditionalItems.FirstOrDefault(item => item.Id == promptId)
+            : null;
+
+        CharacterMode = SelectedCharacter is null
+            ? PromptSelectionMode.Disabled
+            : PromptSelectionMode.Fixed;
+        ArtistMode = SelectedArtist is null
+            ? PromptSelectionMode.Disabled
+            : PromptSelectionMode.Fixed;
+        AdditionalMode = SelectedAdditional is null
+            ? PromptSelectionMode.Disabled
+            : PromptSelectionMode.Fixed;
+
+        PositiveText = history.PositiveText;
+        NegativeText = history.NegativeText;
+    }
+
     public void SetMode(PromptCategory category, PromptSelectionMode mode)
     {
         switch (category)
