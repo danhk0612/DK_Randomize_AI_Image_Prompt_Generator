@@ -96,12 +96,14 @@
                     x:Name="GalleryViewButton"
                     IsChecked="True"
                     Checked="GalleryView_Checked"
+                    AutomationProperties.Name="갤러리 보기"
                     ToolTipService.ToolTip="갤러리 보기">
                     <FontIcon Glyph="&#xF0E2;" FontSize="16" />
                 </ToggleButton>
                 <ToggleButton
                     x:Name="ListViewButton"
                     Checked="ListView_Checked"
+                    AutomationProperties.Name="목록 보기"
                     ToolTipService.ToolTip="목록 보기">
                     <FontIcon Glyph="&#xEA37;" FontSize="16" />
                 </ToggleButton>
@@ -120,7 +122,8 @@
                     ItemsSource="{x:Bind ViewModel.Items, Mode=OneWay}"
                     IsItemClickEnabled="True"
                     SelectionMode="None"
-                    ItemClick="PromptGridView_ItemClick">
+                    ItemClick="PromptGridView_ItemClick"
+                    AutomationProperties.Name="프롬프트 갤러리">
                     <GridView.ItemsPanel>
                         <ItemsPanelTemplate>
                             <ItemsWrapGrid
@@ -182,6 +185,7 @@
                     IsItemClickEnabled="True"
                     SelectionMode="None"
                     ItemClick="PromptGridView_ItemClick"
+                    AutomationProperties.Name="프롬프트 목록"
                     Visibility="Collapsed">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="models:PromptItem">
@@ -264,6 +268,7 @@
                             <Button
                                 Grid.Column="1"
                                 Click="CancelEdit_Click"
+                                AutomationProperties.Name="프롬프트 편집 닫기"
                                 ToolTipService.ToolTip="닫기">
                                 <FontIcon Glyph="&#xE711;" />
                             </Button>
