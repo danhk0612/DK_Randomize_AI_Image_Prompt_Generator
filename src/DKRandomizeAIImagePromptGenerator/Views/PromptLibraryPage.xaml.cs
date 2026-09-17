@@ -1,8 +1,8 @@
 using DKRandomizeAIImagePromptGenerator.Models;
-using DKRandomizeAIImagePromptGenerator.Services;
 using DKRandomizeAIImagePromptGenerator.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Windows.Storage.Pickers;
 
@@ -20,13 +20,13 @@ public sealed partial class PromptLibraryPage : Page
         ViewModel = new PromptLibraryViewModel(((App)Application.Current).Prompts);
         InitializeComponent();
 
-        WheelPassthroughService.Attach(
-            EditorScrollViewer,
-            TitleBox,
-            PositiveBox,
-            NegativeBox,
-            TagsBox,
-            MemoBox);
+        var transparent = new SolidColorBrush(Microsoft.UI.Colors.Transparent);
+        Background = transparent;
+        EditorScrollViewer.Background = transparent;
+        if (Content is Panel rootPanel)
+        {
+            rootPanel.Background = transparent;
+        }
 
         Loaded += PromptLibraryPage_Loaded;
         SizeChanged += PromptLibraryPage_SizeChanged;
