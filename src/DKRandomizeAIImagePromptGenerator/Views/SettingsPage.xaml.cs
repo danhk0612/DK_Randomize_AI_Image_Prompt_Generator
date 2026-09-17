@@ -114,13 +114,20 @@ public sealed partial class SettingsPage : Page
             return;
         }
 
-        var theme = (AppTheme)ThemeComboBox.SelectedIndex;
-        var app = (App)Application.Current;
-        await app.Settings.SetThemeAsync(theme);
-
-        if (app.MainWindowInstance is MainWindow window)
+        try
         {
-            window.ApplyTheme(theme);
+            var theme = (AppTheme)ThemeComboBox.SelectedIndex;
+            var app = (App)Application.Current;
+            await app.Settings.SetThemeAsync(theme);
+
+            if (app.MainWindowInstance is MainWindow window)
+            {
+                window.ApplyTheme(theme);
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowStatus("테마 저장 실패", ex.Message, InfoBarSeverity.Error);
         }
     }
 
@@ -132,26 +139,33 @@ public sealed partial class SettingsPage : Page
             return;
         }
 
-        var picker = new FileSavePicker(window.AppWindow.Id)
+        try
         {
-            SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
-            SuggestedFileName = $"DK-Prompt-Backup-{DateTime.Now:yyyyMMdd-HHmmss}",
-            CommitButtonText = "백업",
-            DefaultFileExtension = ".zip",
-            FileTypeChoices =
+            var picker = new FileSavePicker(window.AppWindow.Id)
             {
-                { "DK Prompt Generator Backup", new List<string> { ".zip" } }
+                SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+                SuggestedFileName = $"DK-Prompt-Backup-{DateTime.Now:yyyyMMdd-HHmmss}",
+                CommitButtonText = "백업",
+                DefaultFileExtension = ".zip",
+                FileTypeChoices =
+                {
+                    { "DK Prompt Generator Backup", new List<string> { ".zip" } }
+                }
+            };
+
+            var result = await picker.PickSaveFileAsync();
+            if (result is null)
+            {
+                return;
             }
-        };
 
-        var result = await picker.PickSaveFileAsync();
-        if (result is null)
-        {
-            return;
+            await app.Backup.CreateAsync(result.Path);
+            ShowStatus("백업 완료", "로컬 데이터 백업 파일을 저장했습니다.", InfoBarSeverity.Success);
         }
-
-        await app.Backup.CreateAsync(result.Path);
-        ShowStatus("백업 완료", "로컬 데이터 백업 파일을 저장했습니다.", InfoBarSeverity.Success);
+        catch (Exception ex)
+        {
+            ShowStatus("백업 실패", ex.Message, InfoBarSeverity.Error);
+        }
     }
 
     private async void Restore_Click(object sender, RoutedEventArgs e)
@@ -162,45 +176,52 @@ public sealed partial class SettingsPage : Page
             return;
         }
 
-        var picker = new FileOpenPicker(window.AppWindow.Id)
+        try
         {
-            SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
-            CommitButtonText = "복원",
-            ViewMode = PickerViewMode.List,
-            FileTypeFilter = { ".zip" }
-        };
+            var picker = new FileOpenPicker(window.AppWindow.Id)
+            {
+                SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+                CommitButtonText = "복원",
+                ViewMode = PickerViewMode.List,
+                FileTypeFilter = { ".zip" }
+            };
 
-        var result = await picker.PickSingleFileAsync();
-        if (result is null)
-        {
-            return;
+            var result = await picker.PickSingleFileAsync();
+            if (result is null)
+            {
+                return;
+            }
+
+            var dialog = new ContentDialog
+            {
+                XamlRoot = XamlRoot,
+                Title = "백업 복원",
+                Content = "현재 프롬프트, 최근 기록, 대표 이미지와 설정을 선택한 백업 내용으로 교체합니다.",
+                PrimaryButtonText = "복원",
+                CloseButtonText = "취소",
+                DefaultButton = ContentDialogButton.Close
+            };
+
+            if (await dialog.ShowAsync() != ContentDialogResult.Primary)
+            {
+                return;
+            }
+
+            await app.Backup.RestoreAsync(result.Path);
+            await app.Database.InitializeAsync();
+            await app.Settings.LoadAsync();
+            window.ApplyTheme(app.Settings.Current.Theme);
+
+            _syncingTheme = true;
+            ThemeComboBox.SelectedIndex = (int)app.Settings.Current.Theme;
+            _syncingTheme = false;
+
+            ShowStatus("복원 완료", "백업 데이터를 복원했습니다. 다른 화면으로 이동하면 복원된 데이터가 표시됩니다.", InfoBarSeverity.Success);
         }
-
-        var dialog = new ContentDialog
+        catch (Exception ex)
         {
-            XamlRoot = XamlRoot,
-            Title = "백업 복원",
-            Content = "현재 프롬프트, 최근 기록, 대표 이미지와 설정을 선택한 백업 내용으로 교체합니다.",
-            PrimaryButtonText = "복원",
-            CloseButtonText = "취소",
-            DefaultButton = ContentDialogButton.Close
-        };
-
-        if (await dialog.ShowAsync() != ContentDialogResult.Primary)
-        {
-            return;
+            ShowStatus("복원 실패", ex.Message, InfoBarSeverity.Error);
         }
-
-        await app.Backup.RestoreAsync(result.Path);
-        await app.Database.InitializeAsync();
-        await app.Settings.LoadAsync();
-        window.ApplyTheme(app.Settings.Current.Theme);
-
-        _syncingTheme = true;
-        ThemeComboBox.SelectedIndex = (int)app.Settings.Current.Theme;
-        _syncingTheme = false;
-
-        ShowStatus("복원 완료", "백업 데이터를 복원했습니다. 다른 화면으로 이동하면 복원된 데이터가 표시됩니다.", InfoBarSeverity.Success);
     }
 
     private void ShowStatus(string title, string message, InfoBarSeverity severity)
