@@ -1,27 +1,54 @@
 # DK Randomize AI Image Prompt Generator
 
-Windows desktop application for managing and combining reusable AI image-generation prompts.
+Windows desktop application for storing reusable AI image-generation prompts and quickly combining them into editable Positive / Negative output.
 
-## Status
+## Main features
 
-Initial project setup in progress.
+- Manage three independent prompt groups:
+  - Character
+  - Artist / Style
+  - Additional
+- Store a title, representative image, Positive prompt, Negative prompt, tags, and notes for each item.
+- Browse prompts in gallery or list view.
+- Search prompt text and filter by tag.
+- Create, edit, duplicate, and delete prompt items.
+- Choose Fixed / Random / Disabled mode independently for each prompt group.
+- Randomize one group or all random-mode groups.
+- Edit the combined Positive / Negative text before copying it.
+- Copy Positive and Negative results independently.
+- Save the final edited result to recent history and restore it later.
+- Follow the Windows system theme or force Light / Dark mode.
+- Back up and restore local data as a ZIP file.
 
-## Core concept
+The application does **not** generate images directly. Its role is to prepare prompt text for use in other image-generation tools and services.
 
-The application manages three prompt groups independently:
+## Data storage
 
-- Character prompts
-- Artist/style prompts
-- Additional prompts
+Application data is local to the current Windows user.
 
-Each prompt item can contain a title, representative image, positive prompt, negative prompt, tags, and notes. The mixer can use a fixed item, a random item, or skip a group, then produces editable positive/negative results that can be copied for use in other image-generation tools.
+```text
+%LOCALAPPDATA%\DK Randomize AI Image Prompt Generator\
+├─ data\prompts.db
+├─ images\
+├─ backups\
+└─ settings.json
+```
 
-## Planned platform
+Representative images are copied into application-managed storage. The original image files are not modified.
+
+## Platform and development stack
 
 - Windows 10 1809+ / Windows 11
 - C# / .NET 10
 - WinUI 3
-- Windows App SDK 2.4
-- SQLite for local structured data
+- Windows App SDK 2.5.1
+- SQLite (`Microsoft.Data.Sqlite`)
+- x64 / ARM64 project targets
 
-Detailed requirements and architecture will be maintained under `docs/`.
+## Development
+
+Open `DK_Randomize_AI_Image_Prompt_Generator.sln` and build the solution with Visual Studio or the .NET CLI on Windows.
+
+GitHub Actions validates restore, Release build, and automated tests on Windows runners.
+
+Detailed product requirements, architecture, UI direction, data model, task status, and current implementation state are maintained under [`docs/`](docs/).
