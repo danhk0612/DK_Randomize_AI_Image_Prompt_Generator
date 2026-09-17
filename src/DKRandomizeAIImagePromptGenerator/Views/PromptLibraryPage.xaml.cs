@@ -1,4 +1,5 @@
 using DKRandomizeAIImagePromptGenerator.Models;
+using DKRandomizeAIImagePromptGenerator.Services;
 using DKRandomizeAIImagePromptGenerator.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -18,6 +19,15 @@ public sealed partial class PromptLibraryPage : Page
     {
         ViewModel = new PromptLibraryViewModel(((App)Application.Current).Prompts);
         InitializeComponent();
+
+        WheelPassthroughService.Attach(
+            EditorScrollViewer,
+            TitleBox,
+            PositiveBox,
+            NegativeBox,
+            TagsBox,
+            MemoBox);
+
         Loaded += PromptLibraryPage_Loaded;
         SizeChanged += PromptLibraryPage_SizeChanged;
     }
