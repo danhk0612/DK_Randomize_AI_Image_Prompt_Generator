@@ -2,6 +2,7 @@ using DKRandomizeAIImagePromptGenerator.Models;
 using DKRandomizeAIImagePromptGenerator.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace DKRandomizeAIImagePromptGenerator.Views;
@@ -18,12 +19,15 @@ public sealed partial class MixerPage : Page
         InitializeComponent();
         _initialized = true;
         Loaded += MixerPage_Loaded;
+        SizeChanged += MixerPage_SizeChanged;
     }
 
     public MixerViewModel ViewModel { get; }
 
     private async void MixerPage_Loaded(object sender, RoutedEventArgs e)
     {
+        ApplyResponsiveCardLayout(ActualWidth);
+
         var app = (App)Application.Current;
         await ViewModel.LoadAsync();
 
@@ -34,6 +38,97 @@ public sealed partial class MixerPage : Page
         }
 
         SyncControls();
+    }
+
+    private void MixerPage_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        ApplyResponsiveCardLayout(e.NewSize.Width);
+    }
+
+    private void ApplyResponsiveCardLayout(double availableWidth)
+    {
+        var characterCard = FindCardBorder(CharacterImage);
+        var artistCard = FindCardBorder(ArtistImage);
+        var additionalCard = FindCardBorder(AdditionalImage);
+
+        if (characterCard?.Parent is not Grid cardGrid ||
+            artistCard is null ||
+            additionalCard is null ||
+            cardGrid.ColumnDefinitions.Count < 3)
+        {
+            return;
+        }
+
+        EnsureCardRows(cardGrid);
+
+        Grid.SetColumnSpan(characterCard, 1);
+        Grid.SetColumnSpan(artistCard, 1);
+        Grid.SetColumnSpan(additionalCard, 1);
+
+        if (availableWidth >= 1100)
+        {
+            cardGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+            cardGrid.ColumnDefinitions[1].Width = new GridLength(1, GridUnitType.Star);
+            cardGrid.ColumnDefinitions[2].Width = new GridLength(1, GridUnitType.Star);
+            cardGrid.RowSpacing = 0;
+
+            PositionCard(characterCard, 0, 0);
+            PositionCard(artistCard, 0, 1);
+            PositionCard(additionalCard, 0, 2);
+        }
+        else if (availableWidth >= 760)
+        {
+            cardGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+            cardGrid.ColumnDefinitions[1].Width = new GridLength(1, GridUnitType.Star);
+            cardGrid.ColumnDefinitions[2].Width = new GridLength(0);
+            cardGrid.RowSpacing = 12;
+
+            PositionCard(characterCard, 0, 0);
+            PositionCard(artistCard, 0, 1);
+            PositionCard(additionalCard, 1, 0);
+            Grid.SetColumnSpan(additionalCard, 2);
+        }
+        else
+        {
+            cardGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+            cardGrid.ColumnDefinitions[1].Width = new GridLength(0);
+            cardGrid.ColumnDefinitions[2].Width = new GridLength(0);
+            cardGrid.RowSpacing = 12;
+
+            PositionCard(characterCard, 0, 0);
+            PositionCard(artistCard, 1, 0);
+            PositionCard(additionalCard, 2, 0);
+        }
+    }
+
+    private static void EnsureCardRows(Grid grid)
+    {
+        while (grid.RowDefinitions.Count < 3)
+        {
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        }
+    }
+
+    private static void PositionCard(FrameworkElement card, int row, int column)
+    {
+        Grid.SetRow(card, row);
+        Grid.SetColumn(card, column);
+    }
+
+    private static Border? FindCardBorder(DependencyObject start)
+    {
+        DependencyObject? current = start;
+        while (current is not null)
+        {
+            if (current is Border border && VisualTreeHelper.GetParent(border) is Grid)
+            {
+                return border;
+            }
+
+            current = VisualTreeHelper.GetParent(current);
+        }
+
+        return null;
     }
 
     private void CharacterModeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) =>
