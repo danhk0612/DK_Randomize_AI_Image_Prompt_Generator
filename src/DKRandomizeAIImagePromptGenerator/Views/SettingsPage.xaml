@@ -3,8 +3,12 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <ScrollViewer>
-        <Grid Padding="32" MaxWidth="980" HorizontalAlignment="Stretch">
+    <ScrollViewer
+        HorizontalContentAlignment="Stretch"
+        HorizontalScrollBarVisibility="Disabled"
+        HorizontalScrollMode="Disabled"
+        VerticalScrollBarVisibility="Auto">
+        <Grid Padding="24" MaxWidth="980" HorizontalAlignment="Stretch">
             <StackPanel Spacing="20">
                 <StackPanel Spacing="6">
                     <TextBlock Text="설정" Style="{StaticResource PageTitleTextStyle}" />
@@ -48,7 +52,11 @@
                             <TextBlock Text="데이터 백업" FontWeight="SemiBold" />
                             <TextBlock Opacity="0.65" Text="프롬프트, 최근 기록, 대표 이미지와 설정을 ZIP 파일 하나로 보관하거나 복원합니다." TextWrapping="Wrap" />
                         </StackPanel>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                        <StackPanel
+                            x:Name="BackupButtons"
+                            Grid.Column="1"
+                            Orientation="Horizontal"
+                            Spacing="8">
                             <Button Content="백업" Click="Backup_Click" />
                             <Button Content="복원" Click="Restore_Click" />
                         </StackPanel>
@@ -58,7 +66,7 @@
                 <Border Style="{StaticResource PromptCardStyle}">
                     <StackPanel Spacing="4">
                         <TextBlock Text="정보" FontWeight="SemiBold" />
-                        <TextBlock Text="DK Randomize AI Image Prompt Generator" />
+                        <TextBlock Text="DK Randomize AI Image Prompt Generator" TextWrapping="Wrap" />
                         <TextBlock x:Name="VersionText" Opacity="0.65" />
                     </StackPanel>
                 </Border>
