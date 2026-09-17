@@ -254,6 +254,10 @@ public sealed partial class MixerPage : Page
             ArtistTitle.Text = ViewModel.SelectedArtist?.Title ?? "선택된 작가 없음";
             AdditionalTitle.Text = ViewModel.SelectedAdditional?.Title ?? "선택된 추가 프롬프트 없음";
 
+            CharacterMemo.Text = ViewModel.SelectedCharacter?.Memo ?? string.Empty;
+            ArtistMemo.Text = ViewModel.SelectedArtist?.Memo ?? string.Empty;
+            AdditionalMemo.Text = ViewModel.SelectedAdditional?.Memo ?? string.Empty;
+
             SetImage(CharacterImage, ViewModel.SelectedCharacter);
             SetImage(ArtistImage, ViewModel.SelectedArtist);
             SetImage(AdditionalImage, ViewModel.SelectedAdditional);
