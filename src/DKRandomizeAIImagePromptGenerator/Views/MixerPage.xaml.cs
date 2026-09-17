@@ -185,8 +185,21 @@ public sealed partial class MixerPage : Page
 
     private async void SaveHistory_Click(object sender, RoutedEventArgs e)
     {
-        await ViewModel.SaveHistoryAsync(PositiveOutput.Text, NegativeOutput.Text);
-        HistorySavedInfoBar.IsOpen = true;
+        try
+        {
+            await ViewModel.SaveHistoryAsync(PositiveOutput.Text, NegativeOutput.Text);
+            HistorySavedInfoBar.Title = "최근 기록에 저장했습니다.";
+            HistorySavedInfoBar.Message = string.Empty;
+            HistorySavedInfoBar.Severity = InfoBarSeverity.Success;
+            HistorySavedInfoBar.IsOpen = true;
+        }
+        catch (Exception ex)
+        {
+            HistorySavedInfoBar.Title = "최근 기록 저장 실패";
+            HistorySavedInfoBar.Message = ex.Message;
+            HistorySavedInfoBar.Severity = InfoBarSeverity.Error;
+            HistorySavedInfoBar.IsOpen = true;
+        }
     }
 
     private void SetMode(PromptCategory category, int selectedIndex)
