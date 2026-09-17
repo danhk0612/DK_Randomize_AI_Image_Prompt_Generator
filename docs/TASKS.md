@@ -7,10 +7,10 @@
 - [x] Define architecture
 - [x] Define UI design direction
 - [x] Define initial data model
-- [ ] Add WinUI 3 / .NET 10 project scaffold
-- [ ] Add application icon vector source
-- [ ] Add initial shell/navigation pages
-- [ ] Add basic build workflow
+- [x] Add WinUI 3 / .NET 10 project scaffold
+- [x] Add application icon vector source
+- [x] Add initial shell/navigation pages
+- [x] Add basic build workflow
 
 ## Milestone 1 — Domain and mixer core
 
