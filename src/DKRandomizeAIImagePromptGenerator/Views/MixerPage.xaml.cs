@@ -1,4 +1,5 @@
 using DKRandomizeAIImagePromptGenerator.Models;
+using DKRandomizeAIImagePromptGenerator.Services;
 using DKRandomizeAIImagePromptGenerator.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -17,6 +18,10 @@ public sealed partial class MixerPage : Page
         var app = (App)Application.Current;
         ViewModel = new MixerViewModel(app.Prompts, app.History, app.Combination);
         InitializeComponent();
+        if (Content is ScrollViewer pageScrollViewer)
+        {
+            MouseWheelScrollService.Attach(pageScrollViewer);
+        }
         _initialized = true;
         Loaded += MixerPage_Loaded;
         SizeChanged += MixerPage_SizeChanged;
