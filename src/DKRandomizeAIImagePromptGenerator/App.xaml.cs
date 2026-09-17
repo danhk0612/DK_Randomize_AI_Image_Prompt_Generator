@@ -1,4 +1,5 @@
 using DKRandomizeAIImagePromptGenerator.Data;
+using DKRandomizeAIImagePromptGenerator.Models;
 using DKRandomizeAIImagePromptGenerator.Services;
 using Microsoft.UI.Xaml;
 
@@ -34,6 +35,8 @@ public partial class App : Application
     public ClipboardService Clipboard { get; }
 
     public Window? MainWindowInstance => _window;
+
+    public CombinationHistory? PendingHistoryRestore { get; set; }
 
     protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
