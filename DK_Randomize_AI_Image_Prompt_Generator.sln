@@ -4,6 +4,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DKRandomizeAIImagePromptGenerator", "src\DKRandomizeAIImagePromptGenerator\DKRandomizeAIImagePromptGenerator.csproj", "{A7D37C1B-79F1-47C7-B044-EDB67521C7A2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DKRandomizeAIImagePromptGenerator.Tests", "tests\DKRandomizeAIImagePromptGenerator.Tests\DKRandomizeAIImagePromptGenerator.Tests.csproj", "{C3469B0E-F17B-4CF7-A6AF-6BB9491870C7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -20,5 +22,13 @@ Global
 		{A7D37C1B-79F1-47C7-B044-EDB67521C7A2}.Release|ARM64.Build.0 = Release|ARM64
 		{A7D37C1B-79F1-47C7-B044-EDB67521C7A2}.Release|x64.ActiveCfg = Release|x64
 		{A7D37C1B-79F1-47C7-B044-EDB67521C7A2}.Release|x64.Build.0 = Release|x64
+		{C3469B0E-F17B-4CF7-A6AF-6BB9491870C7}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{C3469B0E-F17B-4CF7-A6AF-6BB9491870C7}.Debug|ARM64.Build.0 = Debug|ARM64
+		{C3469B0E-F17B-4CF7-A6AF-6BB9491870C7}.Debug|x64.ActiveCfg = Debug|x64
+		{C3469B0E-F17B-4CF7-A6AF-6BB9491870C7}.Debug|x64.Build.0 = Debug|x64
+		{C3469B0E-F17B-4CF7-A6AF-6BB9491870C7}.Release|ARM64.ActiveCfg = Release|ARM64
+		{C3469B0E-F17B-4CF7-A6AF-6BB9491870C7}.Release|ARM64.Build.0 = Release|ARM64
+		{C3469B0E-F17B-4CF7-A6AF-6BB9491870C7}.Release|x64.ActiveCfg = Release|x64
+		{C3469B0E-F17B-4CF7-A6AF-6BB9491870C7}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 EndGlobal
