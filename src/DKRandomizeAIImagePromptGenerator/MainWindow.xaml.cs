@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace DKRandomizeAIImagePromptGenerator;
 
-public sealed partial class MainWindow : Window
+public sealed class MainWindow : Window
 {
     private readonly NavigationView _rootNavigationView;
     private readonly NavigationViewItem _mixerNavigationItem;
@@ -13,7 +13,7 @@ public sealed partial class MainWindow : Window
 
     public MainWindow()
     {
-        InitializeComponent();
+        Title = "DK Randomize AI Image Prompt Generator";
 
         _contentFrame = new Frame();
         _mixerNavigationItem = CreateNavigationItem("조합", "Mixer");
@@ -33,7 +33,7 @@ public sealed partial class MainWindow : Window
         _rootNavigationView.FooterMenuItems.Add(CreateNavigationItem("설정", "Settings"));
         _rootNavigationView.SelectionChanged += RootNavigationView_SelectionChanged;
 
-        RootGrid.Children.Add(_rootNavigationView);
+        Content = _rootNavigationView;
 
         _rootNavigationView.SelectedItem = _mixerNavigationItem;
         NavigateTo("Mixer");
