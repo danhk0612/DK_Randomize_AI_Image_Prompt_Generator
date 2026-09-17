@@ -4,7 +4,7 @@ Updated: 2026-09-17
 
 ## Repository
 
-The repository is initialized and the first implementation branch is `feature/bootstrap`.
+The repository is initialized and active development is on `feature/bootstrap`.
 
 ## Decisions fixed for V1
 
@@ -22,40 +22,77 @@ The repository is initialized and the first implementation branch is `feature/bo
 - Recent-history records preserve final edited text
 - No direct AI API/image-generation feature in V1
 
-## Work completed
+## Implemented
 
-### Product and architecture
+### Application shell and design
 
-- Product requirements documented
-- Architecture documented
-- UI direction documented
-- Initial data model documented
-- Implementation milestones documented
+- WinUI 3 / .NET 10 application scaffold
+- Fluent-style `NavigationView` shell
+- Mixer, Prompt Library, History, and Settings pages
+- Shared card/title styles and system/light/dark themes
+- Vector icon design source based on three prompt cards and shuffle flow
+- GitHub Actions restore/build/test workflow
 
-### Milestone 0 — Bootstrap
+### Prompt domain and combination core
 
-- Added .NET 10 / WinUI 3 project scaffold
-- Added Windows App SDK 2.5.1 dependency
-- Added unpackaged self-contained development configuration
-- Added `NavigationView` application shell
-- Added initial Mixer, Prompt Library, History, and Settings pages
-- Added shared page/card styling resources
-- Added vector application-icon source based on three prompt cards plus shuffle flow
-- Added Windows GitHub Actions restore/build workflow
+- Prompt category and selection-mode models
+- Fixed / Random / Disabled selection rules
+- Character → Artist → Additional composition order
+- Independent Positive and Negative output composition
+- Empty-section handling without duplicate blank lines
+- Unit tests for core combination behavior
 
-## Current UI state
+### Local persistence
 
-The application shell is intentionally functional but still data-free. The Mixer page establishes the target card layout and editable Positive/Negative output areas. Prompt Library, History, and Settings currently provide the first visual structure and empty states.
+- SQLite schema version 1 and migration initialization
+- Prompt CRUD repository
+- Tag persistence and filtering
+- Title / Positive / Negative search
+- Combination-history persistence with final edited text snapshots
+- Prompt deletion preserves history text snapshots
+- Repository persistence tests
 
-No SQLite or prompt CRUD logic is connected yet.
+### Prompt Library
 
-## Next functional milestone
+- Character / Artist / Additional category switching
+- Gallery and list display modes
+- Search and tag filter
+- Create / edit / duplicate / delete
+- Positive / Negative / memo / tags fields
+- Representative image import, preview, replace, remove, and orphan cleanup
+- Application-owned image copies under local app data
 
-Milestone 1 is next:
+### Mixer
 
-1. Add prompt domain models and enums.
-2. Add selection/combination models.
-3. Implement `CombinationService` with Fixed / Random / Disabled rules.
-4. Add unit tests for selection and Positive/Negative composition behavior.
+- Fixed / Random / Disabled controls for all three categories
+- Fixed item selection
+- Per-category randomize while preserving other current selections
+- Randomize all
+- Representative image and title display
+- Editable Positive / Negative result areas
+- Independent copy actions
+- Save final edited output to history
 
-The mixer core should be fully testable before local persistence is introduced.
+### History and settings
+
+- Recent-history list and detail view
+- Restore saved history back into the mixer
+- System / Light / Dark theme setting persisted to `settings.json`
+- ZIP backup of SQLite data, representative images, and settings
+- ZIP restore flow with confirmation
+- Runtime application-version display
+- Settings and backup round-trip tests
+
+## Verification status
+
+GitHub Actions has repeatedly validated the WinUI solution on Windows runners with .NET 10. The branch is currently being revalidated after the latest Settings and Prompt Library UI changes.
+
+## Next milestone
+
+Milestone 6 — polish and distribution:
+
+1. Produce final Windows application icon assets from the approved vector concept.
+2. Run keyboard/accessibility and empty/error-state passes.
+3. Validate a publish/release build.
+4. Choose the final packaging/installer strategy.
+5. Prepare the first distributable release.
