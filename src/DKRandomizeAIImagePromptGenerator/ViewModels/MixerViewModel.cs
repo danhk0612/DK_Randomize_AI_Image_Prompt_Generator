@@ -65,15 +65,18 @@ public sealed class MixerViewModel
             ? AdditionalItems.FirstOrDefault(item => item.Id == promptId)
             : null;
 
+        // Restoring history should reproduce the saved selection and final edited text,
+        // but it should not permanently pin the mixer. Keep categories with a restored
+        // item in Random mode so the next per-category/all reroll works immediately.
         CharacterMode = SelectedCharacter is null
             ? PromptSelectionMode.Disabled
-            : PromptSelectionMode.Fixed;
+            : PromptSelectionMode.Random;
         ArtistMode = SelectedArtist is null
             ? PromptSelectionMode.Disabled
-            : PromptSelectionMode.Fixed;
+            : PromptSelectionMode.Random;
         AdditionalMode = SelectedAdditional is null
             ? PromptSelectionMode.Disabled
-            : PromptSelectionMode.Fixed;
+            : PromptSelectionMode.Random;
 
         PositiveText = history.PositiveText;
         NegativeText = history.NegativeText;
