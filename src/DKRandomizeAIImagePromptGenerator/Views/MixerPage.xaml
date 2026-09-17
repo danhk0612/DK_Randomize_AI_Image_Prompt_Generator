@@ -44,10 +44,11 @@
         </DataTemplate>
     </Page.Resources>
 
-    <ScrollViewer
-        x:Name="MixerScrollViewer"
+    <ScrollView
+        x:Name="MixerScrollView"
+        ContentOrientation="Vertical"
         HorizontalScrollMode="Disabled"
-        HorizontalScrollBarVisibility="Disabled"
+        HorizontalScrollBarVisibility="Hidden"
         HorizontalContentAlignment="Stretch"
         VerticalScrollMode="Enabled"
         VerticalScrollBarVisibility="Auto">
@@ -187,5 +188,5 @@
                 <Button HorizontalAlignment="Right" Content="현재 결과 기록 저장" Click="SaveHistory_Click" />
             </Grid>
         </Grid>
-    </ScrollViewer>
+    </ScrollView>
 </Page>
