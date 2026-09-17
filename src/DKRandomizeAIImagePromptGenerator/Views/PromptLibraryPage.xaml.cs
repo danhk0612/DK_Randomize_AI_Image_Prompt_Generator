@@ -19,13 +19,42 @@ public sealed partial class PromptLibraryPage : Page
         ViewModel = new PromptLibraryViewModel(((App)Application.Current).Prompts);
         InitializeComponent();
         Loaded += PromptLibraryPage_Loaded;
+        SizeChanged += PromptLibraryPage_SizeChanged;
     }
 
     public PromptLibraryViewModel ViewModel { get; }
 
     private async void PromptLibraryPage_Loaded(object sender, RoutedEventArgs e)
     {
+        ApplyResponsiveLayout(ActualWidth);
         await RefreshAsync();
+    }
+
+    private void PromptLibraryPage_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        ApplyResponsiveLayout(e.NewSize.Width);
+    }
+
+    private void ApplyResponsiveLayout(double availableWidth)
+    {
+        if (Content is Grid rootGrid)
+        {
+            rootGrid.MaxWidth = double.PositiveInfinity;
+            rootGrid.Padding = new Thickness(24);
+        }
+
+        if (EditorPane.Parent is Grid contentGrid && contentGrid.ColumnDefinitions.Count > 0)
+        {
+            contentGrid.ColumnDefinitions[0].MinWidth = 0;
+        }
+
+        EditorPane.Width = availableWidth switch
+        {
+            >= 1350 => 400,
+            >= 1100 => 340,
+            >= 900 => 300,
+            _ => 260
+        };
     }
 
     private async void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
