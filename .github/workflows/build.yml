@@ -34,6 +34,15 @@ jobs:
       - name: Publish WPF win-x64
         run: dotnet publish src/DKRandomizeAIImagePromptGenerator.Wpf/DKRandomizeAIImagePromptGenerator.Wpf.csproj -c Release -r win-x64 -p:Platform=x64 --self-contained true --no-restore -o artifacts/win-x64
 
+      - name: Smoke test WPF mouse wheel routing
+        shell: pwsh
+        run: |
+          $exe = Join-Path $PWD "artifacts/win-x64/DKRandomizeAIImagePromptGenerator.exe"
+          & $exe --scroll-smoke
+          if ($LASTEXITCODE -ne 0) {
+            throw "WPF mouse wheel routing smoke test failed. Exit code: $LASTEXITCODE"
+          }
+
       - name: Smoke test published app startup
         shell: pwsh
         run: |
