@@ -10,6 +10,125 @@ namespace DKRandomizeAIImagePromptGenerator.Tests;
 public sealed class MixerViewModelTests
 {
     [Fact]
+    public async Task DirectMultiSelectPreservesOrderAndUsesSingleNewlines()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "DKRandomizeAIImagePromptGenerator.Tests",
+            Guid.NewGuid().ToString("N"));
+
+        var database = new DatabaseService(AppDataPaths.Create(root));
+        await database.InitializeAsync();
+
+        try
+        {
+            var prompts = new PromptRepository(database);
+            var historyRepository = new HistoryRepository(database);
+
+            var first = new PromptItem
+            {
+                Category = PromptCategory.Character,
+                Title = "First",
+                PositivePrompt = "first"
+            };
+            var second = new PromptItem
+            {
+                Category = PromptCategory.Character,
+                Title = "Second",
+                PositivePrompt = "second"
+            };
+
+            await prompts.CreateAsync(first);
+            await prompts.CreateAsync(second);
+
+            var viewModel = new MixerViewModel(
+                prompts,
+                historyRepository,
+                new CombinationService());
+            await viewModel.LoadAsync();
+
+            viewModel.SetSelectedItems(
+                PromptCategory.Character,
+                new[] { second, first });
+            viewModel.SetMode(PromptCategory.Artist, PromptSelectionMode.Disabled);
+            viewModel.SetMode(PromptCategory.Additional, PromptSelectionMode.Disabled);
+
+            Assert.Equal(
+                new[] { second.Id, first.Id },
+                viewModel.SelectedCharacters.Select(item => item.Id).ToArray());
+            Assert.Equal(
+                $"second{Environment.NewLine}first",
+                viewModel.PositiveText);
+
+            Assert.True(viewModel.MoveSelectedItem(PromptCategory.Character, 1, 0));
+            Assert.Equal(
+                $"first{Environment.NewLine}second",
+                viewModel.PositiveText);
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task RandomCountSelectsMultipleUniquePrompts()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "DKRandomizeAIImagePromptGenerator.Tests",
+            Guid.NewGuid().ToString("N"));
+
+        var database = new DatabaseService(AppDataPaths.Create(root));
+        await database.InitializeAsync();
+
+        try
+        {
+            var prompts = new PromptRepository(database);
+            var historyRepository = new HistoryRepository(database);
+
+            for (var index = 1; index <= 5; index++)
+            {
+                await prompts.CreateAsync(new PromptItem
+                {
+                    Category = PromptCategory.Additional,
+                    Title = $"Additional {index}",
+                    PositivePrompt = $"additional {index}"
+                });
+            }
+
+            var viewModel = new MixerViewModel(
+                prompts,
+                historyRepository,
+                new CombinationService());
+            await viewModel.LoadAsync();
+
+            viewModel.SetMode(PromptCategory.Character, PromptSelectionMode.Disabled);
+            viewModel.SetMode(PromptCategory.Artist, PromptSelectionMode.Disabled);
+            viewModel.SetRandomCount(PromptCategory.Additional, 3);
+            viewModel.SetMode(PromptCategory.Additional, PromptSelectionMode.Random);
+
+            Assert.Equal(3, viewModel.SelectedAdditionals.Count);
+            Assert.Equal(
+                3,
+                viewModel.SelectedAdditionals.Select(item => item.Id).Distinct().Count());
+            Assert.Equal(3, viewModel.PositiveText.Split(Environment.NewLine).Length);
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task RestoreFromHistoryKeepsSelectionsButAllowsImmediateReroll()
     {
         var root = Path.Combine(
