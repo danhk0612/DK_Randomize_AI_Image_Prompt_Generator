@@ -10,7 +10,34 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        Loaded += MainWindow_Loaded;
+        SizeChanged += MainWindow_SizeChanged;
         NavigateToMixer();
+    }
+
+    private void MainWindow_Loaded(object sender, RoutedEventArgs e) =>
+        ApplyResponsiveShell(ActualWidth);
+
+    private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e) =>
+        ApplyResponsiveShell(e.NewSize.Width);
+
+    private void ApplyResponsiveShell(double availableWidth)
+    {
+        var compact = availableWidth < 1000;
+        NavigationColumn.Width = new GridLength(compact ? 64 : 220);
+        BrandPanel.Visibility = compact ? Visibility.Collapsed : Visibility.Visible;
+
+        ConfigureNavButton(MixerNavButton, compact ? "⤨" : "⤨  프롬프트 조합", compact);
+        ConfigureNavButton(LibraryNavButton, compact ? "▦" : "▦  프롬프트 관리", compact);
+        ConfigureNavButton(HistoryNavButton, compact ? "◷" : "◷  최근 기록", compact);
+        ConfigureNavButton(SettingsNavButton, compact ? "⚙" : "⚙  설정", compact);
+    }
+
+    private static void ConfigureNavButton(Button button, string content, bool compact)
+    {
+        button.Content = content;
+        button.HorizontalContentAlignment = compact ? HorizontalAlignment.Center : HorizontalAlignment.Left;
+        button.Padding = compact ? new Thickness(8, 10, 8, 10) : new Thickness(14, 10, 14, 10);
     }
 
     public void NavigateToMixer()
