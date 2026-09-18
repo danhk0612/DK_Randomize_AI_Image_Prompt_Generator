@@ -182,6 +182,8 @@ public sealed class MixerViewModel
             return false;
         }
 
+        UpsertAvailableItem(item);
+
         var selected = GetSelectedCollection(category);
         if (selected.Any(existing => existing.Id == item.Id))
         {
@@ -201,6 +203,49 @@ public sealed class MixerViewModel
             SetModeValue(category, PromptSelectionMode.Fixed);
         }
 
+        RecomposeCurrent();
+        return true;
+    }
+
+    public void UpsertAvailableItem(PromptItem item)
+    {
+        var available = GetAvailableCollection(item.Category);
+        var availableIndex = IndexOfPrompt(available, item.Id);
+
+        if (availableIndex >= 0)
+        {
+            available[availableIndex] = item;
+        }
+        else
+        {
+            available.Add(item);
+        }
+
+        var selected = GetSelectedCollection(item.Category);
+        var selectedIndex = IndexOfPrompt(selected, item.Id);
+        if (selectedIndex >= 0)
+        {
+            selected[selectedIndex] = item;
+        }
+    }
+
+    public bool RemoveAvailableItem(PromptCategory category, Guid promptId)
+    {
+        var available = GetAvailableCollection(category);
+        var availableIndex = IndexOfPrompt(available, promptId);
+        if (availableIndex >= 0)
+        {
+            available.RemoveAt(availableIndex);
+        }
+
+        var selected = GetSelectedCollection(category);
+        var selectedIndex = IndexOfPrompt(selected, promptId);
+        if (selectedIndex < 0)
+        {
+            return availableIndex >= 0;
+        }
+
+        selected.RemoveAt(selectedIndex);
         RecomposeCurrent();
         return true;
     }
@@ -469,6 +514,21 @@ public sealed class MixerViewModel
         PromptCategory.Additional => SelectedAdditionals,
         _ => throw new ArgumentOutOfRangeException(nameof(category))
     };
+
+    private static int IndexOfPrompt(
+        ObservableCollection<PromptItem> items,
+        Guid promptId)
+    {
+        for (var index = 0; index < items.Count; index++)
+        {
+            if (items[index].Id == promptId)
+            {
+                return index;
+            }
+        }
+
+        return -1;
+    }
 
     private void SetModeValue(PromptCategory category, PromptSelectionMode mode)
     {
