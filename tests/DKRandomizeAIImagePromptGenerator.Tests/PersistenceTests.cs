@@ -260,11 +260,11 @@ public sealed class PersistenceTests
 
             Assert.NotNull(loaded);
             Assert.Equal(
-                new[] { characterB.Id, characterA.Id },
-                loaded.GetItems(PromptCategory.Character).Select(item => item.PromptId));
+                new Guid?[] { characterB.Id, characterA.Id },
+                loaded.GetItems(PromptCategory.Character).Select(item => item.PromptId).ToArray());
             Assert.Equal(
-                new[] { additionalB.Id, additionalA.Id },
-                loaded.GetItems(PromptCategory.Additional).Select(item => item.PromptId));
+                new Guid?[] { additionalB.Id, additionalA.Id },
+                loaded.GetItems(PromptCategory.Additional).Select(item => item.PromptId).ToArray());
 
             Assert.Equal(PromptSelectionMode.Fixed, loaded.CharacterMode);
             Assert.Equal(PromptSelectionMode.Random, loaded.ArtistMode);
@@ -277,8 +277,8 @@ public sealed class PersistenceTests
             Assert.Equal(characterB.Id, loaded.CharacterPromptId);
             Assert.Equal(artist.Id, loaded.ArtistPromptId);
             Assert.Equal(
-                new[] { additionalB.Id, additionalA.Id },
-                loaded.AdditionalItems.Select(item => item.PromptId));
+                new Guid?[] { additionalB.Id, additionalA.Id },
+                loaded.AdditionalItems.Select(item => item.PromptId).ToArray());
         }
         finally
         {
