@@ -35,6 +35,8 @@
             </Grid>
         </Border>
 
-        <ContentControl x:Name="PageHost" Grid.Column="1" />
+        <ContentControl x:Name="PageHost"
+                        Grid.Column="1"
+                        ClipToBounds="True" />
     </Grid>
 </Window>
