@@ -89,11 +89,11 @@
 - [x] Core/persistence regression tests
 
 ### 7.2 Mixer UI
-- [ ] Direct / Random / Disabled radio modes
-- [ ] Disable manual picker in Random / Disabled modes
-- [ ] Multi-selected item display and ordering
-- [ ] Random count UI
-- [ ] Integrated category search / add / apply / cancel picker
+- [x] Direct / Random / Disabled radio modes
+- [x] Disable manual picker in Random / Disabled modes
+- [x] Multi-selected item display and ordering
+- [x] Random count UI
+- [x] Integrated category search / add / apply / cancel picker
 
 ### 7.3 Prompt Library integration
 - [ ] Shared mixer session state
