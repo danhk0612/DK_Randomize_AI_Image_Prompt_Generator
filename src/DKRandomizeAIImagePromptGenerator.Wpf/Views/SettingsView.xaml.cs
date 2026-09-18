@@ -15,10 +15,13 @@ public partial class SettingsView : UserControl
         InitializeComponent();
         WheelScrollService.Enable(RootScrollViewer);
         Loaded += SettingsView_Loaded;
+        SizeChanged += SettingsView_SizeChanged;
     }
 
     private void SettingsView_Loaded(object sender, RoutedEventArgs e)
     {
+        ApplyResponsiveLayout(ActualWidth);
+
         var app = (App)Application.Current;
         _syncingTheme = true;
         ThemeComboBox.SelectedIndex = (int)app.Settings.Current.Theme;
@@ -28,6 +31,45 @@ public partial class SettingsView : UserControl
         VersionText.Text = version is null
             ? "버전 정보 없음"
             : $"버전 {version.Major}.{version.Minor}.{version.Build}";
+    }
+
+    private void SettingsView_SizeChanged(object sender, SizeChangedEventArgs e) =>
+        ApplyResponsiveLayout(e.NewSize.Width);
+
+    private void ApplyResponsiveLayout(double availableWidth)
+    {
+        if (availableWidth < 700)
+        {
+            ThemeGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+            ThemeGrid.ColumnDefinitions[1].Width = new GridLength(0);
+            Grid.SetRow(ThemeComboBox, 1);
+            Grid.SetColumn(ThemeComboBox, 0);
+            Grid.SetColumnSpan(ThemeComboBox, 2);
+            ThemeComboBox.Margin = new Thickness(0, 12, 0, 0);
+
+            BackupGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+            BackupGrid.ColumnDefinitions[1].Width = new GridLength(0);
+            Grid.SetRow(BackupButtons, 1);
+            Grid.SetColumn(BackupButtons, 0);
+            Grid.SetColumnSpan(BackupButtons, 2);
+            BackupButtons.Margin = new Thickness(0, 12, 0, 0);
+        }
+        else
+        {
+            ThemeGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+            ThemeGrid.ColumnDefinitions[1].Width = new GridLength(220);
+            Grid.SetRow(ThemeComboBox, 0);
+            Grid.SetColumn(ThemeComboBox, 1);
+            Grid.SetColumnSpan(ThemeComboBox, 1);
+            ThemeComboBox.Margin = new Thickness(0);
+
+            BackupGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+            BackupGrid.ColumnDefinitions[1].Width = GridLength.Auto;
+            Grid.SetRow(BackupButtons, 0);
+            Grid.SetColumn(BackupButtons, 1);
+            Grid.SetColumnSpan(BackupButtons, 1);
+            BackupButtons.Margin = new Thickness(16, 0, 0, 0);
+        }
     }
 
     private async void ThemeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
