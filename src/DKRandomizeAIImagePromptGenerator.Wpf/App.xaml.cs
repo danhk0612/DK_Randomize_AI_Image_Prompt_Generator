@@ -133,6 +133,8 @@ public partial class App : Application
         SetBrush("BorderBrush", dark ? "#3A3E47" : "#D9DCE2");
         SetBrush("TextPrimaryBrush", dark ? "#F3F4F6" : "#1F2328");
         SetBrush("TextSecondaryBrush", dark ? "#AEB4BF" : "#666D77");
+        SetBrush("AccentBrush", dark ? "#91A2FF" : "#4F6BED");
+        SetBrush("AccentFillBrush", dark ? "#566FEA" : "#4F6BED");
         SetBrush("DangerBrush", dark ? "#FF7B72" : "#C42B1C");
         SetBrush("ButtonBackgroundBrush", dark ? "#2A2D33" : "#F8F9FB");
         SetBrush("ControlHoverBrush", dark ? "#32363E" : "#F0F2F5");
