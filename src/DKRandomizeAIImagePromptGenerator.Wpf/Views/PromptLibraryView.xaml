@@ -58,13 +58,14 @@
             <Button Content="새 프롬프트" HorizontalAlignment="Right" VerticalAlignment="Top" Style="{StaticResource AccentButtonStyle}" Click="NewPrompt_Click" />
         </Grid>
 
-        <Grid Grid.Row="1" Margin="0,20,0,0">
+        <Grid x:Name="FilterGrid" Grid.Row="1" Margin="0,20,0,0">
             <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-            <StackPanel>
+            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+            <StackPanel x:Name="SearchFilterPanel">
                 <TextBlock Text="검색" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,4" />
                 <TextBox x:Name="SearchBox" TextChanged="SearchBox_TextChanged" />
             </StackPanel>
-            <StackPanel Grid.Column="2">
+            <StackPanel x:Name="TagFilterPanel" Grid.Column="2">
                 <TextBlock Text="태그 필터" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,4" />
                 <TextBox x:Name="TagFilterBox" TextChanged="TagFilterBox_TextChanged" />
             </StackPanel>
@@ -82,9 +83,9 @@
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Row="3" Margin="0,16,0,0">
+        <Grid x:Name="LibraryContentGrid" Grid.Row="3" Margin="0,16,0,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" MinWidth="340" />
+                <ColumnDefinition x:Name="ListColumn" Width="*" MinWidth="340" />
                 <ColumnDefinition Width="16" />
                 <ColumnDefinition x:Name="EditorColumn" Width="0" />
             </Grid.ColumnDefinitions>
