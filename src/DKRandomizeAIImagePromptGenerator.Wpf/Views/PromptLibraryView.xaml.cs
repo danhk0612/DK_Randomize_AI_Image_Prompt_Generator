@@ -77,6 +77,21 @@ public partial class PromptLibraryView : UserControl
             ListColumn.MinWidth = 340;
         }
 
+        if (availableWidth < 860)
+        {
+            Grid.SetRow(CategoryPanel, 0);
+            Grid.SetRow(ViewOptionsPanel, 1);
+            ViewOptionsPanel.HorizontalAlignment = HorizontalAlignment.Left;
+            ViewOptionsPanel.Margin = new Thickness(0, 10, 0, 0);
+        }
+        else
+        {
+            Grid.SetRow(CategoryPanel, 0);
+            Grid.SetRow(ViewOptionsPanel, 0);
+            ViewOptionsPanel.HorizontalAlignment = HorizontalAlignment.Right;
+            ViewOptionsPanel.Margin = new Thickness(0);
+        }
+
         if (EditorPane.Visibility == Visibility.Visible)
         {
             EditorColumn.Width = new GridLength(GetEditorWidth(availableWidth));
@@ -156,6 +171,16 @@ public partial class PromptLibraryView : UserControl
     {
         GalleryListBox.Visibility = gallery ? Visibility.Visible : Visibility.Collapsed;
         DetailListBox.Visibility = gallery ? Visibility.Collapsed : Visibility.Visible;
+
+        GalleryViewButton.ClearValue(Control.BackgroundProperty);
+        GalleryViewButton.ClearValue(Control.ForegroundProperty);
+        ListViewButton.ClearValue(Control.BackgroundProperty);
+        ListViewButton.ClearValue(Control.ForegroundProperty);
+
+        var activeButton = gallery ? GalleryViewButton : ListViewButton;
+        activeButton.SetResourceReference(Control.BackgroundProperty, "SelectionBackgroundBrush");
+        activeButton.SetResourceReference(Control.ForegroundProperty, "AccentBrush");
+
         GalleryViewButton.FontWeight = gallery ? FontWeights.SemiBold : FontWeights.Normal;
         ListViewButton.FontWeight = gallery ? FontWeights.Normal : FontWeights.SemiBold;
     }
