@@ -12,6 +12,8 @@ public partial class PromptPickerDialog : Window
     private readonly IReadOnlyList<PromptItem> _allItems;
     private readonly ObservableCollection<PromptItem> _filteredItems = [];
     private readonly ObservableCollection<PromptItem> _selectedItems = [];
+    private Point _dragStartPoint;
+    private PromptItem? _draggedSelectedItem;
 
     public PromptPickerDialog(
         PromptCategory category,
@@ -106,7 +108,13 @@ public partial class PromptPickerDialog : Window
         UpdateStatus();
     }
 
-    private void RemoveSelected_Click(object sender, RoutedEventArgs e)
+    private void RemoveSelected_Click(object sender, RoutedEventArgs e) =>
+        RemoveSelectedSelection();
+
+    private void SelectedList_MouseDoubleClick(object sender, MouseButtonEventArgs e) =>
+        RemoveSelectedSelection();
+
+    private void RemoveSelectedSelection()
     {
         var removals = SelectedList.SelectedItems
             .OfType<PromptItem>()
@@ -118,6 +126,72 @@ public partial class PromptPickerDialog : Window
         }
 
         UpdateStatus();
+    }
+
+    private void SelectedList_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        _dragStartPoint = e.GetPosition(SelectedList);
+        _draggedSelectedItem = GetPromptFromElement(
+            SelectedList,
+            e.OriginalSource as DependencyObject);
+    }
+
+    private void SelectedList_PreviewMouseMove(object sender, MouseEventArgs e)
+    {
+        if (e.LeftButton != MouseButtonState.Pressed ||
+            _draggedSelectedItem is null)
+        {
+            return;
+        }
+
+        var current = e.GetPosition(SelectedList);
+        if (Math.Abs(current.X - _dragStartPoint.X) < SystemParameters.MinimumHorizontalDragDistance &&
+            Math.Abs(current.Y - _dragStartPoint.Y) < SystemParameters.MinimumVerticalDragDistance)
+        {
+            return;
+        }
+
+        DragDrop.DoDragDrop(
+            SelectedList,
+            _draggedSelectedItem,
+            DragDropEffects.Move);
+        _draggedSelectedItem = null;
+    }
+
+    private void SelectedList_DragOver(object sender, DragEventArgs e)
+    {
+        e.Effects = e.Data.GetDataPresent(typeof(PromptItem))
+            ? DragDropEffects.Move
+            : DragDropEffects.None;
+        e.Handled = true;
+    }
+
+    private void SelectedList_Drop(object sender, DragEventArgs e)
+    {
+        if (e.Data.GetData(typeof(PromptItem)) is not PromptItem dragged)
+        {
+            return;
+        }
+
+        var fromIndex = _selectedItems.IndexOf(dragged);
+        var target = GetPromptFromElement(
+            SelectedList,
+            e.OriginalSource as DependencyObject);
+        var toIndex = target is null
+            ? _selectedItems.Count - 1
+            : _selectedItems.IndexOf(target);
+
+        if (fromIndex >= 0 &&
+            toIndex >= 0 &&
+            fromIndex != toIndex)
+        {
+            _selectedItems.Move(fromIndex, toIndex);
+            SelectedList.SelectedItem = dragged;
+            SelectedList.ScrollIntoView(dragged);
+        }
+
+        _draggedSelectedItem = null;
+        e.Handled = true;
     }
 
     private void MoveUp_Click(object sender, RoutedEventArgs e)
@@ -172,6 +246,16 @@ public partial class PromptPickerDialog : Window
     {
         SelectedTitle.Text = $"선택됨 ({_selectedItems.Count})";
         StatusText.Text = $"{CategoryLabel(_category)} {_selectedItems.Count}개 선택";
+    }
+
+    private static PromptItem? GetPromptFromElement(
+        ListBox list,
+        DependencyObject? element)
+    {
+        var container = element is null
+            ? null
+            : ItemsControl.ContainerFromElement(list, element) as ListBoxItem;
+        return container?.DataContext as PromptItem;
     }
 
     private static string CategoryLabel(PromptCategory category) => category switch
