@@ -77,7 +77,7 @@ Use this checklist on the exact WPF win-x64 artifact intended for the first rele
 
 - [x] Solution Restore succeeds.
 - [x] Release Build succeeds.
-- [x] All 13 automated tests pass.
+- [x] All 15 automated tests pass.
 - [x] Self-contained WPF win-x64 Publish succeeds.
 - [x] WPF routed mouse-wheel smoke succeeds.
 - [x] Published WPF startup smoke succeeds.
