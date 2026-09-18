@@ -43,6 +43,9 @@ The WPF migration was made after repeated WinUI mouse-wheel routing problems. Th
 
 - Prompt category and selection-mode models
 - Fixed / Random / Disabled rules
+- ordered multi-select in all three categories
+- unique random N-item selection per category
+- single-newline prompt composition
 - Character → Artist → Additional composition order
 - independent Positive and Negative composition
 - empty-section handling
@@ -50,7 +53,7 @@ The WPF migration was made after repeated WinUI mouse-wheel routing problems. Th
 
 ### Local persistence
 
-- SQLite schema version 1
+- SQLite schema version 2 with automatic v1 history migration
 - prompt CRUD
 - tag persistence and filtering
 - title/prompt search
@@ -97,7 +100,7 @@ The current WPF pipeline validates:
 
 1. Solution restore
 2. Release build
-3. 15 automated tests
+3. 19 automated tests
 4. self-contained win-x64 WPF publish
 5. WPF routed mouse-wheel smoke
 6. published EXE startup smoke
