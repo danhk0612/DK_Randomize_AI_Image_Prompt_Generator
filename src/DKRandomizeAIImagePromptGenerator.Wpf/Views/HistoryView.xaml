@@ -5,6 +5,20 @@
     <UserControl.Resources>
         <conv:ImagePathConverter x:Key="ImagePathConverter" />
 
+        <Style x:Key="HistoryCellTextStyle" TargetType="TextBlock">
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            <Setter Property="MaxHeight" Value="38" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+        </Style>
+
+        <Style x:Key="HistorySecondaryCellTextStyle"
+               TargetType="TextBlock"
+               BasedOn="{StaticResource HistoryCellTextStyle}">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        </Style>
+
         <DataTemplate x:Key="HistoryPromptPreviewTemplate">
             <Border Width="176"
                     Margin="0,0,10,10"
@@ -51,81 +65,80 @@
         <Border Grid.Row="1"
                 Margin="0,20,0,0"
                 Style="{StaticResource CardStyle}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="250" />
-                </Grid.RowDefinitions>
+            <Grid Height="288">
+                <DataGrid x:Name="HistoryListBox"
+                          ItemsSource="{Binding Items}"
+                          SelectionChanged="HistoryListBox_SelectionChanged"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"
+                          CanUserReorderColumns="False"
+                          CanUserSortColumns="False"
+                          CanUserResizeRows="False"
+                          HeadersVisibility="Column"
+                          RowHeaderWidth="0"
+                          SelectionMode="Single"
+                          SelectionUnit="FullRow"
+                          GridLinesVisibility="Horizontal"
+                          HorizontalGridLinesBrush="{DynamicResource BorderBrush}"
+                          Background="Transparent"
+                          BorderThickness="0"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          AutomationProperties.Name="최근 기록 목록">
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                            <Setter Property="Padding" Value="8,9" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+                            <Setter Property="BorderThickness" Value="0,0,0,1" />
+                        </Style>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="MinHeight" Value="58" />
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="BorderThickness" Value="0" />
+                        </Style>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="Padding" Value="8,8" />
+                            <Setter Property="VerticalContentAlignment" Value="Top" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                        </Style>
+                    </DataGrid.Resources>
 
-                <Grid Margin="6,0,6,8">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="135" />
-                        <ColumnDefinition Width="190" />
-                        <ColumnDefinition Width="190" />
-                        <ColumnDefinition Width="220" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Text="날짜" FontWeight="SemiBold" />
-                    <TextBlock Grid.Column="1" Text="캐릭터" FontWeight="SemiBold" />
-                    <TextBlock Grid.Column="2" Text="작가 / 스타일" FontWeight="SemiBold" />
-                    <TextBlock Grid.Column="3" Text="추가" FontWeight="SemiBold" />
-                    <TextBlock Grid.Column="4" Text="Positive 미리보기" FontWeight="SemiBold" />
-                </Grid>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="날짜"
+                                            Binding="{Binding CreatedAtLocalText}"
+                                            Width="135"
+                                            ElementStyle="{StaticResource HistorySecondaryCellTextStyle}" />
+                        <DataGridTextColumn Header="캐릭터"
+                                            Binding="{Binding CharacterTitleSummary}"
+                                            Width="190"
+                                            ElementStyle="{StaticResource HistoryCellTextStyle}" />
+                        <DataGridTextColumn Header="작가 / 스타일"
+                                            Binding="{Binding ArtistTitleSummary}"
+                                            Width="190"
+                                            ElementStyle="{StaticResource HistoryCellTextStyle}" />
+                        <DataGridTextColumn Header="추가"
+                                            Binding="{Binding AdditionalTitleSummary}"
+                                            Width="220"
+                                            ElementStyle="{StaticResource HistoryCellTextStyle}" />
+                        <DataGridTextColumn Header="Positive 미리보기"
+                                            Binding="{Binding PositiveText}"
+                                            Width="*"
+                                            MinWidth="320"
+                                            ElementStyle="{StaticResource HistorySecondaryCellTextStyle}" />
+                    </DataGrid.Columns>
+                </DataGrid>
 
-                <Grid Grid.Row="1">
-                    <ListBox x:Name="HistoryListBox"
-                             ItemsSource="{Binding Items}"
-                             SelectionChanged="HistoryListBox_SelectionChanged"
-                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                             ScrollViewer.VerticalScrollBarVisibility="Auto"
-                             AutomationProperties.Name="최근 기록 목록">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <Grid Margin="5,6" MinWidth="980">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="130" />
-                                        <ColumnDefinition Width="190" />
-                                        <ColumnDefinition Width="190" />
-                                        <ColumnDefinition Width="220" />
-                                        <ColumnDefinition Width="*" MinWidth="250" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <TextBlock Text="{Binding CreatedAtLocalText}"
-                                               VerticalAlignment="Top"
-                                               FontSize="12"
-                                               Foreground="{DynamicResource TextSecondaryBrush}" />
-                                    <TextBlock Grid.Column="1"
-                                               Text="{Binding CharacterTitleSummary}"
-                                               Margin="6,0,10,0"
-                                               TextWrapping="Wrap"
-                                               MaxHeight="38" />
-                                    <TextBlock Grid.Column="2"
-                                               Text="{Binding ArtistTitleSummary}"
-                                               Margin="6,0,10,0"
-                                               TextWrapping="Wrap"
-                                               MaxHeight="38" />
-                                    <TextBlock Grid.Column="3"
-                                               Text="{Binding AdditionalTitleSummary}"
-                                               Margin="6,0,10,0"
-                                               TextWrapping="Wrap"
-                                               MaxHeight="38" />
-                                    <TextBlock Grid.Column="4"
-                                               Text="{Binding PositiveText}"
-                                               Margin="6,0,0,0"
-                                               Foreground="{DynamicResource TextSecondaryBrush}"
-                                               TextWrapping="Wrap"
-                                               MaxHeight="38" />
-                                </Grid>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-
-                    <TextBlock x:Name="EmptyState"
-                               Text="저장된 기록이 없습니다."
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               FontWeight="SemiBold" />
-                </Grid>
+                <TextBlock x:Name="EmptyState"
+                           Text="저장된 기록이 없습니다."
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontWeight="SemiBold" />
             </Grid>
         </Border>
 
