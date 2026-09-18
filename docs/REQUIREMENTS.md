@@ -58,16 +58,23 @@ Each category has one selection mode:
 - Random: randomly choose an eligible item
 - Disabled: omit the category
 
-V1 uses at most one selected item from each category.
+V1 permits multiple selected items in every category.
 
-The internal model for Additional prompts must permit multiple items later, but V1 UI must remain single-item to keep the interaction simple.
+For each category:
+
+- Direct selection keeps an ordered list of manually selected prompts.
+- Random selection chooses a user-selected number of unique prompts.
+- Disabled omits the category.
+- Selection order is preserved and controls prompt composition order within that category.
 
 The user can:
 
-- Randomize one category independently
-- Randomize all Random-mode categories at once
-- Manually select an item
-- Keep Fixed selections unchanged while other categories are randomized
+- Add or remove multiple items in a category.
+- Reorder directly selected items.
+- Randomize one category independently.
+- Randomize all Random-mode categories at once.
+- Set the random item count per category.
+- Keep Direct selections unchanged while other categories are randomized.
 
 ## 6. Output composition
 
@@ -163,7 +170,5 @@ The following are deliberately excluded from V1:
 - Cloud synchronization
 - Account system
 - Multi-device synchronization
-- More than one Character or Artist item per combination
-- Multiple Additional prompt selection in the UI
 
 These may be considered only after the local prompt-management and mixing workflow is stable.
