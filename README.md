@@ -63,6 +63,12 @@ dotnet run `
   --property:Platform=x64
 ```
 
-GitHub Actions validates build, automated tests, WPF routed mouse-wheel behavior, self-contained publish, and published application startup.
+GitHub Actions validates build, automated tests, WPF routed mouse-wheel behavior, navigation/keyboard UI behavior, self-contained publish, and published application startup.
+
+For a local release-style verification and optional launch:
+
+```powershell
+.\scripts\verify-release.ps1 -Launch
+```
 
 Detailed requirements, architecture, UI direction, data model, task status, and current state are maintained under `docs/`.
