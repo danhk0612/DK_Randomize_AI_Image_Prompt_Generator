@@ -47,15 +47,16 @@ For each category, the user can:
 - Duplicate an item
 - Delete an item with confirmation
 - Change or remove the representative image
+- Add an existing saved prompt directly to the active Mixer selection
 
 Representative images are copied into application-managed local storage. The original source file must never be modified.
 
 ## 5. Mixer
 
-Each category has one selection mode:
+Each category has exactly one selection mode:
 
-- Fixed: use the selected item
-- Random: randomly choose an eligible item
+- Direct: use the ordered manually selected items
+- Random: choose the requested number of unique eligible items
 - Disabled: omit the category
 
 V1 permits multiple selected items in every category.
@@ -85,18 +86,17 @@ Two independent editable outputs are generated:
 
 Default positive composition order:
 
-1. Character positive prompt
-2. One blank line
-3. Artist positive prompt
-4. One blank line
-5. Additional positive prompt
+1. Character items in selection order
+2. Artist / Style items in selection order
+3. Additional items in selection order
 
-Negative composition follows the same category order.
+Negative composition follows the same category and selection order.
 
 Rules:
 
+- Every non-empty prompt fragment is joined with exactly one line break.
 - Empty prompt sections are skipped.
-- Empty sections must not create duplicate blank lines.
+- Empty sections must not create extra line breaks.
 - Stored prompt text is copied verbatim; the application must not insert commas, weights, syntax, or model-specific formatting.
 - The generated output text areas are editable.
 - Editing generated output must not modify stored prompt items.
@@ -109,16 +109,16 @@ The application stores recent combinations locally.
 
 Each history record contains:
 
-- Character prompt ID, if any
-- Artist prompt ID, if any
-- Additional prompt IDs
+- Ordered selected prompt IDs and title snapshots for every category
+- Selection mode for every category
+- Random-count setting for every category
 - Final positive text
 - Final negative text
 - Created date
 
-History must store the final edited text, not only the source prompt IDs, so a manually adjusted result can be restored exactly.
+History must store the final edited text, selection order, mode, and random-count state so a saved result can be restored exactly. If a source prompt is later deleted, the title snapshot and final output remain readable.
 
-The initial history limit is configurable later; V1 may use a sensible fixed limit.
+V1 displays history newest-first in a paged list with 20 records per page. Selecting a record shows the currently available representative thumbnails for its source prompts.
 
 ## 8. Theme and appearance
 
