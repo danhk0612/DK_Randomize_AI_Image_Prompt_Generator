@@ -73,6 +73,16 @@ Use this checklist on the exact WPF win-x64 artifact intended for the first rele
 - [ ] Confirm icon-only controls expose meaningful automation names.
 - [ ] Confirm navigation buttons remain understandable in compact mode via tooltip/accessibility name.
 
+## Local release verification
+
+- [x] `scripts/verify-release.ps1 -Launch` passes on the user's Windows environment.
+- [x] Local Release build succeeds.
+- [x] All 15 automated tests pass locally.
+- [x] Local self-contained `win-x64` Publish succeeds.
+- [x] Local WPF mouse-wheel routing smoke succeeds.
+- [x] Local WPF navigation/keyboard UI smoke succeeds.
+- [x] Locally published WPF executable launches.
+
 ## CI / release output
 
 - [x] Solution Restore succeeds.
