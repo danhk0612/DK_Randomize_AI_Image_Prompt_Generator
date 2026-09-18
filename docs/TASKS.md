@@ -71,7 +71,8 @@
 - [x] Restore responsive History/Settings layout
 - [x] Restore compact navigation layout
 - [x] WPF accessibility code pass
-- [ ] WPF keyboard/focus manual smoke pass
+- [x] WPF navigation/keyboard automated smoke pass
+- [ ] WPF keyboard/focus visual manual smoke pass
 - [ ] Final WPF real-data smoke pass
 - [ ] Prepare first release
 
