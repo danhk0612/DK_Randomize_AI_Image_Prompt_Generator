@@ -100,6 +100,34 @@ public partial class PromptLibraryView : UserControl
         await RefreshAsync();
     }
 
+    private async void SortComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_loaded ||
+            SortComboBox.SelectedItem is not ComboBoxItem item ||
+            item.Tag is not string tag ||
+            !Enum.TryParse<PromptLibrarySortOrder>(tag, out var sortOrder))
+        {
+            return;
+        }
+
+        ViewModel.SortOrder = sortOrder;
+        await RefreshAsync();
+    }
+
+    private async void TagFilter_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button ||
+            button.DataContext is not string tag)
+        {
+            return;
+        }
+
+        TagFilterBox.Text = tag;
+        ViewModel.TagFilter = tag;
+        await RefreshAsync();
+        e.Handled = true;
+    }
+
     private async void Category_Checked(object sender, RoutedEventArgs e)
     {
         if (!_loaded || sender is not RadioButton button || button.Tag is not string tag) return;
