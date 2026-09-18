@@ -79,7 +79,7 @@ public sealed class MixerViewModelTests
             viewModel.RandomizeAll();
 
             Assert.Equal(
-                string.Join(Environment.NewLine + Environment.NewLine,
+                string.Join(Environment.NewLine,
                     "character prompt",
                     "artist prompt",
                     "additional prompt"),
