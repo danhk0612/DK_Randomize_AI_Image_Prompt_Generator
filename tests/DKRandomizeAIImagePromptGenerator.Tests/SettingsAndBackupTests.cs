@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using DKRandomizeAIImagePromptGenerator.Data;
 using DKRandomizeAIImagePromptGenerator.Models;
 using DKRandomizeAIImagePromptGenerator.Services;
@@ -81,6 +82,45 @@ public sealed class SettingsAndBackupTests
             Assert.True(File.Exists(imagePath));
             Assert.Equal(new byte[] { 1, 2, 3, 4 }, await File.ReadAllBytesAsync(imagePath));
             Assert.Equal(AppTheme.Dark, restoredSettings.Current.Theme);
+        }
+        finally
+        {
+            DeleteTemporaryRoot(root);
+            if (File.Exists(backupPath))
+            {
+                File.Delete(backupPath);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task InvalidBackupDoesNotDeleteExistingImages()
+    {
+        var root = CreateTemporaryRoot();
+        var backupPath = Path.Combine(Path.GetTempPath(), $"dk-prompt-invalid-backup-{Guid.NewGuid():N}.zip");
+
+        try
+        {
+            var paths = AppDataPaths.Create(root);
+            paths.EnsureDirectories();
+
+            var existingImagePath = Path.Combine(paths.ImagesDirectory, "keep.png");
+            await File.WriteAllBytesAsync(existingImagePath, new byte[] { 9, 8, 7 });
+
+            using (var stream = new FileStream(backupPath, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (var archive = new ZipArchive(stream, ZipArchiveMode.Create))
+            {
+                var imageEntry = archive.CreateEntry("images/replacement.png");
+                await using var entryStream = imageEntry.Open();
+                await entryStream.WriteAsync(new byte[] { 1, 2, 3 });
+            }
+
+            var backup = new BackupService(paths);
+
+            await Assert.ThrowsAsync<InvalidDataException>(() => backup.RestoreAsync(backupPath));
+
+            Assert.True(File.Exists(existingImagePath));
+            Assert.Equal(new byte[] { 9, 8, 7 }, await File.ReadAllBytesAsync(existingImagePath));
         }
         finally
         {
