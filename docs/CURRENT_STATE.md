@@ -74,7 +74,10 @@ The WPF migration was made after repeated WinUI mouse-wheel routing problems. Th
 
 ### Mixer
 
-- Fixed / Random / Disabled for all categories
+- Direct / Random / Disabled radio modes for all categories
+- multi-select result lists with remove and ordering controls
+- per-category random count
+- integrated category search dialog across title/tags/memo/Positive/Negative
 - direct selection with thumbnail, title, memo, and tags
 - per-category randomize
 - randomize all
@@ -100,7 +103,7 @@ The current WPF pipeline validates:
 
 1. Solution restore
 2. Release build
-3. 19 automated tests
+3. 21 automated tests
 4. self-contained win-x64 WPF publish
 5. WPF routed mouse-wheel smoke
 6. published EXE startup smoke
