@@ -241,7 +241,7 @@
                                 <Button x:Name="DeleteButton"
                                         Content="삭제"
                                         Margin="8,0,0,0"
-                                        Foreground="{DynamicResource DangerBrush}"
+                                        Style="{StaticResource DangerButtonStyle}"
                                         Click="DeletePrompt_Click" />
                                 <Button x:Name="AddToMixerButton"
                                         Content="조합에 추가"
