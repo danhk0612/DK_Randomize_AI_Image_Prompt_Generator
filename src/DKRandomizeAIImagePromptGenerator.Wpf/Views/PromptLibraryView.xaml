@@ -30,7 +30,7 @@
                         <RowDefinition Height="92" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
-                        <RowDefinition Height="36" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <Border CornerRadius="7" Background="{DynamicResource SurfaceSecondaryBrush}">
@@ -41,6 +41,7 @@
                     <ItemsControl Grid.Row="3"
                                   ItemsSource="{Binding Tags}"
                                   Margin="0,5,0,0"
+                                  MaxHeight="42"
                                   ClipToBounds="True">
                         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
