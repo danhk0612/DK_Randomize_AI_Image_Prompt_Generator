@@ -10,6 +10,7 @@
         <SolidColorBrush x:Key="TextPrimaryBrush" Color="#1F2328" />
         <SolidColorBrush x:Key="TextSecondaryBrush" Color="#666D77" />
         <SolidColorBrush x:Key="AccentBrush" Color="#4F6BED" />
+        <SolidColorBrush x:Key="AccentFillBrush" Color="#4F6BED" />
         <SolidColorBrush x:Key="DangerBrush" Color="#C42B1C" />
         <SolidColorBrush x:Key="ButtonBackgroundBrush" Color="#F8F9FB" />
         <SolidColorBrush x:Key="ControlHoverBrush" Color="#F0F2F5" />
@@ -63,7 +64,7 @@
             <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontWeight" Value="Normal" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -107,9 +108,9 @@
             <Setter Property="Padding" Value="13,6" />
             <Setter Property="MinHeight" Value="34" />
             <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="Background" Value="{DynamicResource AccentFillBrush}" />
             <Setter Property="Foreground" Value="White" />
-            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentFillBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
