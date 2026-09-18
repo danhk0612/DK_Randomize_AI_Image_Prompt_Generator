@@ -114,7 +114,7 @@ public partial class PromptLibraryView : UserControl
         await RefreshAsync();
     }
 
-    private async void TagFilter_Click(object sender, RoutedEventArgs e)
+    private void TagFilter_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not Button button ||
             button.DataContext is not string tag)
@@ -123,8 +123,6 @@ public partial class PromptLibraryView : UserControl
         }
 
         TagFilterBox.Text = tag;
-        ViewModel.TagFilter = tag;
-        await RefreshAsync();
         e.Handled = true;
     }
 
