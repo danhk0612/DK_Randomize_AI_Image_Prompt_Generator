@@ -12,90 +12,109 @@ PositivePrompt  TEXT nullable
 NegativePrompt  TEXT nullable
 Memo            TEXT nullable
 ImagePath       TEXT nullable (relative application-owned path)
-CreatedAtUtc    TEXT/INTEGER required
-UpdatedAtUtc    TEXT/INTEGER required
+CreatedAtUtc    TEXT required
+UpdatedAtUtc    TEXT required
 ```
 
-Category values are application enums, not user-defined categories in V1.
+Category values are fixed application enums in V1: Character, Artist / Style, and Additional.
 
-## 2. Tag
-
-```text
-Id    GUID / TEXT primary key
-Name  TEXT required, unique using normalized comparison
-```
-
-## 3. PromptTag
-
-Many-to-many link table.
+## 2. Tags
 
 ```text
-PromptId  TEXT foreign key -> PromptItem.Id
-TagId     TEXT foreign key -> Tag.Id
+Tags
+- Id
+- Name
+- NormalizedName (unique)
+
+PromptTags
+- PromptId
+- TagId
 PRIMARY KEY (PromptId, TagId)
 ```
 
-## 4. CombinationHistory
+## 3. CombinationHistory
 
-Stores the result exactly as it existed when saved to history.
-
-```text
-Id                    GUID / TEXT primary key
-CharacterPromptId     TEXT nullable
-ArtistPromptId        TEXT nullable
-PositiveText          TEXT required
-NegativeText          TEXT required
-CreatedAtUtc          TEXT/INTEGER required
-```
-
-Additional source prompts are normalized into a separate relation so the model can expand to multiple Additional prompts later.
-
-## 5. CombinationHistoryAdditional
+The main history row stores the exact final edited output and timestamp.
 
 ```text
-HistoryId   TEXT foreign key -> CombinationHistory.Id
-PromptId    TEXT nullable
-SortOrder   INTEGER required
-TitleSnapshot TEXT nullable
-PRIMARY KEY (HistoryId, SortOrder)
+Id
+PositiveText
+NegativeText
+CreatedAtUtc
 ```
 
-A title snapshot is retained for meaningful history display even if the source prompt is later removed.
+Legacy schema-v1 Character/Artist snapshot columns remain for compatibility, but schema-v2 readers use the generic item relation below as the source of truth.
 
-For the same reason, implementations may retain title snapshots for Character and Artist in history when schema implementation begins. The final schema must preserve historical readability without requiring source rows to exist.
+## 4. CombinationHistoryItems — schema v2
 
-## 6. Selection state
-
-Current mixer state is application state rather than durable prompt content.
+Stores every selected source prompt in category and selection order.
 
 ```text
-CharacterMode      Fixed | Random | Disabled
-CharacterPromptId  nullable
-ArtistMode         Fixed | Random | Disabled
-ArtistPromptId     nullable
-AdditionalMode     Fixed | Random | Disabled
-AdditionalPromptIds collection (V1 count 0..1)
+HistoryId
+Category
+PromptId nullable
+SortOrder
+TitleSnapshot nullable
+PRIMARY KEY (HistoryId, Category, SortOrder)
 ```
 
-Whether mixer state persists across app restarts will be decided when Settings persistence is implemented; it must not be mixed into prompt records.
+`PromptId` uses `ON DELETE SET NULL`. `TitleSnapshot` remains so history stays readable if the source prompt is deleted.
 
-## 7. App settings
+## 5. CombinationHistoryCategoryState — schema v2
 
-Settings are small local preferences and may be stored outside SQLite.
+Stores the Mixer behavior that produced the saved result.
 
-Initial fields:
+```text
+HistoryId
+Category
+Mode        Direct(Fixed) | Random | Disabled
+RandomCount
+PRIMARY KEY (HistoryId, Category)
+```
+
+The saved selected items remain the exact result shown at save time even for Random mode. `RandomCount` is restored so the next reroll uses the same requested count.
+
+## 6. Legacy history compatibility
+
+Schema version 1 used:
+
+- `CombinationHistory.CharacterPromptId`
+- `CombinationHistory.ArtistPromptId`
+- `CombinationHistoryAdditional`
+
+The schema-v2 migration copies those rows into the generic item/state tables and then sets `PRAGMA user_version = 2`. The legacy tables are retained so older compatibility paths do not require destructive migration.
+
+## 7. Mixer session state
+
+Current Mixer state is application-session state rather than durable prompt content.
+
+```text
+Per category:
+- Mode
+- Ordered SelectedPromptIds[]
+- RandomCount
+
+Current editable:
+- Positive output
+- Negative output
+```
+
+One WPF MixerView instance is retained by the shell during the application session. Prompt Library create/update/delete/add operations synchronize with this session. Mixer session state is not currently persisted across application restarts.
+
+## 8. App settings
+
+Settings remain small local preferences stored outside SQLite.
 
 ```text
 Theme  System | Light | Dark
 ```
 
-Add fields only when a corresponding user-facing behavior exists.
+## 9. Database rules
 
-## 8. Database rules
-
-- Foreign keys enabled.
-- Prompt deletion must not delete history output text.
+- Foreign keys are enabled.
+- Current schema version is 2.
+- Migrations are forward-only and tested.
+- Prompt deletion must not delete saved history output or title snapshots.
 - Tag cleanup may remove orphan tags after prompt updates/deletion.
-- Schema version is explicit from version 1.
-- Migrations must be forward-only and tested once schema code is introduced.
-- User-entered prompt text is preserved exactly except for database encoding/storage requirements.
+- User-entered prompt text is preserved except for composition-time trimming of the fragment boundary.
+- Representative images remain application-owned files referenced by relative path.
