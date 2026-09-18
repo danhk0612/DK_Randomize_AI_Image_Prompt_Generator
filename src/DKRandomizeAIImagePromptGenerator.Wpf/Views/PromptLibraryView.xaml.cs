@@ -24,6 +24,7 @@ public partial class PromptLibraryView : UserControl
         DataContext = ViewModel;
         WheelScrollService.Enable(EditorScrollViewer);
         Loaded += PromptLibraryView_Loaded;
+        SizeChanged += PromptLibraryView_SizeChanged;
     }
 
     public PromptLibraryViewModel ViewModel { get; }
@@ -31,9 +32,59 @@ public partial class PromptLibraryView : UserControl
     private async void PromptLibraryView_Loaded(object sender, RoutedEventArgs e)
     {
         _loaded = true;
+        ApplyResponsiveLayout(ActualWidth);
         await RefreshAsync();
         SetGalleryMode(true);
     }
+
+    private void PromptLibraryView_SizeChanged(object sender, SizeChangedEventArgs e) =>
+        ApplyResponsiveLayout(e.NewSize.Width);
+
+    private void ApplyResponsiveLayout(double availableWidth)
+    {
+        if (availableWidth < 760)
+        {
+            FilterGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+            FilterGrid.ColumnDefinitions[1].Width = new GridLength(0);
+            FilterGrid.ColumnDefinitions[2].Width = new GridLength(0);
+
+            Grid.SetRow(SearchFilterPanel, 0);
+            Grid.SetColumn(SearchFilterPanel, 0);
+            Grid.SetColumnSpan(SearchFilterPanel, 3);
+
+            Grid.SetRow(TagFilterPanel, 1);
+            Grid.SetColumn(TagFilterPanel, 0);
+            Grid.SetColumnSpan(TagFilterPanel, 3);
+            TagFilterPanel.Margin = new Thickness(0, 10, 0, 0);
+
+            ListColumn.MinWidth = 240;
+        }
+        else
+        {
+            FilterGrid.ColumnDefinitions[0].Width = new GridLength(2, GridUnitType.Star);
+            FilterGrid.ColumnDefinitions[1].Width = new GridLength(12);
+            FilterGrid.ColumnDefinitions[2].Width = new GridLength(1, GridUnitType.Star);
+
+            Grid.SetRow(SearchFilterPanel, 0);
+            Grid.SetColumn(SearchFilterPanel, 0);
+            Grid.SetColumnSpan(SearchFilterPanel, 1);
+
+            Grid.SetRow(TagFilterPanel, 0);
+            Grid.SetColumn(TagFilterPanel, 2);
+            Grid.SetColumnSpan(TagFilterPanel, 1);
+            TagFilterPanel.Margin = new Thickness(0);
+
+            ListColumn.MinWidth = 340;
+        }
+
+        if (EditorPane.Visibility == Visibility.Visible)
+        {
+            EditorColumn.Width = new GridLength(GetEditorWidth(availableWidth));
+        }
+    }
+
+    private static double GetEditorWidth(double availableWidth) =>
+        availableWidth < 820 ? 320 : availableWidth < 1050 ? 350 : 380;
 
     private async void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
@@ -131,7 +182,7 @@ public partial class PromptLibraryView : UserControl
 
     private void OpenEditorAtTop()
     {
-        EditorColumn.Width = new GridLength(380);
+        EditorColumn.Width = new GridLength(GetEditorWidth(ActualWidth));
         EditorPane.Visibility = Visibility.Visible;
         EditorScrollViewer.ScrollToTop();
         Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(EditorScrollViewer.ScrollToTop));
