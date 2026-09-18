@@ -99,13 +99,31 @@
                         <Style TargetType="DataGridRow">
                             <Setter Property="MinHeight" Value="58" />
                             <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
                             <Setter Property="BorderThickness" Value="0" />
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background"
+                                            Value="{DynamicResource SelectionBackgroundBrush}" />
+                                    <Setter Property="Foreground"
+                                            Value="{DynamicResource TextPrimaryBrush}" />
+                                </Trigger>
+                            </Style.Triggers>
                         </Style>
                         <Style TargetType="DataGridCell">
                             <Setter Property="Padding" Value="8,8" />
                             <Setter Property="VerticalContentAlignment" Value="Top" />
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
                             <Setter Property="BorderThickness" Value="0" />
                             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="Transparent" />
+                                    <Setter Property="Foreground"
+                                            Value="{DynamicResource TextPrimaryBrush}" />
+                                </Trigger>
+                            </Style.Triggers>
                         </Style>
                     </DataGrid.Resources>
 
@@ -181,7 +199,7 @@
                         </StackPanel>
                         <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                             <Button Content="조합 화면으로 복원"
-                                    Style="{StaticResource AccentButtonStyle}"
+                                    Style="{StaticResource ActionButtonStyle}"
                                     Click="Restore_Click"
                                     AutomationProperties.Name="선택한 기록을 조합 화면으로 복원" />
                             <Button Content="삭제"
