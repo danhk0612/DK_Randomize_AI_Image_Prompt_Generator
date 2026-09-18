@@ -8,7 +8,10 @@
                        Foreground="{DynamicResource TextSecondaryBrush}"
                        TextWrapping="Wrap" />
 
-            <TextBlock x:Name="StatusText" Margin="0,14,0,0" Foreground="{DynamicResource TextSecondaryBrush}" />
+            <TextBlock x:Name="StatusText"
+                       Margin="0,14,0,0"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       TextWrapping="Wrap" />
 
             <Border Style="{StaticResource CardStyle}" Margin="0,18,0,0">
                 <Grid x:Name="ThemeGrid">
