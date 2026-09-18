@@ -62,7 +62,7 @@
         <Grid Grid.Row="1" Margin="0,16,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="92" />
+                <ColumnDefinition Width="104" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
@@ -76,6 +76,7 @@
                     <ListBox x:Name="SearchResultsList"
                              Grid.Row="1"
                              SelectionMode="Extended"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                              ItemTemplate="{StaticResource PromptResultTemplate}"
                              MouseDoubleClick="SearchResultsList_MouseDoubleClick"
                              AutomationProperties.Name="검색 결과" />
@@ -83,7 +84,9 @@
             </Border>
 
             <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
-                <Button Content="추가 →" Click="AddSelected_Click" />
+                <Button Content="추가 →"
+                        Style="{StaticResource ActionButtonStyle}"
+                        Click="AddSelected_Click" />
                 <Button Content="← 제거" Margin="0,8,0,0" Click="RemoveSelected_Click" />
             </StackPanel>
 
@@ -98,6 +101,7 @@
                     <ListBox x:Name="SelectedList"
                              Grid.Row="1"
                              SelectionMode="Extended"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                              AllowDrop="True"
                              ItemTemplate="{StaticResource PromptResultTemplate}"
                              MouseDoubleClick="SelectedList_MouseDoubleClick"
