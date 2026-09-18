@@ -118,16 +118,26 @@
             </Border>
         </Grid>
 
-        <DockPanel Grid.Row="2" Margin="0,16,0,0">
+        <Grid Grid.Row="2" Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
             <TextBlock x:Name="StatusText"
+                       Margin="0,0,16,0"
                        VerticalAlignment="Center"
-                       Foreground="{DynamicResource TextSecondaryBrush}" />
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       TextWrapping="Wrap" />
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right">
                 <Button Content="취소" Width="90" Click="Cancel_Click" />
-                <Button Content="적용" Width="90" Margin="8,0,0,0"
+                <Button Content="적용"
+                        Width="90"
+                        Margin="8,0,0,0"
                         Style="{StaticResource AccentButtonStyle}"
                         Click="Apply_Click" />
             </StackPanel>
-        </DockPanel>
+        </Grid>
     </Grid>
 </Window>
