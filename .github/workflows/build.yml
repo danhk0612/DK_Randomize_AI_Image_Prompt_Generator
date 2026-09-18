@@ -38,9 +38,9 @@ jobs:
         shell: pwsh
         run: |
           $exe = Join-Path $PWD "artifacts/win-x64/DKRandomizeAIImagePromptGenerator.exe"
-          & $exe --scroll-smoke
-          if ($LASTEXITCODE -ne 0) {
-            throw "WPF mouse wheel routing smoke test failed. Exit code: $LASTEXITCODE"
+          $process = Start-Process -FilePath $exe -ArgumentList "--scroll-smoke" -Wait -PassThru
+          if ($process.ExitCode -ne 0) {
+            throw "WPF mouse wheel routing smoke test failed. Exit code: $($process.ExitCode)"
           }
 
       - name: Smoke test published app startup
