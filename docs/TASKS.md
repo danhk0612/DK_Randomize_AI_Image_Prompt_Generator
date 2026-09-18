@@ -108,10 +108,10 @@
 - [x] Exact multi-selection/mode restore
 
 ### 7.5 Verification / release candidate
-- [ ] v1 database migration smoke
-- [ ] backup/restore regression
-- [ ] expanded WPF UI smoke
-- [ ] docs/release checklist refresh
+- [x] v1 database migration smoke
+- [x] backup/restore regression
+- [x] expanded WPF UI smoke
+- [x] docs/release checklist refresh
 - [ ] create new release candidate
 
 ## Deferred
