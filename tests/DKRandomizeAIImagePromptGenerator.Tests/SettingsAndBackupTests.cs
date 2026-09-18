@@ -44,6 +44,8 @@ public sealed class SettingsAndBackupTests
             await database.InitializeAsync();
 
             var prompts = new PromptRepository(database);
+            var historyRepository = new HistoryRepository(database);
+
             var prompt = new PromptItem
             {
                 Category = PromptCategory.Character,
@@ -53,7 +55,41 @@ public sealed class SettingsAndBackupTests
                 ImagePath = Path.Combine("images", "sample.png")
             };
             prompt.Tags.Add("backup");
+
+            var secondCharacter = new PromptItem
+            {
+                Category = PromptCategory.Character,
+                Title = "Backup Character Two",
+                PositivePrompt = "character two positive"
+            };
+
+            var additional = new PromptItem
+            {
+                Category = PromptCategory.Additional,
+                Title = "Backup Additional",
+                PositivePrompt = "additional positive"
+            };
+
             await prompts.CreateAsync(prompt);
+            await prompts.CreateAsync(secondCharacter);
+            await prompts.CreateAsync(additional);
+
+            var history = new CombinationHistory
+            {
+                CharacterMode = PromptSelectionMode.Fixed,
+                ArtistMode = PromptSelectionMode.Disabled,
+                AdditionalMode = PromptSelectionMode.Random,
+                AdditionalRandomCount = 2,
+                PositiveText = "edited backup positive",
+                NegativeText = "edited backup negative"
+            };
+            history.Items.AddRange(
+            [
+                new CombinationHistoryItem(PromptCategory.Character, secondCharacter.Id, secondCharacter.Title, 0),
+                new CombinationHistoryItem(PromptCategory.Character, prompt.Id, prompt.Title, 1),
+                new CombinationHistoryItem(PromptCategory.Additional, additional.Id, additional.Title, 0)
+            ]);
+            await historyRepository.SaveAsync(history);
 
             Directory.CreateDirectory(paths.ImagesDirectory);
             var imagePath = Path.Combine(paths.ImagesDirectory, "sample.png");
@@ -66,6 +102,9 @@ public sealed class SettingsAndBackupTests
             await backup.CreateAsync(backupPath);
 
             await prompts.DeleteAsync(prompt.Id);
+            await prompts.DeleteAsync(secondCharacter.Id);
+            await prompts.DeleteAsync(additional.Id);
+            await historyRepository.DeleteAsync(history.Id);
             File.Delete(imagePath);
             await settings.SetThemeAsync(AppTheme.Light);
 
@@ -76,12 +115,28 @@ public sealed class SettingsAndBackupTests
             var restoredSettings = new SettingsService(paths);
             await restoredSettings.LoadAsync();
 
+            var restoredHistory = await historyRepository.GetByIdAsync(history.Id);
+
             Assert.NotNull(restoredPrompt);
             Assert.Equal("Backup Character", restoredPrompt.Title);
             Assert.Contains("backup", restoredPrompt.Tags);
             Assert.True(File.Exists(imagePath));
             Assert.Equal(new byte[] { 1, 2, 3, 4 }, await File.ReadAllBytesAsync(imagePath));
             Assert.Equal(AppTheme.Dark, restoredSettings.Current.Theme);
+
+            Assert.NotNull(restoredHistory);
+            Assert.Equal(
+                new Guid?[] { secondCharacter.Id, prompt.Id },
+                restoredHistory.GetItems(PromptCategory.Character)
+                    .Select(item => item.PromptId)
+                    .ToArray());
+            Assert.Equal(additional.Id, restoredHistory.GetItems(PromptCategory.Additional).Single().PromptId);
+            Assert.Equal(PromptSelectionMode.Fixed, restoredHistory.CharacterMode);
+            Assert.Equal(PromptSelectionMode.Disabled, restoredHistory.ArtistMode);
+            Assert.Equal(PromptSelectionMode.Random, restoredHistory.AdditionalMode);
+            Assert.Equal(2, restoredHistory.AdditionalRandomCount);
+            Assert.Equal("edited backup positive", restoredHistory.PositiveText);
+            Assert.Equal("edited backup negative", restoredHistory.NegativeText);
         }
         finally
         {
