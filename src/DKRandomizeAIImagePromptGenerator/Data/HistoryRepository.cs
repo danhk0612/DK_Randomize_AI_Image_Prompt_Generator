@@ -20,6 +20,10 @@ public sealed class HistoryRepository
         await using var connection = await _database.OpenConnectionAsync(cancellationToken);
         using var transaction = connection.BeginTransaction();
 
+        var items = BuildEffectiveItems(history);
+        var character = items.FirstOrDefault(item => item.Category == PromptCategory.Character);
+        var artist = items.FirstOrDefault(item => item.Category == PromptCategory.Artist);
+
         await using (var command = connection.CreateCommand())
         {
             command.Transaction = transaction;
@@ -44,10 +48,10 @@ public sealed class HistoryRepository
                     @createdAt);
                 """;
             command.Parameters.AddWithValue("@id", history.Id.ToString("D"));
-            command.Parameters.AddWithValue("@characterPromptId", DbGuid(history.CharacterPromptId));
-            command.Parameters.AddWithValue("@characterTitle", DbValue(history.CharacterTitleSnapshot));
-            command.Parameters.AddWithValue("@artistPromptId", DbGuid(history.ArtistPromptId));
-            command.Parameters.AddWithValue("@artistTitle", DbValue(history.ArtistTitleSnapshot));
+            command.Parameters.AddWithValue("@characterPromptId", DbGuid(character?.PromptId));
+            command.Parameters.AddWithValue("@characterTitle", DbValue(character?.TitleSnapshot));
+            command.Parameters.AddWithValue("@artistPromptId", DbGuid(artist?.PromptId));
+            command.Parameters.AddWithValue("@artistTitle", DbValue(artist?.TitleSnapshot));
             command.Parameters.AddWithValue("@positive", history.PositiveText);
             command.Parameters.AddWithValue("@negative", history.NegativeText);
             command.Parameters.AddWithValue(
@@ -56,13 +60,11 @@ public sealed class HistoryRepository
             await command.ExecuteNonQueryAsync(cancellationToken);
         }
 
-        for (var index = 0; index < history.AdditionalItems.Count; index++)
+        foreach (var additional in items.Where(item => item.Category == PromptCategory.Additional))
         {
-            var additional = history.AdditionalItems[index];
-
-            await using var command = connection.CreateCommand();
-            command.Transaction = transaction;
-            command.CommandText = """
+            await using var legacyCommand = connection.CreateCommand();
+            legacyCommand.Transaction = transaction;
+            legacyCommand.CommandText = """
                 INSERT INTO CombinationHistoryAdditional (
                     HistoryId,
                     PromptId,
@@ -74,11 +76,60 @@ public sealed class HistoryRepository
                     @sortOrder,
                     @title);
                 """;
-            command.Parameters.AddWithValue("@historyId", history.Id.ToString("D"));
-            command.Parameters.AddWithValue("@promptId", DbGuid(additional.PromptId));
-            command.Parameters.AddWithValue("@sortOrder", index);
-            command.Parameters.AddWithValue("@title", DbValue(additional.TitleSnapshot));
-            await command.ExecuteNonQueryAsync(cancellationToken);
+            legacyCommand.Parameters.AddWithValue("@historyId", history.Id.ToString("D"));
+            legacyCommand.Parameters.AddWithValue("@promptId", DbGuid(additional.PromptId));
+            legacyCommand.Parameters.AddWithValue("@sortOrder", additional.SortOrder);
+            legacyCommand.Parameters.AddWithValue("@title", DbValue(additional.TitleSnapshot));
+            await legacyCommand.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        foreach (var item in items)
+        {
+            await using var itemCommand = connection.CreateCommand();
+            itemCommand.Transaction = transaction;
+            itemCommand.CommandText = """
+                INSERT INTO CombinationHistoryItems (
+                    HistoryId,
+                    Category,
+                    PromptId,
+                    SortOrder,
+                    TitleSnapshot)
+                VALUES (
+                    @historyId,
+                    @category,
+                    @promptId,
+                    @sortOrder,
+                    @title);
+                """;
+            itemCommand.Parameters.AddWithValue("@historyId", history.Id.ToString("D"));
+            itemCommand.Parameters.AddWithValue("@category", (int)item.Category);
+            itemCommand.Parameters.AddWithValue("@promptId", DbGuid(item.PromptId));
+            itemCommand.Parameters.AddWithValue("@sortOrder", item.SortOrder);
+            itemCommand.Parameters.AddWithValue("@title", DbValue(item.TitleSnapshot));
+            await itemCommand.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        foreach (var category in Enum.GetValues<PromptCategory>())
+        {
+            await using var stateCommand = connection.CreateCommand();
+            stateCommand.Transaction = transaction;
+            stateCommand.CommandText = """
+                INSERT INTO CombinationHistoryCategoryState (
+                    HistoryId,
+                    Category,
+                    Mode,
+                    RandomCount)
+                VALUES (
+                    @historyId,
+                    @category,
+                    @mode,
+                    @randomCount);
+                """;
+            stateCommand.Parameters.AddWithValue("@historyId", history.Id.ToString("D"));
+            stateCommand.Parameters.AddWithValue("@category", (int)category);
+            stateCommand.Parameters.AddWithValue("@mode", (int)history.GetMode(category));
+            stateCommand.Parameters.AddWithValue("@randomCount", Math.Max(1, history.GetRandomCount(category)));
+            await stateCommand.ExecuteNonQueryAsync(cancellationToken);
         }
 
         transaction.Commit();
@@ -96,9 +147,7 @@ public sealed class HistoryRepository
             return null;
         }
 
-        history.AdditionalItems.AddRange(
-            await ReadAdditionalAsync(connection, history.Id, cancellationToken));
-
+        await PopulateV2DetailsAsync(connection, history, cancellationToken);
         return history;
     }
 
@@ -139,8 +188,7 @@ public sealed class HistoryRepository
 
         foreach (var history in histories)
         {
-            history.AdditionalItems.AddRange(
-                await ReadAdditionalAsync(connection, history.Id, cancellationToken));
+            await PopulateV2DetailsAsync(connection, history, cancellationToken);
         }
 
         return histories;
@@ -204,30 +252,142 @@ public sealed class HistoryRepository
         };
     }
 
-    private static async Task<IReadOnlyList<CombinationHistoryAdditional>> ReadAdditionalAsync(
+    private static async Task PopulateV2DetailsAsync(
+        SqliteConnection connection,
+        CombinationHistory history,
+        CancellationToken cancellationToken)
+    {
+        history.Items.Clear();
+        history.Items.AddRange(await ReadItemsAsync(connection, history.Id, cancellationToken));
+
+        await ReadCategoryStateAsync(connection, history, cancellationToken);
+        ApplyLegacyCompatibility(history);
+    }
+
+    private static async Task<IReadOnlyList<CombinationHistoryItem>> ReadItemsAsync(
         SqliteConnection connection,
         Guid historyId,
         CancellationToken cancellationToken)
     {
         await using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT PromptId, TitleSnapshot
-            FROM CombinationHistoryAdditional
+            SELECT Category, PromptId, TitleSnapshot, SortOrder
+            FROM CombinationHistoryItems
             WHERE HistoryId = @historyId
-            ORDER BY SortOrder ASC;
+            ORDER BY Category ASC, SortOrder ASC;
             """;
         command.Parameters.AddWithValue("@historyId", historyId.ToString("D"));
 
-        var items = new List<CombinationHistoryAdditional>();
+        var items = new List<CombinationHistoryItem>();
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken))
         {
-            items.Add(new CombinationHistoryAdditional(
-                ReadNullableGuid(reader, 0),
-                reader.IsDBNull(1) ? null : reader.GetString(1)));
+            items.Add(new CombinationHistoryItem(
+                (PromptCategory)reader.GetInt32(0),
+                ReadNullableGuid(reader, 1),
+                reader.IsDBNull(2) ? null : reader.GetString(2),
+                reader.GetInt32(3)));
         }
 
         return items;
+    }
+
+    private static async Task ReadCategoryStateAsync(
+        SqliteConnection connection,
+        CombinationHistory history,
+        CancellationToken cancellationToken)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT Category, Mode, RandomCount
+            FROM CombinationHistoryCategoryState
+            WHERE HistoryId = @historyId;
+            """;
+        command.Parameters.AddWithValue("@historyId", history.Id.ToString("D"));
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            var category = (PromptCategory)reader.GetInt32(0);
+            var mode = (PromptSelectionMode)reader.GetInt32(1);
+            var randomCount = Math.Max(1, reader.GetInt32(2));
+
+            switch (category)
+            {
+                case PromptCategory.Character:
+                    history.CharacterMode = mode;
+                    history.CharacterRandomCount = randomCount;
+                    break;
+                case PromptCategory.Artist:
+                    history.ArtistMode = mode;
+                    history.ArtistRandomCount = randomCount;
+                    break;
+                case PromptCategory.Additional:
+                    history.AdditionalMode = mode;
+                    history.AdditionalRandomCount = randomCount;
+                    break;
+            }
+        }
+    }
+
+    private static IReadOnlyList<CombinationHistoryItem> BuildEffectiveItems(CombinationHistory history)
+    {
+        if (history.Items.Count > 0)
+        {
+            return Enum.GetValues<PromptCategory>()
+                .SelectMany(category => history.Items
+                    .Where(item => item.Category == category)
+                    .OrderBy(item => item.SortOrder)
+                    .Select((item, index) => item with { SortOrder = index }))
+                .ToArray();
+        }
+
+        var items = new List<CombinationHistoryItem>();
+
+        if (history.CharacterPromptId is not null || history.CharacterTitleSnapshot is not null)
+        {
+            items.Add(new CombinationHistoryItem(
+                PromptCategory.Character,
+                history.CharacterPromptId,
+                history.CharacterTitleSnapshot,
+                0));
+        }
+
+        if (history.ArtistPromptId is not null || history.ArtistTitleSnapshot is not null)
+        {
+            items.Add(new CombinationHistoryItem(
+                PromptCategory.Artist,
+                history.ArtistPromptId,
+                history.ArtistTitleSnapshot,
+                0));
+        }
+
+        items.AddRange(history.AdditionalItems.Select((item, index) =>
+            new CombinationHistoryItem(
+                PromptCategory.Additional,
+                item.PromptId,
+                item.TitleSnapshot,
+                index)));
+
+        return items;
+    }
+
+    private static void ApplyLegacyCompatibility(CombinationHistory history)
+    {
+        var character = history.GetItems(PromptCategory.Character).FirstOrDefault();
+        var artist = history.GetItems(PromptCategory.Artist).FirstOrDefault();
+
+        history.CharacterPromptId = character?.PromptId;
+        history.CharacterTitleSnapshot = character?.TitleSnapshot;
+        history.ArtistPromptId = artist?.PromptId;
+        history.ArtistTitleSnapshot = artist?.TitleSnapshot;
+
+        history.AdditionalItems.Clear();
+        history.AdditionalItems.AddRange(
+            history.GetItems(PromptCategory.Additional)
+                .Select(item => new CombinationHistoryAdditional(
+                    item.PromptId,
+                    item.TitleSnapshot)));
     }
 
     private static Guid? ReadNullableGuid(SqliteDataReader reader, int ordinal) =>
