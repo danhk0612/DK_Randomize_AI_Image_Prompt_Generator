@@ -46,9 +46,20 @@ jobs:
       - name: Smoke test published app startup
         shell: pwsh
         run: |
+          $appData = Join-Path $env:LOCALAPPDATA "DK Randomize AI Image Prompt Generator"
+          $log = Join-Path $appData "startup-crash.log"
+          if (Test-Path $log) { Remove-Item $log -Force }
+
           $exe = Join-Path $PWD "artifacts/win-x64/DKRandomizeAIImagePromptGenerator.exe"
           $process = Start-Process -FilePath $exe -PassThru
           Start-Sleep -Seconds 5
+
+          if (Test-Path $log) {
+            Write-Host "WPF startup crash log:"
+            Get-Content $log
+            if (-not $process.HasExited) { Stop-Process -Id $process.Id -Force }
+            throw "Published WPF application reported a startup crash."
+          }
 
           if ($process.HasExited) {
             throw "Published WPF application exited during startup smoke test. Exit code: $($process.ExitCode)"
