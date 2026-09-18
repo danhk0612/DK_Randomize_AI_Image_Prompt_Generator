@@ -4,6 +4,23 @@
              xmlns:conv="clr-namespace:DKRandomizeAIImagePromptGenerator.Wpf.Converters">
     <UserControl.Resources>
         <conv:ImagePathConverter x:Key="ImagePathConverter" />
+
+        <Style x:Key="TagFilterButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Padding" Value="5,2" />
+            <Setter Property="Margin" Value="0,0,4,2" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="Background" Value="{DynamicResource SurfaceSecondaryBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+
+        <Style x:Key="DetailPromptListItemStyle" TargetType="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+
         <DataTemplate x:Key="GalleryTemplate">
             <Border Width="238" Height="264" Margin="5" Style="{StaticResource CardStyle}">
                 <Grid>
@@ -21,7 +38,15 @@
                     <TextBlock Grid.Row="2" Text="{Binding PositivePrompt}" Margin="0,5,0,0" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="48" />
                     <ItemsControl Grid.Row="3" ItemsSource="{Binding Tags}" Margin="0,5,0,0">
                         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate><DataTemplate><Border Background="{DynamicResource SurfaceSecondaryBrush}" CornerRadius="7" Padding="5,2" Margin="0,0,4,2"><TextBlock Text="{Binding}" FontSize="10" /></Border></DataTemplate></ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Content="{Binding}"
+                                        Style="{StaticResource TagFilterButtonStyle}"
+                                        Focusable="False"
+                                        Click="TagFilter_Click"
+                                        ToolTip="이 태그로 필터링" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     <Button Grid.Row="4"
                             Content="조합에 추가"
@@ -98,6 +123,23 @@
                 <RadioButton Content="추가" Tag="Additional" Checked="Category_Checked" />
             </StackPanel>
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                <TextBlock Text="정렬"
+                           Margin="0,0,6,0"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource TextSecondaryBrush}" />
+                <ComboBox x:Name="SortComboBox"
+                          Width="150"
+                          Margin="0,0,10,0"
+                          SelectedIndex="0"
+                          SelectionChanged="SortComboBox_SelectionChanged"
+                          AutomationProperties.Name="프롬프트 정렬">
+                    <ComboBoxItem Content="최근 수정순" Tag="UpdatedNewest" />
+                    <ComboBoxItem Content="오래된 수정순" Tag="UpdatedOldest" />
+                    <ComboBoxItem Content="제목 오름차순" Tag="TitleAscending" />
+                    <ComboBoxItem Content="제목 내림차순" Tag="TitleDescending" />
+                    <ComboBoxItem Content="최근 생성순" Tag="CreatedNewest" />
+                    <ComboBoxItem Content="오래된 생성순" Tag="CreatedOldest" />
+                </ComboBox>
                 <Button x:Name="GalleryViewButton" Content="갤러리" Click="GalleryView_Click" />
                 <Button x:Name="ListViewButton" Content="목록" Margin="6,0,0,0" Click="ListView_Click" />
             </StackPanel>
@@ -114,7 +156,14 @@
                 <ListBox x:Name="GalleryListBox" ItemsSource="{Binding Items}" ItemTemplate="{StaticResource GalleryTemplate}" SelectionChanged="PromptList_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Disabled" AutomationProperties.Name="프롬프트 갤러리">
                     <ListBox.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ListBox.ItemsPanel>
                 </ListBox>
-                <ListBox x:Name="DetailListBox" ItemsSource="{Binding Items}" ItemTemplate="{StaticResource ListTemplate}" SelectionChanged="PromptList_SelectionChanged" Visibility="Collapsed" AutomationProperties.Name="프롬프트 목록" />
+                <ListBox x:Name="DetailListBox"
+                         ItemsSource="{Binding Items}"
+                         ItemTemplate="{StaticResource ListTemplate}"
+                         ItemContainerStyle="{StaticResource DetailPromptListItemStyle}"
+                         SelectionChanged="PromptList_SelectionChanged"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         Visibility="Collapsed"
+                         AutomationProperties.Name="프롬프트 목록" />
                 <StackPanel x:Name="EmptyState" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <TextBlock Text="등록된 프롬프트가 없습니다." FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" />
                     <TextBlock Text="새 프롬프트를 추가하면 이곳에 표시됩니다." Margin="0,6,0,0" Foreground="{DynamicResource TextSecondaryBrush}" />
