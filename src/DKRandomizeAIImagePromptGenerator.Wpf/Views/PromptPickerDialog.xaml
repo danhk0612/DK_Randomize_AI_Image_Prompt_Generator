@@ -98,7 +98,13 @@
                     <ListBox x:Name="SelectedList"
                              Grid.Row="1"
                              SelectionMode="Extended"
+                             AllowDrop="True"
                              ItemTemplate="{StaticResource PromptResultTemplate}"
+                             MouseDoubleClick="SelectedList_MouseDoubleClick"
+                             PreviewMouseLeftButtonDown="SelectedList_PreviewMouseLeftButtonDown"
+                             PreviewMouseMove="SelectedList_PreviewMouseMove"
+                             DragOver="SelectedList_DragOver"
+                             Drop="SelectedList_Drop"
                              AutomationProperties.Name="선택된 프롬프트" />
                     <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
                         <Button Content="위" Click="MoveUp_Click" />
