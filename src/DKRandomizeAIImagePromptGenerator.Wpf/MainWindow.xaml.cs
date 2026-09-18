@@ -85,10 +85,12 @@ public partial class MainWindow : Window
         foreach (var button in buttons)
         {
             button.Background = Brushes.Transparent;
+            button.SetResourceReference(Control.ForegroundProperty, "TextPrimaryBrush");
             button.FontWeight = FontWeights.Normal;
         }
 
-        selected.Background = (Brush)FindResource("SurfaceBrush");
+        selected.SetResourceReference(Control.BackgroundProperty, "SelectionBackgroundBrush");
+        selected.SetResourceReference(Control.ForegroundProperty, "AccentBrush");
         selected.FontWeight = FontWeights.SemiBold;
     }
 }
