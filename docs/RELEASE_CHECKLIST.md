@@ -80,6 +80,7 @@ Use this checklist on the exact WPF win-x64 artifact intended for the first rele
 - [x] All 15 automated tests pass.
 - [x] Self-contained WPF win-x64 Publish succeeds.
 - [x] WPF routed mouse-wheel smoke succeeds.
+- [x] WPF navigation/responsive-shell/keyboard-focus UI smoke succeeds.
 - [x] Published WPF startup smoke succeeds.
 - [x] Artifact upload succeeds.
 - [ ] Perform the final manual smoke test from the exact artifact intended for release.
