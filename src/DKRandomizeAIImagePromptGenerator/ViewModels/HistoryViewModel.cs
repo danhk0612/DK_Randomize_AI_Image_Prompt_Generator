@@ -63,4 +63,10 @@ public sealed class HistoryViewModel
         await _repository.DeleteAsync(history.Id);
         await RefreshAsync(CurrentPage);
     }
+
+    public async Task ClearAsync()
+    {
+        await _repository.ClearAsync();
+        await RefreshAsync(1);
+    }
 }
