@@ -10,8 +10,8 @@
                        Foreground="{DynamicResource TextSecondaryBrush}" />
         </StackPanel>
 
-        <Grid Grid.Row="1" Margin="0,20,0,0">
-            <Grid.ColumnDefinitions><ColumnDefinition Width="310" /><ColumnDefinition Width="16" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+        <Grid x:Name="HistoryContentGrid" Grid.Row="1" Margin="0,20,0,0">
+            <Grid.ColumnDefinitions><ColumnDefinition x:Name="HistoryListColumn" Width="310" /><ColumnDefinition x:Name="HistoryGapColumn" Width="16" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 
             <Border Style="{StaticResource CardStyle}">
                 <Grid>
