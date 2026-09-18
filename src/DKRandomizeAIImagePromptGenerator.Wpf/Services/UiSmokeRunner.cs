@@ -44,12 +44,51 @@ public static class UiSmokeRunner
             }
 
             await DrainUiAsync(window.Dispatcher);
-            if (mixer.CharacterPromptCombo.Items.Count == 0 ||
-                mixer.ArtistPromptCombo.Items.Count == 0 ||
-                mixer.AdditionalPromptCombo.Items.Count == 0)
+            if (mixer.ViewModel.CharacterItems.Count < 2 ||
+                mixer.ViewModel.ArtistItems.Count == 0 ||
+                mixer.ViewModel.AdditionalItems.Count == 0 ||
+                mixer.CharacterSelectedList.Items.Count == 0 ||
+                mixer.ArtistSelectedList.Items.Count == 0 ||
+                mixer.AdditionalSelectedList.Items.Count == 0)
             {
                 return false;
             }
+
+            if (mixer.CharacterRandomRadio.IsChecked != true ||
+                mixer.CharacterDirectControls.IsEnabled ||
+                !mixer.CharacterRandomControls.IsEnabled)
+            {
+                return false;
+            }
+
+            mixer.CharacterRandomCountCombo.SelectedItem = 2;
+            await DrainUiAsync(window.Dispatcher);
+            if (mixer.ViewModel.CharacterRandomCount != 2 ||
+                mixer.CharacterSelectedList.Items.Count != 2)
+            {
+                return false;
+            }
+
+            mixer.CharacterDirectRadio.IsChecked = true;
+            await DrainUiAsync(window.Dispatcher);
+            if (mixer.ViewModel.CharacterMode != PromptSelectionMode.Fixed ||
+                !mixer.CharacterDirectControls.IsEnabled ||
+                mixer.CharacterRandomControls.IsEnabled)
+            {
+                return false;
+            }
+
+            var pickerSmoke = new PromptPickerDialog(
+                PromptCategory.Character,
+                mixer.ViewModel.GetAvailableItems(PromptCategory.Character),
+                mixer.ViewModel.GetSelectedItems(PromptCategory.Character));
+            pickerSmoke.SearchBox.Text = "second";
+            if (pickerSmoke.SearchResultsList.Items.Count != 1)
+            {
+                pickerSmoke.Close();
+                return false;
+            }
+            pickerSmoke.Close();
 
             if (!VerifyNavigationAccessibility(window))
             {
@@ -143,6 +182,16 @@ public static class UiSmokeRunner
         };
         character.Tags.Add("smoke");
 
+        var characterSecond = new PromptItem
+        {
+            Category = PromptCategory.Character,
+            Title = "UI Smoke Character Second",
+            PositivePrompt = "character second positive",
+            NegativePrompt = "character second negative",
+            Memo = "second character memo"
+        };
+        characterSecond.Tags.Add("second");
+
         var artist = new PromptItem
         {
             Category = PromptCategory.Artist,
@@ -164,6 +213,7 @@ public static class UiSmokeRunner
         additional.Tags.Add("extra");
 
         await app.Prompts.CreateAsync(character);
+        await app.Prompts.CreateAsync(characterSecond);
         await app.Prompts.CreateAsync(artist);
         await app.Prompts.CreateAsync(additional);
 
