@@ -67,6 +67,8 @@ The WPF migration was made after repeated WinUI mouse-wheel routing problems. Th
 - gallery and list modes
 - search and tag filter
 - create / edit / duplicate / delete
+- add an existing prompt directly to the shared Mixer session
+- prompt create/update/delete changes synchronize with the active Mixer session
 - Positive / Negative / memo / tags
 - representative image import, preview, replace, remove, and orphan cleanup
 - editor opens at the top
@@ -85,6 +87,7 @@ The WPF migration was made after repeated WinUI mouse-wheel routing problems. Th
 - editable Positive / Negative results
 - independent copy
 - history save
+- Mixer state and manually edited output survive normal page navigation
 - responsive 3-column / 2-column / 1-column card layout
 
 ### History and settings
