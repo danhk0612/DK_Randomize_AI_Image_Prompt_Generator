@@ -71,7 +71,7 @@
                     Grid.Column="1"
                     Content="최근 기록 비우기"
                     VerticalAlignment="Top"
-                    Foreground="{DynamicResource DangerBrush}"
+                    Style="{StaticResource DangerButtonStyle}"
                     Click="ClearHistory_Click"
                     AutomationProperties.Name="최근 기록 전체 비우기" />
         </Grid>
