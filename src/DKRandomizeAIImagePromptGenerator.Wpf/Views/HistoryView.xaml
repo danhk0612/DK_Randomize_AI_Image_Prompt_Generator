@@ -224,7 +224,7 @@
                                     AutomationProperties.Name="선택한 기록을 조합 화면으로 복원" />
                             <Button Content="삭제"
                                     Margin="8,0,0,0"
-                                    Foreground="{DynamicResource DangerBrush}"
+                                    Style="{StaticResource DangerButtonStyle}"
                                     Click="Delete_Click"
                                     AutomationProperties.Name="선택한 최근 기록 삭제" />
                         </StackPanel>
