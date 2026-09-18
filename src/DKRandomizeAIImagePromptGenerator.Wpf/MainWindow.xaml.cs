@@ -1,15 +1,19 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using DKRandomizeAIImagePromptGenerator.Models;
 using DKRandomizeAIImagePromptGenerator.Wpf.Views;
 
 namespace DKRandomizeAIImagePromptGenerator.Wpf;
 
 public partial class MainWindow : Window
 {
+    private readonly MixerView _mixerView;
+
     public MainWindow()
     {
         InitializeComponent();
+        _mixerView = new MixerView();
         Loaded += MainWindow_Loaded;
         SizeChanged += MainWindow_SizeChanged;
         NavigateToMixer();
@@ -42,9 +46,18 @@ public partial class MainWindow : Window
 
     public void NavigateToMixer()
     {
-        PageHost.Content = new MixerView();
+        PageHost.Content = _mixerView;
         SelectNav(MixerNavButton);
     }
+
+    public bool AddPromptToMixer(PromptItem item) =>
+        _mixerView.AddPromptFromLibrary(item);
+
+    public void NotifyPromptChanged(PromptItem item) =>
+        _mixerView.NotifyPromptChanged(item);
+
+    public void NotifyPromptDeleted(PromptItem item) =>
+        _mixerView.NotifyPromptDeleted(item);
 
     private void MixerNavButton_Click(object sender, RoutedEventArgs e) => NavigateToMixer();
 
