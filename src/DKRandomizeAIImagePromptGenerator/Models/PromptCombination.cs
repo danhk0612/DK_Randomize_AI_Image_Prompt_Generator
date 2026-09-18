@@ -1,8 +1,13 @@
 namespace DKRandomizeAIImagePromptGenerator.Models;
 
 public sealed record PromptCombination(
-    PromptItem? Character,
-    PromptItem? Artist,
+    IReadOnlyList<PromptItem> CharacterItems,
+    IReadOnlyList<PromptItem> ArtistItems,
     IReadOnlyList<PromptItem> AdditionalItems,
     string PositiveText,
-    string NegativeText);
+    string NegativeText)
+{
+    public PromptItem? Character => CharacterItems.FirstOrDefault();
+
+    public PromptItem? Artist => ArtistItems.FirstOrDefault();
+}
