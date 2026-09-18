@@ -39,7 +39,7 @@
             <TextBlock Text="캐릭터, 작가, 추가 프롬프트를 고정하거나 랜덤으로 조합합니다."
                        Foreground="{DynamicResource TextSecondaryBrush}" />
 
-            <Grid Margin="0,22,0,0">
+            <Grid x:Name="CardsGrid" Margin="0,22,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="12" />
@@ -47,8 +47,13 @@
                     <ColumnDefinition Width="12" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-                <Border Grid.Column="0" Style="{StaticResource CardStyle}">
+                <Border x:Name="CharacterCard" Grid.Column="0" Style="{StaticResource CardStyle}">
                     <StackPanel>
                         <TextBlock Text="캐릭터" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,12" />
                         <Border Height="132" CornerRadius="8" Background="{DynamicResource SurfaceSecondaryBrush}">
@@ -72,7 +77,7 @@
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="2" Style="{StaticResource CardStyle}">
+                <Border x:Name="ArtistCard" Grid.Column="2" Style="{StaticResource CardStyle}">
                     <StackPanel>
                         <TextBlock Text="작가 / 스타일" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,12" />
                         <Border Height="132" CornerRadius="8" Background="{DynamicResource SurfaceSecondaryBrush}">
@@ -96,7 +101,7 @@
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="4" Style="{StaticResource CardStyle}">
+                <Border x:Name="AdditionalCard" Grid.Column="4" Style="{StaticResource CardStyle}">
                     <StackPanel>
                         <TextBlock Text="추가" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,12" />
                         <Border Height="132" CornerRadius="8" Background="{DynamicResource SurfaceSecondaryBrush}">
