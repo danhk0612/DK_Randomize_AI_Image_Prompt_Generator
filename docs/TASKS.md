@@ -80,13 +80,13 @@
 ## Milestone 7 — V1 multi-select mixer expansion
 
 ### 7.1 Core / database
-- [ ] Multi-select model for Character / Artist / Additional
-- [ ] Preserve selection order
-- [ ] Random count and unique random selection
-- [ ] Single-newline prompt composition
-- [ ] History schema v2 generic category items/state
-- [ ] v1 → v2 history migration
-- [ ] Core/persistence regression tests
+- [x] Multi-select model for Character / Artist / Additional
+- [x] Preserve selection order
+- [x] Random count and unique random selection
+- [x] Single-newline prompt composition
+- [x] History schema v2 generic category items/state
+- [x] v1 → v2 history migration
+- [x] Core/persistence regression tests
 
 ### 7.2 Mixer UI
 - [ ] Direct / Random / Disabled radio modes
