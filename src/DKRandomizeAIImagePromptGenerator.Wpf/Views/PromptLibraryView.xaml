@@ -17,7 +17,9 @@
             <Setter Property="BorderThickness" Value="0" />
         </Style>
 
-        <Style x:Key="DetailPromptListItemStyle" TargetType="ListBoxItem">
+        <Style x:Key="DetailPromptListItemStyle"
+               TargetType="ListBoxItem"
+               BasedOn="{StaticResource {x:Type ListBoxItem}}">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         </Style>
 
@@ -28,7 +30,7 @@
                         <RowDefinition Height="92" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="36" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <Border CornerRadius="7" Background="{DynamicResource SurfaceSecondaryBrush}">
@@ -36,7 +38,10 @@
                     </Border>
                     <TextBlock Grid.Row="1" Text="{Binding Title}" Margin="0,10,0,0" FontWeight="SemiBold" FontSize="15" TextTrimming="CharacterEllipsis" />
                     <TextBlock Grid.Row="2" Text="{Binding PositivePrompt}" Margin="0,5,0,0" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="48" />
-                    <ItemsControl Grid.Row="3" ItemsSource="{Binding Tags}" Margin="0,5,0,0">
+                    <ItemsControl Grid.Row="3"
+                                  ItemsSource="{Binding Tags}"
+                                  Margin="0,5,0,0"
+                                  ClipToBounds="True">
                         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -92,12 +97,18 @@
         </Grid.RowDefinitions>
 
         <Grid>
-            <StackPanel>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Margin="0,0,16,0">
                 <TextBlock Text="프롬프트" Style="{StaticResource PageTitleStyle}" />
-                <TextBlock Text="캐릭터, 작가, 추가 프롬프트를 저장하고 빠르게 찾습니다." Foreground="{DynamicResource TextSecondaryBrush}" />
+                <TextBlock Text="캐릭터, 작가, 추가 프롬프트를 저장하고 빠르게 찾습니다."
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           TextWrapping="Wrap" />
             </StackPanel>
-            <Button Content="새 프롬프트"
-                    HorizontalAlignment="Right"
+            <Button Grid.Column="1"
+                    Content="새 프롬프트"
                     VerticalAlignment="Top"
                     Style="{StaticResource ActionButtonStyle}"
                     Click="NewPrompt_Click" />
@@ -116,13 +127,19 @@
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Row="2" Margin="0,14,0,0">
-            <StackPanel Orientation="Horizontal">
+        <Grid x:Name="LibraryToolbarGrid" Grid.Row="2" Margin="0,14,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <StackPanel x:Name="CategoryPanel" Orientation="Horizontal">
                 <RadioButton x:Name="CharacterCategoryButton" Content="캐릭터" Tag="Character" IsChecked="True" Margin="0,0,18,0" Checked="Category_Checked" />
                 <RadioButton Content="작가 / 스타일" Tag="Artist" Margin="0,0,18,0" Checked="Category_Checked" />
                 <RadioButton Content="추가" Tag="Additional" Checked="Category_Checked" />
             </StackPanel>
-            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+            <StackPanel x:Name="ViewOptionsPanel"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal">
                 <TextBlock Text="정렬"
                            Margin="0,0,6,0"
                            VerticalAlignment="Center"
@@ -175,7 +192,12 @@
                     <StackPanel>
                         <Grid>
                             <TextBlock x:Name="EditorTitleText" Text="프롬프트 편집" Style="{StaticResource SectionTitleStyle}" />
-                            <Button Content="✕" HorizontalAlignment="Right" Padding="8,4" Click="CancelEdit_Click" AutomationProperties.Name="프롬프트 편집 닫기" ToolTip="편집 닫기" />
+                            <Button Content="✕"
+                                    HorizontalAlignment="Right"
+                                    Style="{StaticResource IconButtonStyle}"
+                                    Click="CancelEdit_Click"
+                                    AutomationProperties.Name="프롬프트 편집 닫기"
+                                    ToolTip="편집 닫기" />
                         </Grid>
 
                         <Border Height="170" Margin="0,14,0,0" CornerRadius="8" Background="{DynamicResource SurfaceSecondaryBrush}">
@@ -205,27 +227,28 @@
                         <TextBlock Text="메모" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,12,0,4" />
                         <TextBox x:Name="MemoBox" Height="88" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="메모" />
 
-                        <Grid Margin="0,14,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <Button x:Name="DuplicateButton" Content="복제" Click="DuplicatePrompt_Click" />
-                            <Button x:Name="DeleteButton" Grid.Column="1" Content="삭제" Margin="8,0,0,0" Click="DeletePrompt_Click" />
-                            <Button x:Name="AddToMixerButton"
-                                    Grid.Column="2"
-                                    Content="조합에 추가"
+                        <DockPanel Margin="0,14,0,0" LastChildFill="True">
+                            <Button Content="저장"
+                                    DockPanel.Dock="Right"
                                     Margin="8,0,0,0"
-                                    Click="AddToMixer_Click"
-                                    AutomationProperties.Name="현재 프롬프트를 조합에 추가" />
-                            <Button Grid.Column="4"
-                                    Content="저장"
                                     Style="{StaticResource ActionButtonStyle}"
                                     Click="SavePrompt_Click" />
-                        </Grid>
+                            <WrapPanel>
+                                <Button x:Name="DuplicateButton"
+                                        Content="복제"
+                                        Click="DuplicatePrompt_Click" />
+                                <Button x:Name="DeleteButton"
+                                        Content="삭제"
+                                        Margin="8,0,0,0"
+                                        Foreground="{DynamicResource DangerBrush}"
+                                        Click="DeletePrompt_Click" />
+                                <Button x:Name="AddToMixerButton"
+                                        Content="조합에 추가"
+                                        Margin="8,0,0,0"
+                                        Click="AddToMixer_Click"
+                                        AutomationProperties.Name="현재 프롬프트를 조합에 추가" />
+                            </WrapPanel>
+                        </DockPanel>
                     </StackPanel>
                 </ScrollViewer>
             </Border>
