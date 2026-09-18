@@ -102,10 +102,10 @@
 - [x] Switch target category to Direct mode when adding
 
 ### 7.4 History UI
-- [ ] Top full-width paged history list
-- [ ] Multi-selection summaries
-- [ ] Selected prompt thumbnails
-- [ ] Exact multi-selection/mode restore
+- [x] Top full-width paged history list
+- [x] Multi-selection summaries
+- [x] Selected prompt thumbnails
+- [x] Exact multi-selection/mode restore
 
 ### 7.5 Verification / release candidate
 - [ ] v1 database migration smoke
