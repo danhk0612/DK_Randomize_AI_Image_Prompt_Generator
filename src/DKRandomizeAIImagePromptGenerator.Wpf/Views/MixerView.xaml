@@ -66,13 +66,13 @@
                             <ItemsControl.ItemTemplate><DataTemplate><Border Background="{DynamicResource SurfaceSecondaryBrush}" CornerRadius="7" Padding="5,2" Margin="0,0,4,2"><TextBlock Text="{Binding}" FontSize="11" /></Border></DataTemplate></ItemsControl.ItemTemplate>
                         </ItemsControl>
                         <TextBlock Text="직접 선택" Margin="0,10,0,4" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" />
-                        <ComboBox x:Name="CharacterPromptCombo" ItemTemplate="{StaticResource PromptPickerTemplate}" MaxDropDownHeight="430" SelectionChanged="CharacterPromptCombo_SelectionChanged" />
+                        <ComboBox x:Name="CharacterPromptCombo" ItemTemplate="{StaticResource PromptPickerTemplate}" MaxDropDownHeight="430" SelectionChanged="CharacterPromptCombo_SelectionChanged" AutomationProperties.Name="캐릭터 프롬프트 직접 선택" />
                         <Grid Margin="0,10,0,0">
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                             <ComboBox x:Name="CharacterModeCombo" SelectionChanged="CharacterModeCombo_SelectionChanged">
                                 <ComboBoxItem Content="고정" /><ComboBoxItem Content="랜덤" /><ComboBoxItem Content="미사용" />
                             </ComboBox>
-                            <Button x:Name="CharacterRandomButton" Grid.Column="1" Content="다시" Margin="8,0,0,0" Click="CharacterRandom_Click" />
+                            <Button x:Name="CharacterRandomButton" Grid.Column="1" Content="다시" Margin="8,0,0,0" Click="CharacterRandom_Click" AutomationProperties.Name="캐릭터 다시 랜덤 선택" />
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -90,13 +90,13 @@
                             <ItemsControl.ItemTemplate><DataTemplate><Border Background="{DynamicResource SurfaceSecondaryBrush}" CornerRadius="7" Padding="5,2" Margin="0,0,4,2"><TextBlock Text="{Binding}" FontSize="11" /></Border></DataTemplate></ItemsControl.ItemTemplate>
                         </ItemsControl>
                         <TextBlock Text="직접 선택" Margin="0,10,0,4" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" />
-                        <ComboBox x:Name="ArtistPromptCombo" ItemTemplate="{StaticResource PromptPickerTemplate}" MaxDropDownHeight="430" SelectionChanged="ArtistPromptCombo_SelectionChanged" />
+                        <ComboBox x:Name="ArtistPromptCombo" ItemTemplate="{StaticResource PromptPickerTemplate}" MaxDropDownHeight="430" SelectionChanged="ArtistPromptCombo_SelectionChanged" AutomationProperties.Name="작가 스타일 프롬프트 직접 선택" />
                         <Grid Margin="0,10,0,0">
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                             <ComboBox x:Name="ArtistModeCombo" SelectionChanged="ArtistModeCombo_SelectionChanged">
                                 <ComboBoxItem Content="고정" /><ComboBoxItem Content="랜덤" /><ComboBoxItem Content="미사용" />
                             </ComboBox>
-                            <Button x:Name="ArtistRandomButton" Grid.Column="1" Content="다시" Margin="8,0,0,0" Click="ArtistRandom_Click" />
+                            <Button x:Name="ArtistRandomButton" Grid.Column="1" Content="다시" Margin="8,0,0,0" Click="ArtistRandom_Click" AutomationProperties.Name="작가 스타일 다시 랜덤 선택" />
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -114,13 +114,13 @@
                             <ItemsControl.ItemTemplate><DataTemplate><Border Background="{DynamicResource SurfaceSecondaryBrush}" CornerRadius="7" Padding="5,2" Margin="0,0,4,2"><TextBlock Text="{Binding}" FontSize="11" /></Border></DataTemplate></ItemsControl.ItemTemplate>
                         </ItemsControl>
                         <TextBlock Text="직접 선택" Margin="0,10,0,4" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" />
-                        <ComboBox x:Name="AdditionalPromptCombo" ItemTemplate="{StaticResource PromptPickerTemplate}" MaxDropDownHeight="430" SelectionChanged="AdditionalPromptCombo_SelectionChanged" />
+                        <ComboBox x:Name="AdditionalPromptCombo" ItemTemplate="{StaticResource PromptPickerTemplate}" MaxDropDownHeight="430" SelectionChanged="AdditionalPromptCombo_SelectionChanged" AutomationProperties.Name="추가 프롬프트 직접 선택" />
                         <Grid Margin="0,10,0,0">
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                             <ComboBox x:Name="AdditionalModeCombo" SelectionChanged="AdditionalModeCombo_SelectionChanged">
                                 <ComboBoxItem Content="고정" /><ComboBoxItem Content="랜덤" /><ComboBoxItem Content="미사용" />
                             </ComboBox>
-                            <Button x:Name="AdditionalRandomButton" Grid.Column="1" Content="다시" Margin="8,0,0,0" Click="AdditionalRandom_Click" />
+                            <Button x:Name="AdditionalRandomButton" Grid.Column="1" Content="다시" Margin="8,0,0,0" Click="AdditionalRandom_Click" AutomationProperties.Name="추가 프롬프트 다시 랜덤 선택" />
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -132,14 +132,14 @@
                 <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
                 <Grid>
                     <TextBlock Text="Positive" Style="{StaticResource SectionTitleStyle}" />
-                    <Button Content="복사" HorizontalAlignment="Right" Click="CopyPositive_Click" />
+                    <Button Content="복사" HorizontalAlignment="Right" Click="CopyPositive_Click" AutomationProperties.Name="Positive 프롬프트 복사" />
                 </Grid>
-                <TextBox x:Name="PositiveOutput" Grid.Row="1" Margin="0,8,0,0" Height="190" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" />
+                <TextBox x:Name="PositiveOutput" Grid.Row="1" Margin="0,8,0,0" Height="190" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="Positive 결과" />
                 <Grid Grid.Row="2" Margin="0,20,0,0">
                     <TextBlock Text="Negative" Style="{StaticResource SectionTitleStyle}" />
-                    <Button Content="복사" HorizontalAlignment="Right" Click="CopyNegative_Click" />
+                    <Button Content="복사" HorizontalAlignment="Right" Click="CopyNegative_Click" AutomationProperties.Name="Negative 프롬프트 복사" />
                 </Grid>
-                <TextBox x:Name="NegativeOutput" Grid.Row="3" Margin="0,8,0,0" Height="150" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" />
+                <TextBox x:Name="NegativeOutput" Grid.Row="3" Margin="0,8,0,0" Height="150" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="Negative 결과" />
             </Grid>
 
             <DockPanel Margin="0,16,0,0">
