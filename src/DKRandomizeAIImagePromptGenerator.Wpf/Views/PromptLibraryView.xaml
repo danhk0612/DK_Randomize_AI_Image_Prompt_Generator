@@ -137,10 +137,22 @@
                         <TextBox x:Name="MemoBox" Height="88" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="메모" />
 
                         <Grid Margin="0,14,0,0">
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
                             <Button x:Name="DuplicateButton" Content="복제" Click="DuplicatePrompt_Click" />
                             <Button x:Name="DeleteButton" Grid.Column="1" Content="삭제" Margin="8,0,0,0" Click="DeletePrompt_Click" />
-                            <Button Grid.Column="3" Content="저장" Style="{StaticResource AccentButtonStyle}" Click="SavePrompt_Click" />
+                            <Button x:Name="AddToMixerButton"
+                                    Grid.Column="2"
+                                    Content="조합에 추가"
+                                    Margin="8,0,0,0"
+                                    Click="AddToMixer_Click"
+                                    AutomationProperties.Name="현재 프롬프트를 조합에 추가" />
+                            <Button Grid.Column="4" Content="저장" Style="{StaticResource AccentButtonStyle}" Click="SavePrompt_Click" />
                         </Grid>
                     </StackPanel>
                 </ScrollViewer>
