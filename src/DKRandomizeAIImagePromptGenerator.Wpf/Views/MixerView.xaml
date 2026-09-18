@@ -5,7 +5,9 @@
     <UserControl.Resources>
         <conv:ImagePathConverter x:Key="ImagePathConverter" />
 
-        <Style x:Key="SelectedPromptListItemStyle" TargetType="ListBoxItem">
+        <Style x:Key="SelectedPromptListItemStyle"
+               TargetType="ListBoxItem"
+               BasedOn="{StaticResource {x:Type ListBoxItem}}">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         </Style>
 
