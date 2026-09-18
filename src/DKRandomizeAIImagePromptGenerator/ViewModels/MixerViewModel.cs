@@ -193,6 +193,12 @@ public sealed class MixerViewModel
             CharacterTitleSnapshot = SelectedCharacter?.Title,
             ArtistPromptId = SelectedArtist?.Id,
             ArtistTitleSnapshot = SelectedArtist?.Title,
+            CharacterMode = CharacterMode,
+            ArtistMode = ArtistMode,
+            AdditionalMode = AdditionalMode,
+            CharacterRandomCount = 1,
+            ArtistRandomCount = 1,
+            AdditionalRandomCount = 1,
             PositiveText = positiveText,
             NegativeText = negativeText
         };
