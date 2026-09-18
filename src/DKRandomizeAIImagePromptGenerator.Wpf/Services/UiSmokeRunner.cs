@@ -179,7 +179,36 @@ public static class UiSmokeRunner
             window.HistoryNavButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             await DrainUiAsync(window.Dispatcher);
             if (window.PageHost.Content is not HistoryView history ||
-                history.HistoryListBox.Items.Count == 0)
+                history.HistoryListBox.Items.Count != 20 ||
+                history.ViewModel.TotalCount != 21 ||
+                history.ViewModel.TotalPages != 2 ||
+                !history.NextPageButton.IsEnabled)
+            {
+                return false;
+            }
+
+            history.HistoryListBox.SelectedIndex = 0;
+            await DrainUiAsync(window.Dispatcher);
+            if (history.DetailPane.Visibility != Visibility.Visible ||
+                history.PreviewItems.Count != 3)
+            {
+                return false;
+            }
+
+            history.NextPageButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            await DrainUiAsync(window.Dispatcher);
+            if (history.ViewModel.CurrentPage != 2 ||
+                history.HistoryListBox.Items.Count != 1 ||
+                !history.PreviousPageButton.IsEnabled ||
+                history.NextPageButton.IsEnabled)
+            {
+                return false;
+            }
+
+            history.PreviousPageButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            await DrainUiAsync(window.Dispatcher);
+            if (history.ViewModel.CurrentPage != 1 ||
+                history.HistoryListBox.Items.Count != 20)
             {
                 return false;
             }
@@ -281,14 +310,30 @@ public static class UiSmokeRunner
         await app.Prompts.CreateAsync(artist);
         await app.Prompts.CreateAsync(additional);
 
+        var baseTime = DateTimeOffset.UtcNow.AddHours(-1);
+        for (var index = 0; index < 20; index++)
+        {
+            await app.History.SaveAsync(new CombinationHistory
+            {
+                PositiveText = $"paged positive {index}",
+                NegativeText = $"paged negative {index}",
+                CreatedAt = baseTime.AddMinutes(index)
+            });
+        }
+
         var history = new CombinationHistory
         {
             CharacterPromptId = character.Id,
             CharacterTitleSnapshot = character.Title,
             ArtistPromptId = artist.Id,
             ArtistTitleSnapshot = artist.Title,
+            CharacterMode = PromptSelectionMode.Fixed,
+            ArtistMode = PromptSelectionMode.Random,
+            AdditionalMode = PromptSelectionMode.Fixed,
+            ArtistRandomCount = 1,
             PositiveText = "smoke positive",
-            NegativeText = "smoke negative"
+            NegativeText = "smoke negative",
+            CreatedAt = DateTimeOffset.UtcNow
         };
         history.AdditionalItems.Add(new CombinationHistoryAdditional(additional.Id, additional.Title));
         await app.History.SaveAsync(history);
