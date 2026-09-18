@@ -27,9 +27,9 @@ At narrow window widths the pane becomes icon-only while keeping tooltips and au
 
 ## 3. Mixer
 
-Mixer is the default landing view.
+Mixer is the default landing view and remains alive as a shared session while the user navigates to other pages.
 
-### Selection cards
+### Category cards
 
 Three cards appear in this order:
 
@@ -37,19 +37,33 @@ Three cards appear in this order:
 2. Artist / Style
 3. Additional
 
-Each card shows:
+Every card uses one radio mode:
 
-- representative image or placeholder
-- title
-- memo
-- tags
-- direct selection ComboBox
-- Fixed / Random / Disabled mode
-- per-category randomize action
+- Direct
+- Random
+- Disabled
 
-Direct-selection dropdown items show thumbnail, title, memo, and tags.
+The card contains an ordered multi-selection list. Each selected/result row shows representative image, title, memo, and tags.
 
-A single **Randomize all** action refreshes categories currently in Random mode while preserving Fixed selections.
+In Direct mode:
+
+- **Search to select** opens a category-scoped picker.
+- The picker searches title, tags, memo, Positive, and Negative together.
+- Multiple prompts can be added before Apply.
+- Selected prompts can be removed and moved up/down.
+- Adding an existing Prompt Library item to Mixer also switches that category to Direct mode.
+- Duplicate add requests are ignored.
+
+In Random mode:
+
+- manual selection controls are disabled
+- Random count can be chosen from 1 up to the available item count
+- reroll chooses unique prompts
+- the current random result remains visible in the ordered list
+
+In Disabled mode both manual and random controls are disabled and the category contributes no prompt text.
+
+A single **Randomize all** action refreshes Random categories while preserving Direct selections.
 
 Responsive behavior:
 
@@ -64,7 +78,9 @@ Positive and Negative each contain:
 - multiline editable TextBox
 - independent Copy action
 
-The final edited text can be saved to History.
+Prompt fragments are composed Character → Artist / Style → Additional, preserving item order inside each category. Non-empty fragments are joined by one line break, not a blank line.
+
+The final manually edited text can be saved to History. Normal page navigation does not overwrite the current Mixer selection or manual edits.
 
 ## 4. Prompt Library
 
@@ -80,31 +96,19 @@ Search and tag filter stack vertically on narrow layouts.
 
 ### Gallery mode
 
-Cards show:
-
-- representative image
-- title
-- Positive prompt preview
-- tags
-
-Selecting a card opens the editor pane.
+Cards show representative image, title, Positive preview, and tags.
 
 ### List mode
 
-Rows show:
+Rows show thumbnail, title, Positive preview, and Negative preview.
 
-- thumbnail
-- title
-- Positive preview
-- Negative preview
-
-Selecting a row opens the same editor pane.
+Selecting a card/row opens the same editor pane.
 
 ## 5. Prompt editor
 
 The editor is an in-app side pane.
 
-Fields:
+Fields/actions:
 
 - representative image preview
 - Select image / Remove image
@@ -113,8 +117,13 @@ Fields:
 - Negative Prompt
 - tags
 - memo
-- Duplicate / Delete / Save
-- close button
+- Duplicate
+- Delete
+- Add to Mixer
+- Save
+- close
+
+**Add to Mixer** immediately adds the stored item to its category in the shared Mixer session. An already-selected item is ignored.
 
 The editor always opens scrolled to the top.
 
@@ -122,18 +131,27 @@ The editor always opens scrolled to the top.
 
 History is newest-first.
 
-The list provides a compact snapshot. Selecting an entry shows:
+The upper area is a full-width list with 20 records per page. Each row shows:
 
-- timestamp
-- Character title
-- Artist / Style title
-- Additional title(s)
+- local timestamp
+- Character selection summary
+- Artist / Style selection summary
+- Additional selection summary
+- Positive preview
+
+Previous/Next controls navigate pages.
+
+Selecting a record opens the detail area below. Detail shows:
+
+- selection mode and saved/random count for each category
+- ordered title summaries
+- current representative thumbnails for source prompts that still exist
 - final Positive text
 - final Negative text
 - Restore to Mixer
 - Delete
 
-History remains useful even after source prompts are renamed or deleted because final output and title snapshots are stored.
+Restore reproduces selection order, category modes, random counts, and exact final edited text. Deleted source prompts keep title snapshots and final output even when their current thumbnail is no longer available.
 
 ## 7. Settings
 
