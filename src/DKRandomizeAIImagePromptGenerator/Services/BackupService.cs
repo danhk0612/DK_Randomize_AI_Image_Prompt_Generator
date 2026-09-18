@@ -46,12 +46,16 @@ public sealed class BackupService
         using var stream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Read);
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
 
-        var databaseEntry = archive.GetEntry("data/prompts.db");
-        if (databaseEntry is not null)
+        var databaseEntry = archive.GetEntry("data/prompts.db")
+            ?? throw new InvalidDataException("올바른 DK Prompt Generator 백업이 아닙니다: data/prompts.db가 없습니다.");
+
+        if (databaseEntry.Length == 0)
         {
-            Directory.CreateDirectory(_paths.DataDirectory);
-            databaseEntry.ExtractToFile(_paths.DatabasePath, overwrite: true);
+            throw new InvalidDataException("백업의 데이터베이스 파일이 비어 있습니다.");
         }
+
+        Directory.CreateDirectory(_paths.DataDirectory);
+        databaseEntry.ExtractToFile(_paths.DatabasePath, overwrite: true);
 
         var settingsEntry = archive.GetEntry("settings.json");
         if (settingsEntry is not null)
