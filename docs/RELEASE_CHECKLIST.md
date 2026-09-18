@@ -1,6 +1,8 @@
 # First Release Validation Checklist
 
-Use this checklist on the exact WPF win-x64 artifact intended for the first release.
+Use this checklist on the exact expanded WPF win-x64 release-candidate artifact intended for the first release.
+
+The earlier single-selection RC is obsolete after the V1 multi-select expansion.
 
 ## Launch and shell
 
@@ -10,87 +12,103 @@ Use this checklist on the exact WPF win-x64 artifact intended for the first rele
 - [ ] Confirm Mixer, Prompt Library, History, and Settings navigation.
 - [ ] Resize from wide to the minimum supported width.
 - [ ] Confirm compact navigation appears on narrow windows.
-- [ ] Confirm no horizontal page scrolling is introduced unexpectedly.
+- [ ] Confirm Mixer state and manually edited output survive page navigation.
 
 ## Mouse wheel / scrolling
 
-- [x] CI routed-wheel smoke passes with a TextBox as the wheel target.
-- [ ] Mixer outer page scrolls with the pointer over normal content and editable TextBoxes.
-- [ ] Prompt editor scrolls with the pointer over title/Positive/Negative/tags/memo controls.
+- [x] CI routed-wheel smoke targets a nested TextBox.
+- [ ] Mixer outer page scrolls while the pointer is over normal content and editable TextBoxes.
+- [ ] Prompt editor scrolls over title/Positive/Negative/tags/memo controls.
 - [ ] History detail and Settings scroll normally.
-- [ ] Prompt gallery/list scroll normally.
+- [ ] Prompt gallery/list and Mixer selected-item lists scroll normally.
 
 ## Prompt Library
 
 - [ ] Create Character, Artist / Style, and Additional prompts.
-- [ ] Add Positive, Negative, tags, and memo and confirm persistence after restart.
-- [ ] Add a representative image and confirm the original source is unchanged.
-- [ ] Replace and remove a representative image.
+- [ ] Save Positive, Negative, tags, and memo and confirm persistence after restart.
+- [ ] Add, replace, and remove a representative image; confirm the source file is unchanged.
 - [ ] Verify gallery/list switching.
 - [ ] Verify title/prompt search and tag filtering.
 - [ ] Duplicate, edit, and delete an item.
 - [ ] Confirm the editor always opens at the top.
 - [ ] Confirm search/tag filters stack correctly on a narrow window.
+- [ ] Click **Add to Mixer** and confirm the item is appended to the correct category.
+- [ ] Confirm Add to Mixer switches that category to Direct mode.
+- [ ] Click Add to Mixer again and confirm no duplicate is created.
+- [ ] Edit/delete an item already present in Mixer and confirm the active Mixer session stays synchronized.
 
-## Mixer
+## Mixer — modes and multi-select
 
-- [ ] Verify Fixed mode uses the selected item.
-- [ ] Verify Random mode chooses only from the matching category.
-- [ ] Verify Disabled omits the category.
-- [ ] Verify direct-selection items show thumbnail, title, memo, and tags.
-- [ ] Randomize one category and confirm other current selections remain unchanged.
-- [ ] Randomize all.
-- [ ] Verify Positive order: Character → Artist → Additional.
-- [ ] Verify Negative order: Character → Artist → Additional.
-- [ ] Verify empty sections do not create repeated blank lines.
+- [ ] Confirm Direct / Random / Disabled are mutually exclusive radio modes.
+- [ ] Confirm Direct enables search/remove/up/down controls.
+- [ ] Confirm Random disables manual selection controls and enables random-count/reroll controls.
+- [ ] Confirm Disabled disables both manual and random controls and omits the category.
+- [ ] Select at least 2 prompts in each category.
+- [ ] Reorder Direct items and confirm output order changes accordingly.
+- [ ] Remove an item and confirm output is recomposed.
+- [ ] Search the category picker by title, tag, memo, Positive text, and Negative text.
+- [ ] Add several search results, cancel once, then apply once; confirm cancel/apply semantics.
+- [ ] Set Random count to 2+ and confirm results are unique within that category.
+- [ ] Request more random items than available and confirm it safely uses all available candidates.
+- [ ] Reroll one Random category and confirm other categories remain unchanged.
+- [ ] Randomize all and confirm Direct selections remain unchanged.
+- [ ] Confirm Positive order is Character items → Artist / Style items → Additional items.
+- [ ] Confirm Negative follows the same order.
+- [ ] Confirm non-empty fragments are separated by exactly one line break, with no blank line between categories.
 - [ ] Edit generated text and confirm stored prompts are unchanged.
 - [ ] Copy Positive and Negative independently.
 - [ ] Confirm cards reflow 3-column → 2-column → 1-column as the window narrows.
 
 ## History
 
-- [ ] Save a mixer result after manually editing output.
-- [ ] Confirm final edited Positive / Negative text in History.
-- [ ] Restore to Mixer and confirm final text is restored exactly.
-- [ ] Confirm the next Randomize All works immediately after restore.
-- [ ] Delete a source prompt and confirm saved history text remains available.
-- [ ] Delete a history record.
+- [ ] Save a result containing multiple selected prompts after manually editing output.
+- [ ] Confirm the upper full-width list is newest-first.
+- [ ] With more than 20 records, confirm Previous/Next paging and 20-record page size.
+- [ ] Confirm Character / Artist / Additional summaries include multiple titles.
+- [ ] Select a record and confirm source-prompt thumbnails appear when source prompts still exist.
+- [ ] Confirm final edited Positive / Negative text is exact.
+- [ ] Restore to Mixer and confirm item order, modes, random counts, and final text are restored exactly.
+- [ ] Reroll a restored Random category and confirm its saved random count is used.
+- [ ] Delete a source prompt and confirm saved title snapshot/final text remain readable.
+- [ ] Delete a history record and confirm paging remains valid.
 
-## Settings / backup
+## Settings / schema-v2 backup
 
 - [ ] Switch System / Light / Dark and restart to confirm persistence.
 - [ ] Confirm the settings layout stacks correctly at narrow width.
-- [ ] Create a backup ZIP.
-- [ ] Make visible data changes.
-- [ ] Restore the backup and confirm prompts, history, images, and theme.
+- [ ] Create a backup containing prompts, representative images, and multi-select history.
+- [ ] Make visible changes, including deleting/changing prompts/history.
+- [ ] Restore the backup.
+- [ ] Confirm prompts, images, theme, history item order, modes, random counts, and final text are restored.
 - [ ] Confirm displayed application version.
 
 ## Keyboard and accessibility
 
 - [ ] Navigate primary controls with Tab / Shift+Tab.
-- [ ] Activate buttons, radio buttons, ComboBoxes, and lists with keyboard input.
+- [ ] Activate buttons, radio buttons, ComboBoxes, picker lists, and history paging with keyboard input.
 - [ ] Confirm focus remains visible in Light and Dark themes.
 - [ ] Confirm icon-only controls expose meaningful automation names.
 - [ ] Confirm navigation buttons remain understandable in compact mode via tooltip/accessibility name.
 
-## Local release verification
+## Local release verification — expanded candidate
 
-- [x] `scripts/verify-release.ps1 -Launch` passes on the user's Windows environment.
-- [x] Local Release build succeeds.
-- [x] All 15 automated tests pass locally.
-- [x] Local self-contained `win-x64` Publish succeeds.
-- [x] Local WPF mouse-wheel routing smoke succeeds.
-- [x] Local WPF navigation/keyboard UI smoke succeeds.
-- [x] Locally published WPF executable launches.
+- [ ] Pull the final `feature/wpf-ui` HEAD.
+- [ ] Run `scripts/verify-release.ps1 -Launch`.
+- [ ] Local Release build succeeds.
+- [ ] All current automated tests pass locally.
+- [ ] Local self-contained `win-x64` Publish succeeds.
+- [ ] Local WPF mouse-wheel routing smoke succeeds.
+- [ ] Local expanded WPF UI smoke succeeds.
+- [ ] Locally published WPF executable launches.
+- [ ] Perform the real-data checks above from that exact published build.
 
 ## CI / release output
 
-- [x] Solution Restore succeeds.
-- [x] Release Build succeeds.
-- [x] All 15 automated tests pass.
-- [x] Self-contained WPF win-x64 Publish succeeds.
-- [x] WPF routed mouse-wheel smoke succeeds.
-- [x] WPF navigation/responsive-shell/keyboard-focus UI smoke succeeds.
-- [x] Published WPF startup smoke succeeds.
-- [x] Artifact upload succeeds.
-- [ ] Perform the final manual smoke test from the exact artifact intended for release.
+- [ ] Solution Restore succeeds on final HEAD.
+- [ ] Release Build succeeds on final HEAD.
+- [ ] All 24 automated tests pass on final HEAD.
+- [ ] Self-contained WPF win-x64 Publish succeeds.
+- [ ] WPF routed mouse-wheel smoke succeeds.
+- [ ] Expanded WPF UI smoke succeeds, including multi-select, shared Mixer session, Prompt Library integration, and History paging.
+- [ ] Published WPF startup smoke succeeds.
+- [ ] Artifact upload succeeds.
