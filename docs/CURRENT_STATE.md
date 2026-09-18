@@ -1,19 +1,23 @@
 # Current State
 
-Updated: 2026-09-17
+Updated: 2026-09-18
 
 ## Repository
 
-Active development is on `feature/bootstrap`. The branch contains the complete V1 implementation candidate. Initial Windows launch has been confirmed on a real desktop, and the remaining work before release is final manual UI/feature smoke testing and release preparation.
+Active development is now on `feature/wpf-ui`.
+
+The original WinUI implementation remains on `feature/bootstrap` and in the legacy source folder for reference/recovery, but it is no longer the active release target.
+
+The WPF migration was made after repeated WinUI mouse-wheel routing problems. The WPF build has been confirmed locally to scroll correctly by the user.
 
 ## Decisions fixed for V1
 
 - Windows desktop application
 - C# / .NET 10
-- WinUI 3 using Windows App SDK 2.4.0
-- Minimum OS target: Windows 10 1809+
+- WPF / XAML active UI
 - Local-first architecture
 - SQLite for structured data
+- Existing local data path preserved across the UI migration
 - Application-owned representative image copies
 - Three prompt categories: Character, Artist/Style, Additional
 - Selection modes: Fixed, Random, Disabled
@@ -21,104 +25,97 @@ Active development is on `feature/bootstrap`. The branch contains the complete V
 - Generated outputs remain manually editable before copy
 - Recent-history records preserve final edited text
 - No direct AI API/image-generation feature in V1
+- First release target: self-contained win-x64 portable ZIP
 
 ## Implemented
 
-### Application shell and design
+### WPF application shell
 
-- WinUI 3 / .NET 10 application scaffold
-- Fluent-style `NavigationView` shell
-- Mixer, Prompt Library, History, and Settings pages
-- Shared card/title styles and system/light/dark themes
-- Vector icon source based on three prompt cards and shuffle flow
-- Windows executable ICO asset embedded through `ApplicationIcon`
-- Accessibility names for icon-only Prompt Library controls
-- Responsive NavigationView pane sizing and page-width handling
-- Responsive Mixer card layout: 3 columns, 2 columns, or 1 column depending on available width
-- Responsive Prompt Library filters and editor width
-- Responsive History and Settings layouts
+- WPF / .NET 10 application
+- Mixer, Prompt Library, History, and Settings views
+- left navigation shell with compact mode for narrow windows
+- System / Light / Dark theme support
+- existing application icon reused
+- responsive page layouts
+- WPF PreviewMouseWheel routing for page/editor scroll areas
 
 ### Prompt domain and combination core
 
 - Prompt category and selection-mode models
-- Fixed / Random / Disabled selection rules
+- Fixed / Random / Disabled rules
 - Character → Artist → Additional composition order
-- Independent Positive and Negative output composition
-- Empty-section handling without duplicate blank lines
-- Unit tests for core combination behavior
+- independent Positive and Negative composition
+- empty-section handling
+- automated combination tests
 
 ### Local persistence
 
-- SQLite schema version 1 and migration initialization
-- Prompt CRUD repository
-- Tag persistence and filtering
-- Title / Positive / Negative search
-- Combination-history persistence with final edited text snapshots
-- Prompt deletion preserves history text snapshots
-- Repository persistence tests
+- SQLite schema version 1
+- prompt CRUD
+- tag persistence and filtering
+- title/prompt search
+- combination-history persistence
+- prompt deletion preserves history text
+- existing LocalAppData paths preserved
 
 ### Prompt Library
 
-- Character / Artist / Additional category switching
-- Gallery and list display modes
-- Search and tag filter
-- Create / edit / duplicate / delete
-- Positive / Negative / memo / tags fields
-- Representative image import, preview, replace, remove, and orphan cleanup
-- Application-owned image copies under local app data
-- User-visible error dialogs for load, image, save, duplicate, and delete failures
+- category switching
+- gallery and list modes
+- search and tag filter
+- create / edit / duplicate / delete
+- Positive / Negative / memo / tags
+- representative image import, preview, replace, remove, and orphan cleanup
+- editor opens at the top
+- responsive filter/editor layout
 
 ### Mixer
 
-- Fixed / Random / Disabled controls for all three categories
-- Fixed item selection
-- Per-category randomize while preserving other current selections
-- Randomize all
-- Representative image and title display
-- Editable Positive / Negative result areas
-- Independent copy actions
-- Save final edited output to history
-- User-visible error state when history saving fails
+- Fixed / Random / Disabled for all categories
+- direct selection with thumbnail, title, memo, and tags
+- per-category randomize
+- randomize all
+- selected image/title/memo/tags display
+- editable Positive / Negative results
+- independent copy
+- history save
+- responsive 3-column / 2-column / 1-column card layout
 
 ### History and settings
 
-- Recent-history list and detail view
-- Restore saved history back into the mixer
-- System / Light / Dark theme setting persisted to `settings.json`
-- ZIP backup of SQLite data, representative images, and settings
-- ZIP restore flow with confirmation
-- Runtime application-version display
-- User-visible errors for theme persistence, backup, and restore failures
-- Settings and backup round-trip tests
+- recent-history list/detail
+- restore history to Mixer
+- delete history
+- System / Light / Dark theme persistence
+- ZIP backup/restore
+- version display
+- responsive History and Settings layouts
 
-### Distribution preparation
+## Automated verification
 
-- Self-contained unpackaged `win-x64` publish configuration validated in GitHub Actions
-- Explicit publish inclusion of the application PRI resource to avoid runtime XAML loading failure
-- Published EXE startup smoke test checks `startup-crash.log` and process survival
-- Published output uploaded as a GitHub Actions artifact
-- First-release distribution strategy documented as portable ZIP
-- Manual Windows release checklist added
-- First-release notes draft added; version/tag intentionally not chosen yet
-
-## Verification status
-
-The current automated Windows validation includes:
+The current WPF pipeline validates:
 
 1. Solution restore
 2. Release build
-3. 12 automated tests
-4. Self-contained `win-x64` publish
-5. Published EXE startup smoke test
-6. Published artifact upload
+3. 13 automated tests
+4. self-contained win-x64 WPF publish
+5. WPF routed mouse-wheel smoke
+6. published EXE startup smoke
+7. artifact upload
 
-A real Windows desktop launch has also been confirmed after the PRI publish fix and Mixer initialization fix.
+The routed-wheel smoke specifically verifies scrolling while the wheel target is a nested TextBox.
+
+## Manual verification already confirmed
+
+- WPF application launches on the user's Windows environment
+- mouse-wheel scrolling works normally in the WPF build
 
 ## Remaining before first release
 
-1. Run the remaining manual checks in `docs/RELEASE_CHECKLIST.md` against the current published artifact.
-2. Verify responsive layout while resizing the app and toggling the navigation pane.
-3. Verify Prompt Library CRUD and representative image handling with real data.
-4. Verify Mixer, History restore, theme, backup, and restore flows.
-5. Fix any issues found by the smoke test.
-6. Choose the release version/tag, merge the implementation branch, and publish the first GitHub Release.
+1. Complete the WPF functional-equivalence smoke pass against real data.
+2. Check responsive layouts at narrow and wide window sizes.
+3. Check keyboard/focus/accessibility behavior in WPF.
+4. Validate backup/restore from the exact release artifact.
+5. Update any remaining WinUI-specific documentation.
+6. Choose release version/tag.
+7. Merge only after the WPF build is approved for release.
