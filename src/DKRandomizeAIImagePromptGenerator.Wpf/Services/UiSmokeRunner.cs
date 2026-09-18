@@ -34,7 +34,7 @@ public static class UiSmokeRunner
                 Top = -10000
             };
 
-            app.MainWindow = window;
+            app.RegisterMainWindow(window);
             window.Show();
             await DrainUiAsync(window.Dispatcher);
 
