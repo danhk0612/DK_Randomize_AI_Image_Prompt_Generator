@@ -92,7 +92,9 @@ The WPF migration was made after repeated WinUI mouse-wheel routing problems. Th
 
 ### History and settings
 
-- recent-history list/detail
+- top full-width recent-history list with 20-item paging
+- multi-selection summaries and current representative-image thumbnails
+- exact selection mode/order/random-count restore into Mixer
 - restore history to Mixer
 - delete history
 - System / Light / Dark theme persistence
@@ -106,7 +108,7 @@ The current WPF pipeline validates:
 
 1. Solution restore
 2. Release build
-3. 21 automated tests
+3. 23 automated tests
 4. self-contained win-x64 WPF publish
 5. WPF routed mouse-wheel smoke
 6. published EXE startup smoke
