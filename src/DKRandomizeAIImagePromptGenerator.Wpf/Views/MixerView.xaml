@@ -5,6 +5,10 @@
     <UserControl.Resources>
         <conv:ImagePathConverter x:Key="ImagePathConverter" />
 
+        <Style x:Key="SelectedPromptListItemStyle" TargetType="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+
         <DataTemplate x:Key="SelectedPromptTemplate">
             <Grid Margin="2" MinHeight="62">
                 <Grid.ColumnDefinitions>
@@ -37,6 +41,7 @@
                 <Button Grid.Column="2"
                         Content="✕"
                         Style="{StaticResource DangerIconButtonStyle}"
+                        HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Click="RemovePromptItem_Click"
                         ToolTip="조합에서 제거"
@@ -98,6 +103,7 @@
                         <Grid>
                             <ListBox x:Name="CharacterSelectedList"
                                      Height="190"
+                                     ItemContainerStyle="{StaticResource SelectedPromptListItemStyle}"
                                      Tag="Character"
                                      AllowDrop="True"
                                      PreviewMouseLeftButtonDown="SelectedList_PreviewMouseLeftButtonDown"
@@ -170,6 +176,7 @@
                         <Grid>
                             <ListBox x:Name="ArtistSelectedList"
                                      Height="190"
+                                     ItemContainerStyle="{StaticResource SelectedPromptListItemStyle}"
                                      Tag="Artist"
                                      AllowDrop="True"
                                      PreviewMouseLeftButtonDown="SelectedList_PreviewMouseLeftButtonDown"
@@ -240,6 +247,7 @@
                         <Grid>
                             <ListBox x:Name="AdditionalSelectedList"
                                      Height="190"
+                                     ItemContainerStyle="{StaticResource SelectedPromptListItemStyle}"
                                      Tag="Additional"
                                      AllowDrop="True"
                                      PreviewMouseLeftButtonDown="SelectedList_PreviewMouseLeftButtonDown"
@@ -281,7 +289,6 @@
             </Grid>
 
             <Button Content="전체 다시 조합"
-                    Style="{StaticResource AccentButtonStyle}"
                     HorizontalAlignment="Right"
                     Margin="0,16,0,0"
                     Click="RandomizeAll_Click" />
