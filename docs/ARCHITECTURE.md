@@ -91,14 +91,25 @@ Prompt editing is shown as an in-app editor pane rather than a chain of modal di
 Typical mixer flow:
 
 ```text
-Repositories -> MixerViewModel -> CombinationService -> editable output -> Clipboard
+PromptRepository
+      ↓
+MixerViewModel (ordered selections + modes + random counts)
+      ↓
+CombinationService
+      ↓
+editable Positive / Negative output
+      ↓
+Clipboard / History
 ```
+
+The WPF shell retains one MixerView instance for the application session so selections and manually edited output survive normal page navigation.
 
 Typical prompt-edit flow:
 
 ```text
 PromptLibraryView -> PromptLibraryViewModel -> PromptRepository
-                                      └─────> ImageStorageService
+          │                           └─────> ImageStorageService
+          └──── add/update/delete ──────────> shared Mixer session
 ```
 
 ## 6. Randomization rules
@@ -107,13 +118,13 @@ Randomization is performed only by `CombinationService`.
 
 For each category:
 
-- Fixed: use the currently selected item.
-- Random: choose one eligible item from that category.
-- Disabled: return no item.
+- Direct: use the ordered manually selected items.
+- Random: choose the requested number of unique eligible items.
+- Disabled: return no items.
 
-If a Random category has no eligible items, it contributes no prompt text. This is a normal empty state, not a fatal error.
+Random count is capped at the number of available candidates. If a Random category has no eligible items, it contributes no prompt text. This is a normal empty state, not a fatal error.
 
-V1 Additional selection returns zero or one item. The domain object keeps an item collection so multi-additional support can be added without replacing history/storage contracts.
+Character, Artist / Style, and Additional use the same multi-item selection contract.
 
 ## 7. Prompt composition rules
 
@@ -121,17 +132,19 @@ V1 Additional selection returns zero or one item. The domain object keeps an ite
 
 For each output:
 
-1. Read Character text.
-2. Read Artist text.
-3. Read Additional text.
-4. Remove empty/whitespace-only sections.
-5. Join remaining sections with exactly one blank line.
+1. Read Character items in selection order.
+2. Read Artist / Style items in selection order.
+3. Read Additional items in selection order.
+4. Remove empty/whitespace-only fragments.
+5. Join remaining fragments with exactly one line break.
 
 The service must never alter prompt syntax.
 
 ## 8. Persistence
 
 SQLite stores structured records. Images remain regular files.
+
+Schema version 2 adds generic `CombinationHistoryItems` and `CombinationHistoryCategoryState` tables so every category can store multiple ordered source prompts plus mode/random-count state. Existing schema-v1 history is migrated forward automatically while the original V1 tables remain for compatibility.
 
 Application data stays under:
 
@@ -169,12 +182,15 @@ No MSIX signing or Windows App SDK runtime is required by the active WPF release
 
 Highest-value automated tests:
 
-- Fixed/Random/Disabled selection behavior
-- Positive/Negative composition ordering
-- empty-section handling
-- random selection constrained to the requested category
-- history captures final edited output
-- repository CRUD and schema behavior
-- backup/settings round trip
+- Direct/Random/Disabled selection behavior
+- ordered multi-select Positive/Negative composition
+- unique random N-item selection
+- empty-fragment handling and single-line separators
+- schema-v1 → schema-v2 history migration
+- exact multi-selection/mode/random-count history restore
+- paged history queries
+- prompt CRUD and image behavior
+- schema-v2 backup/settings round trip
 - WPF routed mouse-wheel smoke
+- WPF navigation/multi-select/Prompt Library/History paging UI smoke
 - published WPF application startup smoke
