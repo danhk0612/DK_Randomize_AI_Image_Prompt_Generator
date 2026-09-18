@@ -187,12 +187,6 @@ public sealed class MixerViewModel
         var selected = GetSelectedCollection(category);
         if (selected.Any(existing => existing.Id == item.Id))
         {
-            if (switchToDirectMode)
-            {
-                SetModeValue(category, PromptSelectionMode.Fixed);
-                RecomposeCurrent();
-            }
-
             return false;
         }
 
