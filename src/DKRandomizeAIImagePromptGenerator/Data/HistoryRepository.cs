@@ -151,11 +151,28 @@ public sealed class HistoryRepository
         return history;
     }
 
-    public async Task<IReadOnlyList<CombinationHistory>> GetRecentAsync(
+    public Task<IReadOnlyList<CombinationHistory>> GetRecentAsync(
         int limit = 100,
+        CancellationToken cancellationToken = default) =>
+        GetPageAsync(0, limit, cancellationToken);
+
+    public async Task<int> GetCountAsync(
         CancellationToken cancellationToken = default)
     {
-        if (limit <= 0)
+        await using var connection = await _database.OpenConnectionAsync(cancellationToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT COUNT(*) FROM CombinationHistory;";
+        var value = await command.ExecuteScalarAsync(cancellationToken);
+        return Convert.ToInt32(value);
+    }
+
+    public async Task<IReadOnlyList<CombinationHistory>> GetPageAsync(
+        int pageIndex,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        pageIndex = Math.Max(0, pageIndex);
+        if (pageSize <= 0)
         {
             return Array.Empty<CombinationHistory>();
         }
@@ -173,9 +190,10 @@ public sealed class HistoryRepository
                    CreatedAtUtc
             FROM CombinationHistory
             ORDER BY CreatedAtUtc DESC
-            LIMIT @limit;
+            LIMIT @limit OFFSET @offset;
             """;
-        command.Parameters.AddWithValue("@limit", limit);
+        command.Parameters.AddWithValue("@limit", pageSize);
+        command.Parameters.AddWithValue("@offset", pageIndex * pageSize);
 
         var histories = new List<CombinationHistory>();
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
