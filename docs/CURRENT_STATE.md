@@ -110,6 +110,12 @@ The routed-wheel smoke specifically verifies scrolling while the wheel target is
 
 - WPF application launches on the user's Windows environment
 - mouse-wheel scrolling works normally in the WPF build
+- `scripts/verify-release.ps1 -Launch` completed successfully on the user's Windows environment
+- local Release build succeeded
+- all 15 automated tests passed locally
+- local self-contained `win-x64` publish succeeded
+- local WPF mouse-wheel and navigation/keyboard UI smoke modes passed
+- the published WPF executable launched successfully
 
 ## Remaining before first release
 
