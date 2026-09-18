@@ -22,21 +22,18 @@ public partial class App : Application
             return;
         }
 
+        if (e.Args.Any(arg => string.Equals(arg, "--ui-smoke", StringComparison.OrdinalIgnoreCase)))
+        {
+            var succeeded = await UiSmokeRunner.RunAsync(this);
+            Shutdown(succeeded ? 0 : 3);
+            return;
+        }
+
         var paths = AppDataPaths.CreateDefault();
 
         try
         {
-            Database = new DatabaseService(paths);
-            Prompts = new PromptRepository(Database);
-            History = new HistoryRepository(Database);
-            Images = new ImageStorageService(paths, Database);
-            Combination = new CombinationService();
-            Settings = new SettingsService(paths);
-            Backup = new BackupService(paths);
-
-            await Database.InitializeAsync();
-            await Settings.LoadAsync();
-            ApplyTheme(Settings.Current.Theme);
+            await InitializeServicesAsync(paths);
             ClearStartupCrashLog(paths);
 
             MainWindowInstance = new MainWindow();
@@ -53,6 +50,21 @@ public partial class App : Application
                 MessageBoxImage.Error);
             Shutdown(1);
         }
+    }
+
+    internal async Task InitializeServicesAsync(AppDataPaths paths)
+    {
+        Database = new DatabaseService(paths);
+        Prompts = new PromptRepository(Database);
+        History = new HistoryRepository(Database);
+        Images = new ImageStorageService(paths, Database);
+        Combination = new CombinationService();
+        Settings = new SettingsService(paths);
+        Backup = new BackupService(paths);
+
+        await Database.InitializeAsync();
+        await Settings.LoadAsync();
+        ApplyTheme(Settings.Current.Theme);
     }
 
     private static string GetStartupCrashLogPath(AppDataPaths paths) =>
