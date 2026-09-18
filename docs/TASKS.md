@@ -96,10 +96,10 @@
 - [x] Integrated category search / add / apply / cancel picker
 
 ### 7.3 Prompt Library integration
-- [ ] Shared mixer session state
-- [ ] Add-to-mixer action from Prompt Library
-- [ ] Ignore duplicate additions
-- [ ] Switch target category to Direct mode when adding
+- [x] Shared mixer session state
+- [x] Add-to-mixer action from Prompt Library
+- [x] Ignore duplicate additions
+- [x] Switch target category to Direct mode when adding
 
 ### 7.4 History UI
 - [ ] Top full-width paged history list
