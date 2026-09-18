@@ -63,11 +63,11 @@
             <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
             <StackPanel x:Name="SearchFilterPanel">
                 <TextBlock Text="검색" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,4" />
-                <TextBox x:Name="SearchBox" TextChanged="SearchBox_TextChanged" />
+                <TextBox x:Name="SearchBox" TextChanged="SearchBox_TextChanged" AutomationProperties.Name="프롬프트 검색" />
             </StackPanel>
             <StackPanel x:Name="TagFilterPanel" Grid.Column="2">
                 <TextBlock Text="태그 필터" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,4" />
-                <TextBox x:Name="TagFilterBox" TextChanged="TagFilterBox_TextChanged" />
+                <TextBox x:Name="TagFilterBox" TextChanged="TagFilterBox_TextChanged" AutomationProperties.Name="태그 필터" />
             </StackPanel>
         </Grid>
 
@@ -91,10 +91,10 @@
             </Grid.ColumnDefinitions>
 
             <Grid Grid.Column="0">
-                <ListBox x:Name="GalleryListBox" ItemsSource="{Binding Items}" ItemTemplate="{StaticResource GalleryTemplate}" SelectionChanged="PromptList_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBox x:Name="GalleryListBox" ItemsSource="{Binding Items}" ItemTemplate="{StaticResource GalleryTemplate}" SelectionChanged="PromptList_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Disabled" AutomationProperties.Name="프롬프트 갤러리">
                     <ListBox.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ListBox.ItemsPanel>
                 </ListBox>
-                <ListBox x:Name="DetailListBox" ItemsSource="{Binding Items}" ItemTemplate="{StaticResource ListTemplate}" SelectionChanged="PromptList_SelectionChanged" Visibility="Collapsed" />
+                <ListBox x:Name="DetailListBox" ItemsSource="{Binding Items}" ItemTemplate="{StaticResource ListTemplate}" SelectionChanged="PromptList_SelectionChanged" Visibility="Collapsed" AutomationProperties.Name="프롬프트 목록" />
                 <StackPanel x:Name="EmptyState" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <TextBlock Text="등록된 프롬프트가 없습니다." FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" />
                     <TextBlock Text="새 프롬프트를 추가하면 이곳에 표시됩니다." Margin="0,6,0,0" Foreground="{DynamicResource TextSecondaryBrush}" />
@@ -106,7 +106,7 @@
                     <StackPanel>
                         <Grid>
                             <TextBlock x:Name="EditorTitleText" Text="프롬프트 편집" Style="{StaticResource SectionTitleStyle}" />
-                            <Button Content="✕" HorizontalAlignment="Right" Padding="8,4" Click="CancelEdit_Click" />
+                            <Button Content="✕" HorizontalAlignment="Right" Padding="8,4" Click="CancelEdit_Click" AutomationProperties.Name="프롬프트 편집 닫기" ToolTip="편집 닫기" />
                         </Grid>
 
                         <Border Height="170" Margin="0,14,0,0" CornerRadius="8" Background="{DynamicResource SurfaceSecondaryBrush}">
@@ -121,20 +121,20 @@
                         </StackPanel>
 
                         <TextBlock Text="제목" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,14,0,4" />
-                        <TextBox x:Name="TitleBox" />
+                        <TextBox x:Name="TitleBox" AutomationProperties.Name="프롬프트 제목" />
                         <TextBlock x:Name="TitleValidationText" Text="제목을 입력해야 합니다." Foreground="{DynamicResource DangerBrush}" Margin="0,4,0,0" Visibility="Collapsed" />
 
                         <TextBlock Text="Positive Prompt" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,12,0,4" />
-                        <TextBox x:Name="PositiveBox" Height="130" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" />
+                        <TextBox x:Name="PositiveBox" Height="130" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="Positive Prompt" />
 
                         <TextBlock Text="Negative Prompt" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,12,0,4" />
-                        <TextBox x:Name="NegativeBox" Height="110" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" />
+                        <TextBox x:Name="NegativeBox" Height="110" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="Negative Prompt" />
 
                         <TextBlock Text="태그" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,12,0,4" />
-                        <TextBox x:Name="TagsBox" />
+                        <TextBox x:Name="TagsBox" AutomationProperties.Name="태그" />
 
                         <TextBlock Text="메모" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,12,0,4" />
-                        <TextBox x:Name="MemoBox" Height="88" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" />
+                        <TextBox x:Name="MemoBox" Height="88" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="메모" />
 
                         <Grid Margin="0,14,0,0">
                             <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
