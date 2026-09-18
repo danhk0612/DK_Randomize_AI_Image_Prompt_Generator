@@ -17,14 +17,27 @@ public partial class HistoryView : UserControl
         DataContext = ViewModel;
         WheelScrollService.Enable(DetailScrollViewer);
         Loaded += HistoryView_Loaded;
+        SizeChanged += HistoryView_SizeChanged;
     }
 
     public HistoryViewModel ViewModel { get; }
 
     private async void HistoryView_Loaded(object sender, RoutedEventArgs e)
     {
+        ApplyResponsiveLayout(ActualWidth);
         await ViewModel.RefreshAsync();
         UpdateEmptyState();
+    }
+
+    private void HistoryView_SizeChanged(object sender, SizeChangedEventArgs e) =>
+        ApplyResponsiveLayout(e.NewSize.Width);
+
+    private void ApplyResponsiveLayout(double availableWidth)
+    {
+        HistoryListColumn.Width = new GridLength(
+            availableWidth < 780 ? 220 :
+            availableWidth < 980 ? 260 : 310);
+        HistoryGapColumn.Width = new GridLength(availableWidth < 780 ? 10 : 16);
     }
 
     private void HistoryListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
