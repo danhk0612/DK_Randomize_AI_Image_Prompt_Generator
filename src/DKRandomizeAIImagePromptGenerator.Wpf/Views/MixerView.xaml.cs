@@ -544,7 +544,9 @@ public partial class MixerView : UserControl
                 return match;
             }
 
-            element = VisualTreeHelper.GetParent(element);
+            element = element is FrameworkContentElement contentElement
+                ? contentElement.Parent
+                : VisualTreeHelper.GetParent(element);
         }
 
         return null;
