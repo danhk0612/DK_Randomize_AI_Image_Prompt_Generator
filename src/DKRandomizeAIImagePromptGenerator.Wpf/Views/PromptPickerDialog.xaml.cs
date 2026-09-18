@@ -111,8 +111,15 @@ public partial class PromptPickerDialog : Window
     private void RemoveSelected_Click(object sender, RoutedEventArgs e) =>
         RemoveSelectedSelection();
 
-    private void SelectedList_MouseDoubleClick(object sender, MouseButtonEventArgs e) =>
-        RemoveSelectedSelection();
+    private void SelectedList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (GetPromptFromElement(
+                SelectedList,
+                e.OriginalSource as DependencyObject) is not null)
+        {
+            RemoveSelectedSelection();
+        }
+    }
 
     private void RemoveSelectedSelection()
     {
