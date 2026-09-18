@@ -25,6 +25,7 @@ public partial class MixerView : UserControl
 
         WheelScrollService.Enable(RootScrollViewer);
         Loaded += MixerView_Loaded;
+        SizeChanged += MixerView_SizeChanged;
         _initialized = true;
     }
 
@@ -32,6 +33,7 @@ public partial class MixerView : UserControl
 
     private async void MixerView_Loaded(object sender, RoutedEventArgs e)
     {
+        ApplyResponsiveCardLayout(ActualWidth);
         await ViewModel.LoadAsync();
         var app = (App)Application.Current;
         if (app.PendingHistoryRestore is CombinationHistory history)
@@ -41,6 +43,67 @@ public partial class MixerView : UserControl
         }
 
         SyncControls();
+    }
+
+    private void MixerView_SizeChanged(object sender, SizeChangedEventArgs e) =>
+        ApplyResponsiveCardLayout(e.NewSize.Width);
+
+    private void ApplyResponsiveCardLayout(double availableWidth)
+    {
+        Grid.SetColumnSpan(CharacterCard, 1);
+        Grid.SetColumnSpan(ArtistCard, 1);
+        Grid.SetColumnSpan(AdditionalCard, 1);
+
+        CharacterCard.Margin = new Thickness(0);
+        ArtistCard.Margin = new Thickness(0);
+        AdditionalCard.Margin = new Thickness(0);
+
+        if (availableWidth >= 1100)
+        {
+            CardsGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+            CardsGrid.ColumnDefinitions[1].Width = new GridLength(12);
+            CardsGrid.ColumnDefinitions[2].Width = new GridLength(1, GridUnitType.Star);
+            CardsGrid.ColumnDefinitions[3].Width = new GridLength(12);
+            CardsGrid.ColumnDefinitions[4].Width = new GridLength(1, GridUnitType.Star);
+
+            PositionCard(CharacterCard, 0, 0);
+            PositionCard(ArtistCard, 0, 2);
+            PositionCard(AdditionalCard, 0, 4);
+        }
+        else if (availableWidth >= 760)
+        {
+            CardsGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+            CardsGrid.ColumnDefinitions[1].Width = new GridLength(12);
+            CardsGrid.ColumnDefinitions[2].Width = new GridLength(1, GridUnitType.Star);
+            CardsGrid.ColumnDefinitions[3].Width = new GridLength(0);
+            CardsGrid.ColumnDefinitions[4].Width = new GridLength(0);
+
+            PositionCard(CharacterCard, 0, 0);
+            PositionCard(ArtistCard, 0, 2);
+            PositionCard(AdditionalCard, 1, 0);
+            Grid.SetColumnSpan(AdditionalCard, 3);
+            AdditionalCard.Margin = new Thickness(0, 12, 0, 0);
+        }
+        else
+        {
+            CardsGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+            for (var index = 1; index < CardsGrid.ColumnDefinitions.Count; index++)
+            {
+                CardsGrid.ColumnDefinitions[index].Width = new GridLength(0);
+            }
+
+            PositionCard(CharacterCard, 0, 0);
+            PositionCard(ArtistCard, 1, 0);
+            PositionCard(AdditionalCard, 2, 0);
+            ArtistCard.Margin = new Thickness(0, 12, 0, 0);
+            AdditionalCard.Margin = new Thickness(0, 12, 0, 0);
+        }
+    }
+
+    private static void PositionCard(FrameworkElement card, int row, int column)
+    {
+        Grid.SetRow(card, row);
+        Grid.SetColumn(card, column);
     }
 
     private void CharacterModeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) => SetMode(PromptCategory.Character, CharacterModeCombo.SelectedIndex);
