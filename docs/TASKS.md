@@ -77,6 +77,43 @@
 - [ ] Final WPF real-data smoke pass
 - [ ] Prepare first release
 
+## Milestone 7 — V1 multi-select mixer expansion
+
+### 7.1 Core / database
+- [ ] Multi-select model for Character / Artist / Additional
+- [ ] Preserve selection order
+- [ ] Random count and unique random selection
+- [ ] Single-newline prompt composition
+- [ ] History schema v2 generic category items/state
+- [ ] v1 → v2 history migration
+- [ ] Core/persistence regression tests
+
+### 7.2 Mixer UI
+- [ ] Direct / Random / Disabled radio modes
+- [ ] Disable manual picker in Random / Disabled modes
+- [ ] Multi-selected item display and ordering
+- [ ] Random count UI
+- [ ] Integrated category search / add / apply / cancel picker
+
+### 7.3 Prompt Library integration
+- [ ] Shared mixer session state
+- [ ] Add-to-mixer action from Prompt Library
+- [ ] Ignore duplicate additions
+- [ ] Switch target category to Direct mode when adding
+
+### 7.4 History UI
+- [ ] Top full-width paged history list
+- [ ] Multi-selection summaries
+- [ ] Selected prompt thumbnails
+- [ ] Exact multi-selection/mode restore
+
+### 7.5 Verification / release candidate
+- [ ] v1 database migration smoke
+- [ ] backup/restore regression
+- [ ] expanded WPF UI smoke
+- [ ] docs/release checklist refresh
+- [ ] create new release candidate
+
 ## Deferred
 
 - Multiple Additional prompts in the UI
