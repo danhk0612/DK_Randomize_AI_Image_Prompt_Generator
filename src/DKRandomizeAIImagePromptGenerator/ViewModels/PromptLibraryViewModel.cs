@@ -4,6 +4,16 @@ using DKRandomizeAIImagePromptGenerator.Models;
 
 namespace DKRandomizeAIImagePromptGenerator.ViewModels;
 
+public enum PromptLibrarySortOrder
+{
+    UpdatedNewest,
+    UpdatedOldest,
+    TitleAscending,
+    TitleDescending,
+    CreatedNewest,
+    CreatedOldest
+}
+
 public sealed class PromptLibraryViewModel
 {
     private readonly PromptRepository _repository;
@@ -20,6 +30,8 @@ public sealed class PromptLibraryViewModel
     public string SearchText { get; set; } = string.Empty;
 
     public string TagFilter { get; set; } = string.Empty;
+
+    public PromptLibrarySortOrder SortOrder { get; set; } = PromptLibrarySortOrder.UpdatedNewest;
 
     public async Task SetCategoryAsync(PromptCategory category)
     {
@@ -39,8 +51,28 @@ public sealed class PromptLibraryViewModel
             SearchText,
             TagFilter);
 
+        var ordered = SortOrder switch
+        {
+            PromptLibrarySortOrder.UpdatedOldest => results
+                .OrderBy(item => item.UpdatedAt)
+                .ThenBy(item => item.Title, StringComparer.CurrentCultureIgnoreCase),
+            PromptLibrarySortOrder.TitleAscending => results
+                .OrderBy(item => item.Title, StringComparer.CurrentCultureIgnoreCase),
+            PromptLibrarySortOrder.TitleDescending => results
+                .OrderByDescending(item => item.Title, StringComparer.CurrentCultureIgnoreCase),
+            PromptLibrarySortOrder.CreatedNewest => results
+                .OrderByDescending(item => item.CreatedAt)
+                .ThenBy(item => item.Title, StringComparer.CurrentCultureIgnoreCase),
+            PromptLibrarySortOrder.CreatedOldest => results
+                .OrderBy(item => item.CreatedAt)
+                .ThenBy(item => item.Title, StringComparer.CurrentCultureIgnoreCase),
+            _ => results
+                .OrderByDescending(item => item.UpdatedAt)
+                .ThenBy(item => item.Title, StringComparer.CurrentCultureIgnoreCase)
+        };
+
         Items.Clear();
-        foreach (var item in results)
+        foreach (var item in ordered)
         {
             Items.Add(item);
         }
