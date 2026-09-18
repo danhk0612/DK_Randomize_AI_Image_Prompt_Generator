@@ -223,6 +223,15 @@ public sealed class HistoryRepository
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
+    public async Task ClearAsync(
+        CancellationToken cancellationToken = default)
+    {
+        await using var connection = await _database.OpenConnectionAsync(cancellationToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "DELETE FROM CombinationHistory;";
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
     private static async Task<CombinationHistory?> ReadHistoryAsync(
         SqliteConnection connection,
         Guid id,
