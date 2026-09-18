@@ -56,11 +56,20 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <StackPanel>
-            <TextBlock Text="최근 기록" Style="{StaticResource PageTitleStyle}" />
-            <TextBlock Text="최근 기록을 위에서 페이지 단위로 확인하고, 선택한 조합의 프롬프트와 최종 결과를 아래에서 봅니다."
-                       Foreground="{DynamicResource TextSecondaryBrush}" />
-        </StackPanel>
+        <Grid>
+            <StackPanel>
+                <TextBlock Text="최근 기록" Style="{StaticResource PageTitleStyle}" />
+                <TextBlock Text="최근 기록을 위에서 페이지 단위로 확인하고, 선택한 조합의 프롬프트와 최종 결과를 아래에서 봅니다."
+                           Foreground="{DynamicResource TextSecondaryBrush}" />
+            </StackPanel>
+            <Button x:Name="ClearHistoryButton"
+                    Content="최근 기록 비우기"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Foreground="{DynamicResource DangerBrush}"
+                    Click="ClearHistory_Click"
+                    AutomationProperties.Name="최근 기록 전체 비우기" />
+        </Grid>
 
         <Border Grid.Row="1"
                 Margin="0,20,0,0"
