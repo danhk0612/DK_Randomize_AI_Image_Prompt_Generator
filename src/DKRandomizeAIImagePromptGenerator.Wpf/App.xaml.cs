@@ -142,6 +142,9 @@ public partial class App : Application
         SetBrush("ActionButtonBorderBrush", dark ? "#43517A" : "#C9D2FA");
         SetBrush("ActionButtonHoverBrush", dark ? "#2E385B" : "#E3E9FF");
         SetBrush("SelectionBackgroundBrush", dark ? "#2C3552" : "#E9EEFF");
+        SetBrush("DangerButtonBackgroundBrush", dark ? "#35272A" : "#FFF5F4");
+        SetBrush("DangerButtonBorderBrush", dark ? "#6D4146" : "#EEC8C4");
+        SetBrush("DangerButtonHoverBrush", dark ? "#442D31" : "#FDE9E7");
     }
 
     private void SetBrush(string key, string color)
