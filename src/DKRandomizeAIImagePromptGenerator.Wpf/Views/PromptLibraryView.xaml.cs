@@ -301,11 +301,23 @@ public partial class PromptLibraryView : UserControl
 
     private void AddToMixer_Click(object sender, RoutedEventArgs e)
     {
-        if (_editingItem is null)
+        if (_editingItem is not null)
         {
-            return;
+            AddItemToMixer(_editingItem);
         }
+    }
 
+    private void AddGalleryItemToMixer_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button button &&
+            button.DataContext is PromptItem item)
+        {
+            AddItemToMixer(item);
+        }
+    }
+
+    private void AddItemToMixer(PromptItem item)
+    {
         var app = (App)Application.Current;
         var window = Window.GetWindow(this) as MainWindow ?? app.MainWindowInstance;
         if (window is null)
@@ -314,10 +326,10 @@ public partial class PromptLibraryView : UserControl
             return;
         }
 
-        var added = window.AddPromptToMixer(_editingItem);
+        var added = window.AddPromptToMixer(item);
         StatusText.Text = added
-            ? $"'{_editingItem.Title}'을(를) 조합에 추가했습니다."
-            : $"'{_editingItem.Title}'은(는) 이미 조합에 추가되어 있습니다.";
+            ? $"'{item.Title}'을(를) 조합에 추가했습니다."
+            : $"'{item.Title}'은(는) 이미 조합에 추가되어 있습니다.";
     }
 
     private async void DuplicatePrompt_Click(object sender, RoutedEventArgs e)
