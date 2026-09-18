@@ -299,9 +299,6 @@
                             <Trigger Property="IsKeyboardFocusWithin" Value="True">
                                 <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
                             </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="ItemBorder" Property="Opacity" Value="0.42" />
-                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
