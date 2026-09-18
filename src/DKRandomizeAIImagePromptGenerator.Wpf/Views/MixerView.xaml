@@ -337,15 +337,21 @@
                          AutomationProperties.Name="Negative 결과" />
             </Grid>
 
-            <DockPanel Margin="0,16,0,0">
+            <Grid Margin="0,16,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
                 <TextBlock x:Name="StatusText"
+                           Margin="0,0,16,0"
                            VerticalAlignment="Center"
-                           Foreground="{DynamicResource TextSecondaryBrush}" />
-                <Button Content="현재 결과 기록 저장"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           TextWrapping="Wrap" />
+                <Button Grid.Column="1"
+                        Content="현재 결과 기록 저장"
                         HorizontalAlignment="Right"
-                        DockPanel.Dock="Right"
                         Click="SaveHistory_Click" />
-            </DockPanel>
+            </Grid>
         </StackPanel>
     </ScrollViewer>
 </UserControl>
