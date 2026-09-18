@@ -35,6 +35,9 @@ public sealed class CombinationHistory
 
     public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
 
+    public string CreatedAtLocalText =>
+        CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+
     public string CharacterTitleSummary => BuildTitleSummary(PromptCategory.Character);
 
     public string ArtistTitleSummary => BuildTitleSummary(PromptCategory.Artist);
