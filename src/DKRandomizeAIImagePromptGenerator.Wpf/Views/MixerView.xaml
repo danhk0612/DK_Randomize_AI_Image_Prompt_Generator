@@ -10,11 +10,12 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="56" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="34" />
                 </Grid.ColumnDefinitions>
                 <Border Width="52" Height="52" CornerRadius="6" Background="{DynamicResource SurfaceSecondaryBrush}">
                     <Image Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}}" Stretch="Uniform" />
                 </Border>
-                <StackPanel Grid.Column="1" Margin="9,0,0,0" VerticalAlignment="Center">
+                <StackPanel Grid.Column="1" Margin="9,0,6,0" VerticalAlignment="Center">
                     <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                     <TextBlock Text="{Binding Memo}" FontSize="11"
                                Foreground="{DynamicResource TextSecondaryBrush}"
@@ -33,6 +34,13 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </StackPanel>
+                <Button Grid.Column="2"
+                        Content="✕"
+                        Style="{StaticResource DangerIconButtonStyle}"
+                        VerticalAlignment="Center"
+                        Click="RemovePromptItem_Click"
+                        ToolTip="조합에서 제거"
+                        AutomationProperties.Name="선택 프롬프트 제거" />
             </Grid>
         </DataTemplate>
     </UserControl.Resources>
@@ -90,6 +98,12 @@
                         <Grid>
                             <ListBox x:Name="CharacterSelectedList"
                                      Height="190"
+                                     Tag="Character"
+                                     AllowDrop="True"
+                                     PreviewMouseLeftButtonDown="SelectedList_PreviewMouseLeftButtonDown"
+                                     PreviewMouseMove="SelectedList_PreviewMouseMove"
+                                     DragOver="SelectedList_DragOver"
+                                     Drop="SelectedList_Drop"
                                      ItemTemplate="{StaticResource SelectedPromptTemplate}"
                                      AutomationProperties.Name="선택된 캐릭터 프롬프트" />
                             <TextBlock x:Name="CharacterEmptySelectionText"
@@ -156,6 +170,12 @@
                         <Grid>
                             <ListBox x:Name="ArtistSelectedList"
                                      Height="190"
+                                     Tag="Artist"
+                                     AllowDrop="True"
+                                     PreviewMouseLeftButtonDown="SelectedList_PreviewMouseLeftButtonDown"
+                                     PreviewMouseMove="SelectedList_PreviewMouseMove"
+                                     DragOver="SelectedList_DragOver"
+                                     Drop="SelectedList_Drop"
                                      ItemTemplate="{StaticResource SelectedPromptTemplate}"
                                      AutomationProperties.Name="선택된 작가 스타일 프롬프트" />
                             <TextBlock x:Name="ArtistEmptySelectionText"
@@ -220,6 +240,12 @@
                         <Grid>
                             <ListBox x:Name="AdditionalSelectedList"
                                      Height="190"
+                                     Tag="Additional"
+                                     AllowDrop="True"
+                                     PreviewMouseLeftButtonDown="SelectedList_PreviewMouseLeftButtonDown"
+                                     PreviewMouseMove="SelectedList_PreviewMouseMove"
+                                     DragOver="SelectedList_DragOver"
+                                     Drop="SelectedList_Drop"
                                      ItemTemplate="{StaticResource SelectedPromptTemplate}"
                                      AutomationProperties.Name="선택된 추가 프롬프트" />
                             <TextBlock x:Name="AdditionalEmptySelectionText"
