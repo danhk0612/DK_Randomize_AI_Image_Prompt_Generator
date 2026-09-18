@@ -4,29 +4,30 @@
 
 - Language: C#
 - Runtime: .NET 10
-- UI: WinUI 3 / XAML
-- Windows App SDK: 2.5.x stable line
-- Pattern: MVVM
+- UI: WPF / XAML
+- Pattern: MVVM-oriented separation
 - Local database: SQLite
-- Minimum OS: Windows 10 1809 (build 17763)
+- Minimum OS target: Windows 10 1809+
+- First distribution target: self-contained win-x64
 
-The application is local-first. V1 has no server dependency and no AI API dependency.
+The application is local-first. V1 has no server dependency and no direct AI API/image-generation dependency.
 
 ## 2. Project layout
 
 ```text
 src/
+├─ DKRandomizeAIImagePromptGenerator.Core/
+│  └─ links the shared Models, Data, Services, and ViewModels
+├─ DKRandomizeAIImagePromptGenerator.Wpf/
+│  ├─ Converters/
+│  ├─ Services/
+│  ├─ Views/
+│  ├─ App.xaml
+│  ├─ App.xaml.cs
+│  ├─ MainWindow.xaml
+│  └─ MainWindow.xaml.cs
 └─ DKRandomizeAIImagePromptGenerator/
-   ├─ Assets/
-   ├─ Models/
-   ├─ ViewModels/
-   ├─ Views/
-   ├─ Services/
-   ├─ Data/
-   ├─ App.xaml
-   ├─ App.xaml.cs
-   ├─ MainWindow.xaml
-   └─ MainWindow.xaml.cs
+   └─ legacy WinUI implementation retained as migration/reference source
 
 tests/
 └─ DKRandomizeAIImagePromptGenerator.Tests/
@@ -42,51 +43,37 @@ docs/
 
 ## 3. Responsibilities
 
-### Models
+### Core
 
-Pure application data structures and enums.
+The Core project reuses the existing UI-independent application code:
 
-Initial models:
+- Models
+- SQLite repositories and database initialization
+- combination/history/settings logic
+- image storage and backup services
+- ViewModels
 
-- `PromptItem`
-- `PromptCategory`
-- `PromptSelectionMode`
-- `PromptCombination`
-- `CombinationHistory`
-- `Tag`
-- `AppSettings`
+UI-framework-specific code does not belong in Core.
 
-### ViewModels
+### WPF UI
 
-UI state and commands only. ViewModels must not directly access SQLite or the file system.
+The WPF project owns:
 
-Initial ViewModels:
+- application startup
+- navigation shell
+- Mixer / Prompt Library / History / Settings views
+- WPF file dialogs and clipboard integration
+- image conversion for WPF
+- mouse-wheel routing for outer page scroll areas
+- responsive desktop layout behavior
 
-- `ShellViewModel`
-- `MixerViewModel`
-- `PromptLibraryViewModel`
-- `HistoryViewModel`
-- `SettingsViewModel`
-- `PromptEditorViewModel`
+### Legacy WinUI project
 
-### Services
-
-Focused infrastructure/application services:
-
-- `PromptRepository` — prompt CRUD and queries
-- `HistoryRepository` — combination history persistence
-- `DatabaseService` — database initialization and migrations
-- `CombinationService` — deterministic composition rules and random selection
-- `ImageStorageService` — representative-image import/remove/thumbnail handling
-- `ClipboardService` — copy positive/negative result
-- `BackupService` — backup and restore application-owned data
-- `SettingsService` — local application settings
-
-Do not add additional abstraction layers unless a concrete need appears.
+The original WinUI implementation remains in the repository during migration as a reference and recovery point. It is not the active release target.
 
 ## 4. Navigation
 
-`MainWindow` hosts a WinUI `NavigationView` with a single content frame.
+`MainWindow` hosts a left navigation pane and a content host.
 
 Primary destinations:
 
@@ -95,7 +82,9 @@ Primary destinations:
 - History
 - Settings
 
-Prompt editing is opened as an in-app editor surface or secondary content pane rather than a chain of modal dialogs.
+The navigation pane switches to a compact icon-only layout when the window becomes narrow.
+
+Prompt editing is shown as an in-app editor pane rather than a chain of modal dialogs.
 
 ## 5. Data flow
 
@@ -108,8 +97,8 @@ Repositories -> MixerViewModel -> CombinationService -> editable output -> Clipb
 Typical prompt-edit flow:
 
 ```text
-PromptEditorViewModel -> PromptRepository
-                     -> ImageStorageService
+PromptLibraryView -> PromptLibraryViewModel -> PromptRepository
+                                      └─────> ImageStorageService
 ```
 
 ## 6. Randomization rules
@@ -128,7 +117,7 @@ V1 Additional selection returns zero or one item. The domain object keeps an ite
 
 ## 7. Prompt composition rules
 
-`CombinationService` composes positive and negative output independently.
+`CombinationService` composes Positive and Negative output independently.
 
 For each output:
 
@@ -136,7 +125,7 @@ For each output:
 2. Read Artist text.
 3. Read Additional text.
 4. Remove empty/whitespace-only sections.
-5. Join remaining sections with exactly one blank line (`Environment.NewLine` twice).
+5. Join remaining sections with exactly one blank line.
 
 The service must never alter prompt syntax.
 
@@ -144,37 +133,48 @@ The service must never alter prompt syntax.
 
 SQLite stores structured records. Images remain regular files.
 
-Database versioning uses explicit migrations from the beginning. V1 starts at schema version 1.
+Application data stays under:
 
-Application data paths are supplied by one path service/value source rather than scattered literal paths.
+```text
+%LOCALAPPDATA%\DK Randomize AI Image Prompt Generator\
+```
+
+The WPF migration intentionally reuses the same database, images, backup, and settings locations as the original implementation.
 
 ## 9. Image storage
 
 When the user chooses a representative image:
 
 1. Read the source without modifying it.
-2. Generate an application-owned display copy.
-3. Store that copy under the app data image directory with a generated unique file name.
+2. Create an application-owned copy.
+3. Store it under the app data image directory with a generated unique file name.
 4. Persist only the relative application-owned path.
 5. Remove orphaned application-owned copies when safe.
 
-The initial implementation may preserve the source format; WebP thumbnail conversion can be added when image processing is implemented and tested.
+## 10. Scrolling strategy
 
-## 10. Packaging strategy
+The WPF UI uses normal WPF `ScrollViewer` controls.
 
-Development starts with the standard WinUI 3 project structure and an unpackaged/debug-friendly workflow where useful. Final distribution strategy is decided after core features are stable.
+For outer page/editor scroll areas, `WheelScrollService` handles WPF `PreviewMouseWheel` so wheel input is received before nested controls such as TextBox and ComboBox can consume it.
 
-Packaging concerns must stay separate from prompt-domain logic so MSIX or installer changes do not affect core behavior.
+CI contains a routed-wheel smoke mode that creates a TextBox inside a ScrollViewer, raises a PreviewMouseWheel event against the TextBox, and verifies that the parent ScrollViewer offset changes.
 
-## 11. Testing priorities
+## 11. Packaging strategy
+
+V1 distribution is an unpackaged, self-contained `win-x64` WPF publish distributed as a ZIP archive.
+
+No MSIX signing or Windows App SDK runtime is required by the active WPF release target.
+
+## 12. Testing priorities
 
 Highest-value automated tests:
 
 - Fixed/Random/Disabled selection behavior
 - Positive/Negative composition ordering
-- Empty-section handling
-- Random selection constrained to the requested category
-- History captures final edited output
-- Repository CRUD and schema migration behavior
-
-UI automation is not required for the first implementation milestone.
+- empty-section handling
+- random selection constrained to the requested category
+- history captures final edited output
+- repository CRUD and schema behavior
+- backup/settings round trip
+- WPF routed mouse-wheel smoke
+- published WPF application startup smoke
