@@ -26,12 +26,12 @@
                 </StackPanel>
 
                 <StackPanel Grid.Row="1" Margin="0,8,0,0">
-                    <Button x:Name="MixerNavButton" Style="{StaticResource NavButtonStyle}" Click="MixerNavButton_Click" Content="⤨  프롬프트 조합" ToolTip="프롬프트 조합" />
-                    <Button x:Name="LibraryNavButton" Style="{StaticResource NavButtonStyle}" Click="LibraryNavButton_Click" Content="▦  프롬프트 관리" ToolTip="프롬프트 관리" />
-                    <Button x:Name="HistoryNavButton" Style="{StaticResource NavButtonStyle}" Click="HistoryNavButton_Click" Content="◷  최근 기록" ToolTip="최근 기록" />
+                    <Button x:Name="MixerNavButton" Style="{StaticResource NavButtonStyle}" Click="MixerNavButton_Click" Content="⤨  프롬프트 조합" ToolTip="프롬프트 조합" AutomationProperties.Name="프롬프트 조합" />
+                    <Button x:Name="LibraryNavButton" Style="{StaticResource NavButtonStyle}" Click="LibraryNavButton_Click" Content="▦  프롬프트 관리" ToolTip="프롬프트 관리" AutomationProperties.Name="프롬프트 관리" />
+                    <Button x:Name="HistoryNavButton" Style="{StaticResource NavButtonStyle}" Click="HistoryNavButton_Click" Content="◷  최근 기록" ToolTip="최근 기록" AutomationProperties.Name="최근 기록" />
                 </StackPanel>
 
-                <Button Grid.Row="2" x:Name="SettingsNavButton" Style="{StaticResource NavButtonStyle}" Click="SettingsNavButton_Click" Content="⚙  설정" ToolTip="설정" Margin="8,8,8,14" />
+                <Button Grid.Row="2" x:Name="SettingsNavButton" Style="{StaticResource NavButtonStyle}" Click="SettingsNavButton_Click" Content="⚙  설정" ToolTip="설정" AutomationProperties.Name="설정" Margin="8,8,8,14" />
             </Grid>
         </Border>
 
