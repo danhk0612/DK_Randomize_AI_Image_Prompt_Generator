@@ -4,7 +4,7 @@ namespace DKRandomizeAIImagePromptGenerator.Data;
 
 public sealed class DatabaseService
 {
-    public const int CurrentSchemaVersion = 1;
+    public const int CurrentSchemaVersion = 2;
 
     private readonly AppDataPaths _paths;
     private readonly string _connectionString;
@@ -36,6 +36,12 @@ public sealed class DatabaseService
         if (version == 0)
         {
             await MigrateToVersion1Async(connection, cancellationToken);
+            version = 1;
+        }
+
+        if (version < 2)
+        {
+            await MigrateToVersion2Async(connection, cancellationToken);
         }
     }
 
@@ -123,6 +129,99 @@ public sealed class DatabaseService
             );
 
             PRAGMA user_version = 1;
+            """;
+
+        await command.ExecuteNonQueryAsync(cancellationToken);
+        transaction.Commit();
+    }
+
+    private static async Task MigrateToVersion2Async(
+        SqliteConnection connection,
+        CancellationToken cancellationToken)
+    {
+        using var transaction = connection.BeginTransaction();
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = """
+            CREATE TABLE CombinationHistoryItems (
+                HistoryId TEXT NOT NULL,
+                Category INTEGER NOT NULL,
+                PromptId TEXT NULL,
+                SortOrder INTEGER NOT NULL,
+                TitleSnapshot TEXT NULL,
+                PRIMARY KEY (HistoryId, Category, SortOrder),
+                FOREIGN KEY (HistoryId) REFERENCES CombinationHistory(Id) ON DELETE CASCADE,
+                FOREIGN KEY (PromptId) REFERENCES PromptItems(Id) ON DELETE SET NULL
+            );
+
+            CREATE INDEX IX_CombinationHistoryItems_PromptId
+                ON CombinationHistoryItems(PromptId);
+
+            CREATE TABLE CombinationHistoryCategoryState (
+                HistoryId TEXT NOT NULL,
+                Category INTEGER NOT NULL,
+                Mode INTEGER NOT NULL,
+                RandomCount INTEGER NOT NULL DEFAULT 1,
+                PRIMARY KEY (HistoryId, Category),
+                FOREIGN KEY (HistoryId) REFERENCES CombinationHistory(Id) ON DELETE CASCADE
+            );
+
+            INSERT INTO CombinationHistoryItems (
+                HistoryId, Category, PromptId, SortOrder, TitleSnapshot)
+            SELECT Id, 0, CharacterPromptId, 0, CharacterTitleSnapshot
+            FROM CombinationHistory
+            WHERE CharacterPromptId IS NOT NULL
+               OR CharacterTitleSnapshot IS NOT NULL;
+
+            INSERT INTO CombinationHistoryItems (
+                HistoryId, Category, PromptId, SortOrder, TitleSnapshot)
+            SELECT Id, 1, ArtistPromptId, 0, ArtistTitleSnapshot
+            FROM CombinationHistory
+            WHERE ArtistPromptId IS NOT NULL
+               OR ArtistTitleSnapshot IS NOT NULL;
+
+            INSERT INTO CombinationHistoryItems (
+                HistoryId, Category, PromptId, SortOrder, TitleSnapshot)
+            SELECT HistoryId, 2, PromptId, SortOrder, TitleSnapshot
+            FROM CombinationHistoryAdditional;
+
+            INSERT INTO CombinationHistoryCategoryState (
+                HistoryId, Category, Mode, RandomCount)
+            SELECT Id, 0,
+                   CASE
+                       WHEN CharacterPromptId IS NOT NULL
+                         OR CharacterTitleSnapshot IS NOT NULL THEN 1
+                       ELSE 2
+                   END,
+                   1
+            FROM CombinationHistory;
+
+            INSERT INTO CombinationHistoryCategoryState (
+                HistoryId, Category, Mode, RandomCount)
+            SELECT Id, 1,
+                   CASE
+                       WHEN ArtistPromptId IS NOT NULL
+                         OR ArtistTitleSnapshot IS NOT NULL THEN 1
+                       ELSE 2
+                   END,
+                   1
+            FROM CombinationHistory;
+
+            INSERT INTO CombinationHistoryCategoryState (
+                HistoryId, Category, Mode, RandomCount)
+            SELECT h.Id, 2,
+                   CASE
+                       WHEN EXISTS (
+                           SELECT 1
+                           FROM CombinationHistoryAdditional a
+                           WHERE a.HistoryId = h.Id
+                       ) THEN 1
+                       ELSE 2
+                   END,
+                   1
+            FROM CombinationHistory h;
+
+            PRAGMA user_version = 2;
             """;
 
         await command.ExecuteNonQueryAsync(cancellationToken);
