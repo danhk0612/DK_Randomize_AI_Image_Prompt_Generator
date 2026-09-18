@@ -93,6 +93,27 @@ public partial class HistoryView : UserControl
         AfterPageChanged();
     }
 
+    private async void ClearHistory_Click(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel.TotalCount == 0)
+        {
+            return;
+        }
+
+        if (MessageBox.Show(
+                $"저장된 최근 기록 {ViewModel.TotalCount}개를 모두 삭제합니다.\n이 작업은 되돌릴 수 없습니다.",
+                "최근 기록 비우기",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning) != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        await ViewModel.ClearAsync();
+        _selectedHistory = null;
+        AfterPageChanged();
+    }
+
     private async Task RefreshPageAsync()
     {
         await ViewModel.RefreshAsync();
@@ -118,6 +139,7 @@ public partial class HistoryView : UserControl
         HistoryCountText.Text = $"총 {ViewModel.TotalCount}개 · 페이지당 {HistoryViewModel.PageSize}개";
         PreviousPageButton.IsEnabled = ViewModel.HasPreviousPage;
         NextPageButton.IsEnabled = ViewModel.HasNextPage;
+        ClearHistoryButton.IsEnabled = ViewModel.TotalCount > 0;
     }
 
     private async Task UpdateDetailAsync()
