@@ -192,6 +192,230 @@ public sealed class PersistenceTests
         }
     }
 
+    [Fact]
+    public async Task HistoryRepositoryPreservesMultipleItemsOrderModesAndRandomCounts()
+    {
+        var (root, database) = await CreateDatabaseAsync();
+
+        try
+        {
+            var promptRepository = new PromptRepository(database);
+            var historyRepository = new HistoryRepository(database);
+
+            var characterA = new PromptItem
+            {
+                Category = PromptCategory.Character,
+                Title = "Character A"
+            };
+            var characterB = new PromptItem
+            {
+                Category = PromptCategory.Character,
+                Title = "Character B"
+            };
+            var artist = new PromptItem
+            {
+                Category = PromptCategory.Artist,
+                Title = "Artist A"
+            };
+            var additionalA = new PromptItem
+            {
+                Category = PromptCategory.Additional,
+                Title = "Additional A"
+            };
+            var additionalB = new PromptItem
+            {
+                Category = PromptCategory.Additional,
+                Title = "Additional B"
+            };
+
+            foreach (var prompt in new[] { characterA, characterB, artist, additionalA, additionalB })
+            {
+                await promptRepository.CreateAsync(prompt);
+            }
+
+            var history = new CombinationHistory
+            {
+                CharacterMode = PromptSelectionMode.Fixed,
+                ArtistMode = PromptSelectionMode.Random,
+                AdditionalMode = PromptSelectionMode.Fixed,
+                CharacterRandomCount = 1,
+                ArtistRandomCount = 2,
+                AdditionalRandomCount = 3,
+                PositiveText = "multi positive",
+                NegativeText = "multi negative"
+            };
+
+            history.Items.AddRange(
+            [
+                new CombinationHistoryItem(PromptCategory.Character, characterB.Id, characterB.Title, 0),
+                new CombinationHistoryItem(PromptCategory.Character, characterA.Id, characterA.Title, 1),
+                new CombinationHistoryItem(PromptCategory.Artist, artist.Id, artist.Title, 0),
+                new CombinationHistoryItem(PromptCategory.Additional, additionalB.Id, additionalB.Title, 0),
+                new CombinationHistoryItem(PromptCategory.Additional, additionalA.Id, additionalA.Title, 1)
+            ]);
+
+            await historyRepository.SaveAsync(history);
+
+            var loaded = await historyRepository.GetByIdAsync(history.Id);
+
+            Assert.NotNull(loaded);
+            Assert.Equal(
+                new[] { characterB.Id, characterA.Id },
+                loaded.GetItems(PromptCategory.Character).Select(item => item.PromptId));
+            Assert.Equal(
+                new[] { additionalB.Id, additionalA.Id },
+                loaded.GetItems(PromptCategory.Additional).Select(item => item.PromptId));
+
+            Assert.Equal(PromptSelectionMode.Fixed, loaded.CharacterMode);
+            Assert.Equal(PromptSelectionMode.Random, loaded.ArtistMode);
+            Assert.Equal(PromptSelectionMode.Fixed, loaded.AdditionalMode);
+            Assert.Equal(1, loaded.CharacterRandomCount);
+            Assert.Equal(2, loaded.ArtistRandomCount);
+            Assert.Equal(3, loaded.AdditionalRandomCount);
+
+            // Legacy compatibility still exposes the first item and Additional list.
+            Assert.Equal(characterB.Id, loaded.CharacterPromptId);
+            Assert.Equal(artist.Id, loaded.ArtistPromptId);
+            Assert.Equal(
+                new[] { additionalB.Id, additionalA.Id },
+                loaded.AdditionalItems.Select(item => item.PromptId));
+        }
+        finally
+        {
+            Cleanup(root);
+        }
+    }
+
+    [Fact]
+    public async Task Version1HistoryMigratesToVersion2WithoutLosingSelections()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "DKRandomizeAIImagePromptGenerator.Tests",
+            Guid.NewGuid().ToString("N"));
+
+        var paths = AppDataPaths.Create(root);
+        paths.EnsureDirectories();
+
+        var characterId = Guid.NewGuid();
+        var artistId = Guid.NewGuid();
+        var additionalId = Guid.NewGuid();
+        var historyId = Guid.NewGuid();
+        var now = DateTimeOffset.UtcNow.ToString("O");
+
+        try
+        {
+            var connectionString = new SqliteConnectionStringBuilder
+            {
+                DataSource = paths.DatabasePath
+            }.ToString();
+
+            await using (var connection = new SqliteConnection(connectionString))
+            {
+                await connection.OpenAsync();
+                await using var command = connection.CreateCommand();
+                command.CommandText = """
+                    PRAGMA foreign_keys = ON;
+
+                    CREATE TABLE PromptItems (
+                        Id TEXT PRIMARY KEY NOT NULL,
+                        Category INTEGER NOT NULL,
+                        Title TEXT NOT NULL,
+                        PositivePrompt TEXT NULL,
+                        NegativePrompt TEXT NULL,
+                        Memo TEXT NULL,
+                        ImagePath TEXT NULL,
+                        CreatedAtUtc TEXT NOT NULL,
+                        UpdatedAtUtc TEXT NOT NULL
+                    );
+
+                    CREATE TABLE CombinationHistory (
+                        Id TEXT PRIMARY KEY NOT NULL,
+                        CharacterPromptId TEXT NULL,
+                        CharacterTitleSnapshot TEXT NULL,
+                        ArtistPromptId TEXT NULL,
+                        ArtistTitleSnapshot TEXT NULL,
+                        PositiveText TEXT NOT NULL,
+                        NegativeText TEXT NOT NULL,
+                        CreatedAtUtc TEXT NOT NULL,
+                        FOREIGN KEY (CharacterPromptId) REFERENCES PromptItems(Id) ON DELETE SET NULL,
+                        FOREIGN KEY (ArtistPromptId) REFERENCES PromptItems(Id) ON DELETE SET NULL
+                    );
+
+                    CREATE TABLE CombinationHistoryAdditional (
+                        HistoryId TEXT NOT NULL,
+                        PromptId TEXT NULL,
+                        SortOrder INTEGER NOT NULL,
+                        TitleSnapshot TEXT NULL,
+                        PRIMARY KEY (HistoryId, SortOrder),
+                        FOREIGN KEY (HistoryId) REFERENCES CombinationHistory(Id) ON DELETE CASCADE,
+                        FOREIGN KEY (PromptId) REFERENCES PromptItems(Id) ON DELETE SET NULL
+                    );
+
+                    INSERT INTO PromptItems (
+                        Id, Category, Title, PositivePrompt, NegativePrompt,
+                        Memo, ImagePath, CreatedAtUtc, UpdatedAtUtc)
+                    VALUES
+                        (@characterId, 0, 'Legacy Character', '', '', '', NULL, @now, @now),
+                        (@artistId, 1, 'Legacy Artist', '', '', '', NULL, @now, @now),
+                        (@additionalId, 2, 'Legacy Additional', '', '', '', NULL, @now, @now);
+
+                    INSERT INTO CombinationHistory (
+                        Id, CharacterPromptId, CharacterTitleSnapshot,
+                        ArtistPromptId, ArtistTitleSnapshot,
+                        PositiveText, NegativeText, CreatedAtUtc)
+                    VALUES (
+                        @historyId, @characterId, 'Legacy Character',
+                        @artistId, 'Legacy Artist',
+                        'legacy positive', 'legacy negative', @now);
+
+                    INSERT INTO CombinationHistoryAdditional (
+                        HistoryId, PromptId, SortOrder, TitleSnapshot)
+                    VALUES (
+                        @historyId, @additionalId, 0, 'Legacy Additional');
+
+                    PRAGMA user_version = 1;
+                    """;
+                command.Parameters.AddWithValue("@characterId", characterId.ToString("D"));
+                command.Parameters.AddWithValue("@artistId", artistId.ToString("D"));
+                command.Parameters.AddWithValue("@additionalId", additionalId.ToString("D"));
+                command.Parameters.AddWithValue("@historyId", historyId.ToString("D"));
+                command.Parameters.AddWithValue("@now", now);
+                await command.ExecuteNonQueryAsync();
+            }
+
+            var database = new DatabaseService(paths);
+            await database.InitializeAsync();
+
+            await using (var connection = await database.OpenConnectionAsync())
+            {
+                await using var versionCommand = connection.CreateCommand();
+                versionCommand.CommandText = "PRAGMA user_version;";
+                Assert.Equal(2L, (long)(await versionCommand.ExecuteScalarAsync() ?? 0L));
+            }
+
+            var historyRepository = new HistoryRepository(database);
+            var loaded = await historyRepository.GetByIdAsync(historyId);
+
+            Assert.NotNull(loaded);
+            Assert.Equal(characterId, loaded.GetItems(PromptCategory.Character).Single().PromptId);
+            Assert.Equal(artistId, loaded.GetItems(PromptCategory.Artist).Single().PromptId);
+            Assert.Equal(additionalId, loaded.GetItems(PromptCategory.Additional).Single().PromptId);
+            Assert.Equal(PromptSelectionMode.Random, loaded.CharacterMode);
+            Assert.Equal(PromptSelectionMode.Random, loaded.ArtistMode);
+            Assert.Equal(PromptSelectionMode.Random, loaded.AdditionalMode);
+            Assert.Equal(1, loaded.CharacterRandomCount);
+            Assert.Equal(1, loaded.ArtistRandomCount);
+            Assert.Equal(1, loaded.AdditionalRandomCount);
+            Assert.Equal("legacy positive", loaded.PositiveText);
+            Assert.Equal("legacy negative", loaded.NegativeText);
+        }
+        finally
+        {
+            Cleanup(root);
+        }
+    }
+
     private static async Task<(string Root, DatabaseService Database)> CreateDatabaseAsync()
     {
         var root = Path.Combine(
