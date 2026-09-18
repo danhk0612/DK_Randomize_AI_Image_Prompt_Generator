@@ -1,5 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 using DKRandomizeAIImagePromptGenerator.Models;
 using DKRandomizeAIImagePromptGenerator.ViewModels;
 using DKRandomizeAIImagePromptGenerator.Wpf.Services;
@@ -11,6 +13,9 @@ public partial class MixerView : UserControl
     private bool _initialized;
     private bool _syncing;
     private bool _hasLoaded;
+    private Point _dragStartPoint;
+    private ListBox? _dragSourceList;
+    private PromptItem? _draggedPrompt;
 
     public MixerView()
     {
@@ -206,6 +211,26 @@ public partial class MixerView : UserControl
         SyncControls();
     }
 
+    private void RemovePromptItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button ||
+            button.DataContext is not PromptItem item)
+        {
+            return;
+        }
+
+        var list = FindVisualAncestor<ListBox>(button);
+        if (list is null ||
+            !TryGetCategory(list, out var category) ||
+            ViewModel.GetMode(category) != PromptSelectionMode.Fixed)
+        {
+            return;
+        }
+
+        ViewModel.RemoveSelectedItem(category, item.Id);
+        SyncControls();
+    }
+
     private void RemoveSelected_Click(object sender, RoutedEventArgs e)
     {
         if (!TryGetCategory(sender, out var category) ||
@@ -251,6 +276,85 @@ public partial class MixerView : UserControl
             list.ScrollIntoView(item);
             SyncOutputs();
         }
+    }
+
+    private void SelectedList_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is not ListBox list)
+        {
+            return;
+        }
+
+        _dragStartPoint = e.GetPosition(list);
+        _dragSourceList = list;
+
+        var origin = e.OriginalSource as DependencyObject;
+        _draggedPrompt = FindVisualAncestor<Button>(origin) is null
+            ? GetPromptFromElement(list, origin)
+            : null;
+    }
+
+    private void SelectedList_PreviewMouseMove(object sender, MouseEventArgs e)
+    {
+        if (sender is not ListBox list ||
+            e.LeftButton != MouseButtonState.Pressed ||
+            _dragSourceList != list ||
+            _draggedPrompt is null ||
+            !TryGetCategory(list, out var category) ||
+            ViewModel.GetMode(category) != PromptSelectionMode.Fixed)
+        {
+            return;
+        }
+
+        var current = e.GetPosition(list);
+        if (Math.Abs(current.X - _dragStartPoint.X) < SystemParameters.MinimumHorizontalDragDistance &&
+            Math.Abs(current.Y - _dragStartPoint.Y) < SystemParameters.MinimumVerticalDragDistance)
+        {
+            return;
+        }
+
+        DragDrop.DoDragDrop(list, _draggedPrompt, DragDropEffects.Move);
+        _draggedPrompt = null;
+        _dragSourceList = null;
+    }
+
+    private void SelectedList_DragOver(object sender, DragEventArgs e)
+    {
+        e.Effects = sender is ListBox list &&
+                    _dragSourceList == list &&
+                    e.Data.GetDataPresent(typeof(PromptItem))
+            ? DragDropEffects.Move
+            : DragDropEffects.None;
+        e.Handled = true;
+    }
+
+    private void SelectedList_Drop(object sender, DragEventArgs e)
+    {
+        if (sender is not ListBox list ||
+            _dragSourceList != list ||
+            !TryGetCategory(list, out var category) ||
+            ViewModel.GetMode(category) != PromptSelectionMode.Fixed ||
+            e.Data.GetData(typeof(PromptItem)) is not PromptItem dragged)
+        {
+            return;
+        }
+
+        var fromIndex = list.Items.IndexOf(dragged);
+        var target = GetPromptFromElement(list, e.OriginalSource as DependencyObject);
+        var toIndex = target is null ? list.Items.Count - 1 : list.Items.IndexOf(target);
+
+        if (fromIndex >= 0 &&
+            toIndex >= 0 &&
+            ViewModel.MoveSelectedItem(category, fromIndex, toIndex))
+        {
+            list.SelectedItem = dragged;
+            list.ScrollIntoView(dragged);
+            SyncOutputs();
+        }
+
+        _draggedPrompt = null;
+        _dragSourceList = null;
+        e.Handled = true;
     }
 
     private void RandomizeCategory_Click(object sender, RoutedEventArgs e)
@@ -382,9 +486,22 @@ public partial class MixerView : UserControl
             ? Visibility.Visible
             : Visibility.Collapsed;
 
-        selectedList.Opacity = mode == PromptSelectionMode.Disabled ? 0.55 : 1.0;
+        selectedList.IsEnabled = mode == PromptSelectionMode.Fixed;
+        selectedList.Opacity = mode switch
+        {
+            PromptSelectionMode.Fixed => 1.0,
+            PromptSelectionMode.Random => 0.68,
+            _ => 0.34
+        };
+
         directControls.IsEnabled = mode == PromptSelectionMode.Fixed;
+        directControls.Opacity = mode == PromptSelectionMode.Fixed ? 1.0 : 0.34;
+
         randomControls.IsEnabled = mode == PromptSelectionMode.Random;
+        randomControls.Opacity = mode == PromptSelectionMode.Random ? 1.0 : 0.34;
+
+        summary.Opacity = mode == PromptSelectionMode.Disabled ? 0.55 : 1.0;
+        emptyText.Opacity = mode == PromptSelectionMode.Disabled ? 0.45 : 1.0;
 
         var currentCount = ViewModel.GetRandomCount(category);
         var max = Math.Max(
@@ -408,6 +525,30 @@ public partial class MixerView : UserControl
         PromptCategory.Additional => AdditionalSelectedList,
         _ => throw new ArgumentOutOfRangeException(nameof(category))
     };
+
+    private static PromptItem? GetPromptFromElement(ListBox list, DependencyObject? element)
+    {
+        var container = element is null
+            ? null
+            : ItemsControl.ContainerFromElement(list, element) as ListBoxItem;
+        return container?.DataContext as PromptItem;
+    }
+
+    private static T? FindVisualAncestor<T>(DependencyObject? element)
+        where T : DependencyObject
+    {
+        while (element is not null)
+        {
+            if (element is T match)
+            {
+                return match;
+            }
+
+            element = VisualTreeHelper.GetParent(element);
+        }
+
+        return null;
+    }
 
     private static bool TryGetCategory(object sender, out PromptCategory category)
     {
