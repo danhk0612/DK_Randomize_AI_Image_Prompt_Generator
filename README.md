@@ -4,23 +4,21 @@ Windows desktop application for storing reusable AI image-generation prompts and
 
 ## Main features
 
-- Manage three independent prompt groups:
-  - Character
-  - Artist / Style
-  - Additional
-- Store a title, representative image, Positive prompt, Negative prompt, tags, and notes for each item.
+- Manage Character, Artist / Style, and Additional prompt groups.
+- Store title, representative image, Positive prompt, Negative prompt, tags, and memo.
 - Browse prompts in gallery or list view.
 - Search prompt text and filter by tag.
 - Create, edit, duplicate, and delete prompt items.
-- Choose Fixed / Random / Disabled mode independently for each prompt group.
+- Choose Fixed / Random / Disabled independently for each group.
 - Randomize one group or all random-mode groups.
-- Edit the combined Positive / Negative text before copying it.
-- Copy Positive and Negative results independently.
-- Save the final edited result to recent history and restore it later.
-- Follow the Windows system theme or force Light / Dark mode.
-- Back up and restore local data as a ZIP file.
+- Direct selection shows thumbnail, title, memo, and tags.
+- Edit combined Positive / Negative output before copying.
+- Copy Positive and Negative independently.
+- Save final edited output to recent history and restore it later.
+- Follow the Windows system theme or force Light / Dark.
+- Back up and restore local data as a ZIP.
 
-The application does **not** generate images directly. Its role is to prepare prompt text for use in other image-generation tools and services.
+The application does **not** generate images directly. It prepares prompt text for use in other image-generation tools and services.
 
 ## Data storage
 
@@ -34,21 +32,37 @@ Application data is local to the current Windows user.
 └─ settings.json
 ```
 
-Representative images are copied into application-managed storage. The original image files are not modified.
+Representative images are copied into application-managed storage. Original image files are not modified.
 
 ## Platform and development stack
 
-- Windows 10 1809+ / Windows 11
+Active release target:
+
+- Windows desktop
 - C# / .NET 10
-- WinUI 3
-- Windows App SDK 2.5.1
+- WPF / XAML
 - SQLite (`Microsoft.Data.Sqlite`)
-- x64 / ARM64 project targets
+- self-contained win-x64 portable publish
+
+The earlier WinUI implementation is retained in the repository as migration/reference code but is not the active release target.
 
 ## Development
 
-Open `DK_Randomize_AI_Image_Prompt_Generator.sln` and build the solution with Visual Studio or the .NET CLI on Windows.
+Active development branch:
 
-GitHub Actions validates restore, Release build, and automated tests on Windows runners.
+```text
+feature/wpf-ui
+```
 
-Detailed product requirements, architecture, UI direction, data model, task status, and current implementation state are maintained under [`docs/`](docs/).
+Run the WPF application:
+
+```powershell
+dotnet run `
+  --project ".\src\DKRandomizeAIImagePromptGenerator.Wpf\DKRandomizeAIImagePromptGenerator.Wpf.csproj" `
+  -c Release `
+  --property:Platform=x64
+```
+
+GitHub Actions validates build, automated tests, WPF routed mouse-wheel behavior, self-contained publish, and published application startup.
+
+Detailed requirements, architecture, UI direction, data model, task status, and current state are maintained under `docs/`.
