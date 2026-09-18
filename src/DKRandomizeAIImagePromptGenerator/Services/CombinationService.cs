@@ -4,7 +4,7 @@ namespace DKRandomizeAIImagePromptGenerator.Services;
 
 public sealed class CombinationService
 {
-    private static readonly string SectionSeparator = Environment.NewLine + Environment.NewLine;
+    private static readonly string SectionSeparator = Environment.NewLine;
 
     public PromptCombination Combine(
         IReadOnlyCollection<PromptItem> items,
@@ -13,43 +13,31 @@ public sealed class CombinationService
     {
         random ??= Random.Shared;
 
-        var character = Resolve(items, request.Character, random);
-        var artist = Resolve(items, request.Artist, random);
-        var additional = Resolve(items, request.Additional, random);
-        IReadOnlyList<PromptItem> additionalItems = additional is null
-            ? Array.Empty<PromptItem>()
-            : new[] { additional };
+        var characters = Resolve(items, request.Character, random);
+        var artists = Resolve(items, request.Artist, random);
+        var additionalItems = Resolve(items, request.Additional, random);
 
-        var orderedItems = new List<PromptItem>(2 + additionalItems.Count);
-
-        if (character is not null)
-        {
-            orderedItems.Add(character);
-        }
-
-        if (artist is not null)
-        {
-            orderedItems.Add(artist);
-        }
-
-        orderedItems.AddRange(additionalItems);
+        var orderedItems = characters
+            .Concat(artists)
+            .Concat(additionalItems)
+            .ToArray();
 
         return new PromptCombination(
-            character,
-            artist,
+            characters,
+            artists,
             additionalItems,
             Compose(orderedItems, item => item.PositivePrompt),
             Compose(orderedItems, item => item.NegativePrompt));
     }
 
-    private static PromptItem? Resolve(
+    private static IReadOnlyList<PromptItem> Resolve(
         IReadOnlyCollection<PromptItem> items,
         PromptSelection selection,
         Random random)
     {
         if (selection.Mode == PromptSelectionMode.Disabled)
         {
-            return null;
+            return Array.Empty<PromptItem>();
         }
 
         var candidates = items
@@ -58,20 +46,40 @@ public sealed class CombinationService
 
         if (selection.Mode == PromptSelectionMode.Fixed)
         {
-            if (selection.FixedPromptId is null)
+            if (selection.FixedPromptIds.Count == 0)
             {
-                return null;
+                return Array.Empty<PromptItem>();
             }
 
-            return candidates.FirstOrDefault(item => item.Id == selection.FixedPromptId.Value);
+            var byId = candidates.ToDictionary(item => item.Id);
+            var selected = new List<PromptItem>(selection.FixedPromptIds.Count);
+
+            foreach (var id in selection.FixedPromptIds)
+            {
+                if (byId.TryGetValue(id, out var item))
+                {
+                    selected.Add(item);
+                }
+            }
+
+            return selected;
         }
 
         if (candidates.Length == 0)
         {
-            return null;
+            return Array.Empty<PromptItem>();
         }
 
-        return candidates[random.Next(candidates.Length)];
+        var count = Math.Min(selection.RandomCount, candidates.Length);
+        var pool = candidates.ToArray();
+
+        for (var index = 0; index < count; index++)
+        {
+            var selectedIndex = random.Next(index, pool.Length);
+            (pool[index], pool[selectedIndex]) = (pool[selectedIndex], pool[index]);
+        }
+
+        return pool.Take(count).ToArray();
     }
 
     private static string Compose(
