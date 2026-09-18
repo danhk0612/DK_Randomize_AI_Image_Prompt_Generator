@@ -27,17 +27,30 @@ public sealed class MixerViewModel
 
     public ObservableCollection<PromptItem> AdditionalItems { get; } = [];
 
+    public ObservableCollection<PromptItem> SelectedCharacters { get; } = [];
+
+    public ObservableCollection<PromptItem> SelectedArtists { get; } = [];
+
+    public ObservableCollection<PromptItem> SelectedAdditionals { get; } = [];
+
     public PromptSelectionMode CharacterMode { get; private set; } = PromptSelectionMode.Random;
 
     public PromptSelectionMode ArtistMode { get; private set; } = PromptSelectionMode.Random;
 
     public PromptSelectionMode AdditionalMode { get; private set; } = PromptSelectionMode.Random;
 
-    public PromptItem? SelectedCharacter { get; private set; }
+    public int CharacterRandomCount { get; private set; } = 1;
 
-    public PromptItem? SelectedArtist { get; private set; }
+    public int ArtistRandomCount { get; private set; } = 1;
 
-    public PromptItem? SelectedAdditional { get; private set; }
+    public int AdditionalRandomCount { get; private set; } = 1;
+
+    // Compatibility accessors while the WPF UI is migrated to multi-select.
+    public PromptItem? SelectedCharacter => SelectedCharacters.FirstOrDefault();
+
+    public PromptItem? SelectedArtist => SelectedArtists.FirstOrDefault();
+
+    public PromptItem? SelectedAdditional => SelectedAdditionals.FirstOrDefault();
 
     public string PositiveText { get; private set; } = string.Empty;
 
@@ -51,32 +64,40 @@ public sealed class MixerViewModel
         RandomizeAll();
     }
 
+    public IReadOnlyList<PromptItem> GetAvailableItems(PromptCategory category) =>
+        GetAvailableCollection(category).ToArray();
+
+    public IReadOnlyList<PromptItem> GetSelectedItems(PromptCategory category) =>
+        GetSelectedCollection(category).ToArray();
+
+    public PromptSelectionMode GetMode(PromptCategory category) => category switch
+    {
+        PromptCategory.Character => CharacterMode,
+        PromptCategory.Artist => ArtistMode,
+        PromptCategory.Additional => AdditionalMode,
+        _ => PromptSelectionMode.Disabled
+    };
+
+    public int GetRandomCount(PromptCategory category) => category switch
+    {
+        PromptCategory.Character => CharacterRandomCount,
+        PromptCategory.Artist => ArtistRandomCount,
+        PromptCategory.Additional => AdditionalRandomCount,
+        _ => 1
+    };
+
     public void RestoreFromHistory(CombinationHistory history)
     {
-        SelectedCharacter = history.CharacterPromptId is Guid characterId
-            ? CharacterItems.FirstOrDefault(item => item.Id == characterId)
-            : null;
-        SelectedArtist = history.ArtistPromptId is Guid artistId
-            ? ArtistItems.FirstOrDefault(item => item.Id == artistId)
-            : null;
+        RestoreCategoryFromHistory(history, PromptCategory.Character);
+        RestoreCategoryFromHistory(history, PromptCategory.Artist);
+        RestoreCategoryFromHistory(history, PromptCategory.Additional);
 
-        var additionalId = history.AdditionalItems.FirstOrDefault()?.PromptId;
-        SelectedAdditional = additionalId is Guid promptId
-            ? AdditionalItems.FirstOrDefault(item => item.Id == promptId)
-            : null;
-
-        // Restoring history should reproduce the saved selection and final edited text,
-        // but it should not permanently pin the mixer. Keep categories with a restored
-        // item in Random mode so the next per-category/all reroll works immediately.
-        CharacterMode = SelectedCharacter is null
-            ? PromptSelectionMode.Disabled
-            : PromptSelectionMode.Random;
-        ArtistMode = SelectedArtist is null
-            ? PromptSelectionMode.Disabled
-            : PromptSelectionMode.Random;
-        AdditionalMode = SelectedAdditional is null
-            ? PromptSelectionMode.Disabled
-            : PromptSelectionMode.Random;
+        CharacterMode = history.CharacterMode;
+        ArtistMode = history.ArtistMode;
+        AdditionalMode = history.AdditionalMode;
+        CharacterRandomCount = Math.Max(1, history.CharacterRandomCount);
+        ArtistRandomCount = Math.Max(1, history.ArtistRandomCount);
+        AdditionalRandomCount = Math.Max(1, history.AdditionalRandomCount);
 
         PositiveText = history.PositiveText;
         NegativeText = history.NegativeText;
@@ -84,69 +105,144 @@ public sealed class MixerViewModel
 
     public void SetMode(PromptCategory category, PromptSelectionMode mode)
     {
-        switch (category)
+        SetModeValue(category, mode);
+
+        if (mode == PromptSelectionMode.Disabled)
         {
-            case PromptCategory.Character:
-                CharacterMode = mode;
-                if (mode == PromptSelectionMode.Disabled)
-                {
-                    SelectedCharacter = null;
-                }
-                else if (mode == PromptSelectionMode.Fixed && SelectedCharacter is null)
-                {
-                    SelectedCharacter = CharacterItems.FirstOrDefault();
-                }
-                break;
-            case PromptCategory.Artist:
-                ArtistMode = mode;
-                if (mode == PromptSelectionMode.Disabled)
-                {
-                    SelectedArtist = null;
-                }
-                else if (mode == PromptSelectionMode.Fixed && SelectedArtist is null)
-                {
-                    SelectedArtist = ArtistItems.FirstOrDefault();
-                }
-                break;
-            case PromptCategory.Additional:
-                AdditionalMode = mode;
-                if (mode == PromptSelectionMode.Disabled)
-                {
-                    SelectedAdditional = null;
-                }
-                else if (mode == PromptSelectionMode.Fixed && SelectedAdditional is null)
-                {
-                    SelectedAdditional = AdditionalItems.FirstOrDefault();
-                }
-                break;
+            GetSelectedCollection(category).Clear();
+            RecomposeCurrent();
+            return;
         }
 
         if (mode == PromptSelectionMode.Random)
         {
             RandomizeCategory(category);
-        }
-        else
-        {
-            RecomposeCurrent();
-        }
-    }
-
-    public void SetSelectedItem(PromptCategory category, PromptItem? item)
-    {
-        switch (category)
-        {
-            case PromptCategory.Character:
-                SelectedCharacter = item;
-                break;
-            case PromptCategory.Artist:
-                SelectedArtist = item;
-                break;
-            case PromptCategory.Additional:
-                SelectedAdditional = item;
-                break;
+            return;
         }
 
         RecomposeCurrent();
+    }
+
+    public void SetRandomCount(PromptCategory category, int count)
+    {
+        count = Math.Max(1, count);
+
+        switch (category)
+        {
+            case PromptCategory.Character:
+                CharacterRandomCount = count;
+                break;
+            case PromptCategory.Artist:
+                ArtistRandomCount = count;
+                break;
+            case PromptCategory.Additional:
+                AdditionalRandomCount = count;
+                break;
+        }
+
+        if (GetMode(category) == PromptSelectionMode.Random)
+        {
+            RandomizeCategory(category);
+        }
+    }
+
+    public void SetSelectedItems(
+        PromptCategory category,
+        IEnumerable<PromptItem> items,
+        bool switchToDirectMode = true)
+    {
+        var selected = GetSelectedCollection(category);
+        var normalized = items
+            .Where(item => item.Category == category)
+            .GroupBy(item => item.Id)
+            .Select(group => group.First())
+            .ToArray();
+
+        selected.Clear();
+        foreach (var item in normalized)
+        {
+            selected.Add(item);
+        }
+
+        if (switchToDirectMode)
+        {
+            SetModeValue(category, PromptSelectionMode.Fixed);
+        }
+
+        RecomposeCurrent();
+    }
+
+    public bool AddSelectedItem(
+        PromptCategory category,
+        PromptItem item,
+        bool switchToDirectMode = true)
+    {
+        if (item.Category != category)
+        {
+            return false;
+        }
+
+        var selected = GetSelectedCollection(category);
+        if (selected.Any(existing => existing.Id == item.Id))
+        {
+            if (switchToDirectMode)
+            {
+                SetModeValue(category, PromptSelectionMode.Fixed);
+                RecomposeCurrent();
+            }
+
+            return false;
+        }
+
+        selected.Add(item);
+
+        if (switchToDirectMode)
+        {
+            SetModeValue(category, PromptSelectionMode.Fixed);
+        }
+
+        RecomposeCurrent();
+        return true;
+    }
+
+    public bool RemoveSelectedItem(PromptCategory category, Guid promptId)
+    {
+        var selected = GetSelectedCollection(category);
+        var item = selected.FirstOrDefault(candidate => candidate.Id == promptId);
+        if (item is null)
+        {
+            return false;
+        }
+
+        selected.Remove(item);
+        RecomposeCurrent();
+        return true;
+    }
+
+    public bool MoveSelectedItem(PromptCategory category, int fromIndex, int toIndex)
+    {
+        var selected = GetSelectedCollection(category);
+
+        if (fromIndex < 0 ||
+            fromIndex >= selected.Count ||
+            toIndex < 0 ||
+            toIndex >= selected.Count ||
+            fromIndex == toIndex)
+        {
+            return false;
+        }
+
+        selected.Move(fromIndex, toIndex);
+        RecomposeCurrent();
+        return true;
+    }
+
+    // Compatibility wrapper for the previous single-select UI.
+    public void SetSelectedItem(PromptCategory category, PromptItem? item)
+    {
+        SetSelectedItems(
+            category,
+            item is null ? Array.Empty<PromptItem>() : new[] { item });
     }
 
     public void RandomizeAll()
@@ -154,9 +250,9 @@ public sealed class MixerViewModel
         var result = _combinationService.Combine(
             GetAllItems(),
             new PromptCombinationRequest(
-                BuildSelection(PromptCategory.Character, CharacterMode, SelectedCharacter, allowRandom: true),
-                BuildSelection(PromptCategory.Artist, ArtistMode, SelectedArtist, allowRandom: true),
-                BuildSelection(PromptCategory.Additional, AdditionalMode, SelectedAdditional, allowRandom: true)));
+                BuildSelection(PromptCategory.Character, allowRandom: true),
+                BuildSelection(PromptCategory.Artist, allowRandom: true),
+                BuildSelection(PromptCategory.Additional, allowRandom: true)));
 
         Apply(result);
     }
@@ -168,18 +264,12 @@ public sealed class MixerViewModel
             new PromptCombinationRequest(
                 BuildSelection(
                     PromptCategory.Character,
-                    CharacterMode,
-                    SelectedCharacter,
                     allowRandom: category == PromptCategory.Character),
                 BuildSelection(
                     PromptCategory.Artist,
-                    ArtistMode,
-                    SelectedArtist,
                     allowRandom: category == PromptCategory.Artist),
                 BuildSelection(
                     PromptCategory.Additional,
-                    AdditionalMode,
-                    SelectedAdditional,
                     allowRandom: category == PromptCategory.Additional)));
 
         Apply(result);
@@ -196,20 +286,20 @@ public sealed class MixerViewModel
             CharacterMode = CharacterMode,
             ArtistMode = ArtistMode,
             AdditionalMode = AdditionalMode,
-            CharacterRandomCount = 1,
-            ArtistRandomCount = 1,
-            AdditionalRandomCount = 1,
+            CharacterRandomCount = CharacterRandomCount,
+            ArtistRandomCount = ArtistRandomCount,
+            AdditionalRandomCount = AdditionalRandomCount,
             PositiveText = positiveText,
             NegativeText = negativeText
         };
 
-        if (SelectedAdditional is not null)
-        {
-            record.AdditionalItems.Add(
-                new CombinationHistoryAdditional(
-                    SelectedAdditional.Id,
-                    SelectedAdditional.Title));
-        }
+        AddHistoryItems(record, PromptCategory.Character, SelectedCharacters);
+        AddHistoryItems(record, PromptCategory.Artist, SelectedArtists);
+        AddHistoryItems(record, PromptCategory.Additional, SelectedAdditionals);
+
+        record.AdditionalItems.AddRange(
+            SelectedAdditionals.Select(item =>
+                new CombinationHistoryAdditional(item.Id, item.Title)));
 
         await _history.SaveAsync(record);
     }
@@ -226,14 +316,61 @@ public sealed class MixerViewModel
         }
     }
 
+    private void RestoreCategoryFromHistory(
+        CombinationHistory history,
+        PromptCategory category)
+    {
+        var available = GetAvailableCollection(category);
+        var selected = GetSelectedCollection(category);
+        selected.Clear();
+
+        var historyItems = history.GetItems(category);
+        if (historyItems.Count > 0)
+        {
+            foreach (var historyItem in historyItems)
+            {
+                if (historyItem.PromptId is not Guid id)
+                {
+                    continue;
+                }
+
+                var item = available.FirstOrDefault(candidate => candidate.Id == id);
+                if (item is not null)
+                {
+                    selected.Add(item);
+                }
+            }
+
+            return;
+        }
+
+        // Compatibility for in-memory V1 history objects not loaded through schema v2.
+        IEnumerable<Guid?> legacyIds = category switch
+        {
+            PromptCategory.Character => new[] { history.CharacterPromptId },
+            PromptCategory.Artist => new[] { history.ArtistPromptId },
+            PromptCategory.Additional => history.AdditionalItems.Select(item => item.PromptId),
+            _ => Array.Empty<Guid?>()
+        };
+
+        foreach (var id in legacyIds.OfType<Guid>())
+        {
+            var item = available.FirstOrDefault(candidate => candidate.Id == id);
+            if (item is not null)
+            {
+                selected.Add(item);
+            }
+        }
+    }
+
     private void RecomposeCurrent()
     {
         var result = _combinationService.Combine(
             GetAllItems(),
             new PromptCombinationRequest(
-                StableSelection(PromptCategory.Character, CharacterMode, SelectedCharacter),
-                StableSelection(PromptCategory.Artist, ArtistMode, SelectedArtist),
-                StableSelection(PromptCategory.Additional, AdditionalMode, SelectedAdditional)));
+                StableSelection(PromptCategory.Character),
+                StableSelection(PromptCategory.Artist),
+                StableSelection(PromptCategory.Additional)));
 
         Apply(result);
     }
@@ -241,12 +378,13 @@ public sealed class MixerViewModel
     private IReadOnlyCollection<PromptItem> GetAllItems() =>
         CharacterItems.Concat(ArtistItems).Concat(AdditionalItems).ToArray();
 
-    private static PromptSelection BuildSelection(
+    private PromptSelection BuildSelection(
         PromptCategory category,
-        PromptSelectionMode mode,
-        PromptItem? selected,
         bool allowRandom)
     {
+        var mode = GetMode(category);
+        var selected = GetSelectedCollection(category);
+
         if (mode == PromptSelectionMode.Disabled)
         {
             return new PromptSelection(category, PromptSelectionMode.Disabled);
@@ -254,33 +392,97 @@ public sealed class MixerViewModel
 
         if (mode == PromptSelectionMode.Random && allowRandom)
         {
-            return new PromptSelection(category, PromptSelectionMode.Random);
+            return new PromptSelection(
+                category,
+                PromptSelectionMode.Random,
+                fixedPromptId: null,
+                randomCount: GetRandomCount(category));
         }
 
-        return selected is null
-            ? new PromptSelection(category, PromptSelectionMode.Disabled)
-            : new PromptSelection(category, PromptSelectionMode.Fixed, selected.Id);
+        return new PromptSelection(
+            category,
+            PromptSelectionMode.Fixed,
+            selected.Select(item => item.Id).ToArray());
     }
 
-    private static PromptSelection StableSelection(
-        PromptCategory category,
-        PromptSelectionMode mode,
-        PromptItem? selected)
+    private PromptSelection StableSelection(PromptCategory category)
     {
-        if (mode == PromptSelectionMode.Disabled || selected is null)
+        if (GetMode(category) == PromptSelectionMode.Disabled)
         {
             return new PromptSelection(category, PromptSelectionMode.Disabled);
         }
 
-        return new PromptSelection(category, PromptSelectionMode.Fixed, selected.Id);
+        return new PromptSelection(
+            category,
+            PromptSelectionMode.Fixed,
+            GetSelectedCollection(category).Select(item => item.Id).ToArray());
     }
 
     private void Apply(PromptCombination combination)
     {
-        SelectedCharacter = combination.Character;
-        SelectedArtist = combination.Artist;
-        SelectedAdditional = combination.AdditionalItems.FirstOrDefault();
+        ReplaceSelected(SelectedCharacters, combination.CharacterItems);
+        ReplaceSelected(SelectedArtists, combination.ArtistItems);
+        ReplaceSelected(SelectedAdditionals, combination.AdditionalItems);
         PositiveText = combination.PositiveText;
         NegativeText = combination.NegativeText;
+    }
+
+    private static void ReplaceSelected(
+        ObservableCollection<PromptItem> target,
+        IReadOnlyList<PromptItem> items)
+    {
+        target.Clear();
+        foreach (var item in items)
+        {
+            target.Add(item);
+        }
+    }
+
+    private static void AddHistoryItems(
+        CombinationHistory history,
+        PromptCategory category,
+        IEnumerable<PromptItem> items)
+    {
+        history.Items.AddRange(
+            items.Select((item, index) =>
+                new CombinationHistoryItem(
+                    category,
+                    item.Id,
+                    item.Title,
+                    index)));
+    }
+
+    private ObservableCollection<PromptItem> GetAvailableCollection(
+        PromptCategory category) => category switch
+    {
+        PromptCategory.Character => CharacterItems,
+        PromptCategory.Artist => ArtistItems,
+        PromptCategory.Additional => AdditionalItems,
+        _ => throw new ArgumentOutOfRangeException(nameof(category))
+    };
+
+    private ObservableCollection<PromptItem> GetSelectedCollection(
+        PromptCategory category) => category switch
+    {
+        PromptCategory.Character => SelectedCharacters,
+        PromptCategory.Artist => SelectedArtists,
+        PromptCategory.Additional => SelectedAdditionals,
+        _ => throw new ArgumentOutOfRangeException(nameof(category))
+    };
+
+    private void SetModeValue(PromptCategory category, PromptSelectionMode mode)
+    {
+        switch (category)
+        {
+            case PromptCategory.Character:
+                CharacterMode = mode;
+                break;
+            case PromptCategory.Artist:
+                ArtistMode = mode;
+                break;
+            case PromptCategory.Additional:
+                AdditionalMode = mode;
+                break;
+        }
     }
 }
