@@ -2,40 +2,36 @@
 
 ## 1. Visual direction
 
-The application uses a restrained, modern Windows desktop visual language aligned with WinUI 3 and Fluent Design.
+The active WPF UI uses a restrained Windows desktop visual language.
 
 Principles:
 
-- Clean surfaces and clear hierarchy
-- Native Windows controls before custom controls
-- Generous but compact desktop spacing
-- Rounded corners where provided naturally by WinUI
-- Minimal shadows and decoration
-- One accent color for primary actions
-- Fluent/Symbol icons for common actions
-- Representative images used where recognition benefits from visuals
-- No decorative AI/robot imagery in the main workflow
+- clean surfaces and clear hierarchy
+- native WPF controls before custom controls
+- compact desktop spacing
+- rounded card surfaces
+- one accent color for primary actions
+- representative images where visual recognition helps
+- no decorative AI/robot imagery in the main workflow
 
 ## 2. Shell
 
-Use a left `NavigationView`.
-
-Primary destinations:
+The shell uses a left navigation pane with four destinations:
 
 1. Mixer
 2. Prompt Library
 3. History
 4. Settings
 
-The title bar should integrate with the app window visually where practical. The content area uses a maximum readable width only where forms would otherwise become excessively wide.
+At narrow window widths the pane becomes icon-only while keeping tooltips and automation names.
 
-## 3. Mixer page
+## 3. Mixer
 
-The Mixer page is the default landing page.
+Mixer is the default landing view.
 
 ### Selection cards
 
-Three cards appear in order:
+Three cards appear in this order:
 
 1. Character
 2. Artist / Style
@@ -43,148 +39,139 @@ Three cards appear in order:
 
 Each card shows:
 
-- Representative thumbnail or placeholder
-- Title or empty-state label
-- Selection mode: Fixed / Random / Disabled
-- Select action
-- Randomize-again action when relevant
+- representative image or placeholder
+- title
+- memo
+- tags
+- direct selection ComboBox
+- Fixed / Random / Disabled mode
+- per-category randomize action
 
-A single `Randomize all` primary action refreshes every category currently in Random mode while preserving Fixed selections.
+Direct-selection dropdown items show thumbnail, title, memo, and tags.
+
+A single **Randomize all** action refreshes categories currently in Random mode while preserving Fixed selections.
+
+Responsive behavior:
+
+- wide: 3 columns
+- medium: 2 columns + Additional on the next row
+- narrow: 1 column
 
 ### Result editors
 
-Two clearly separated sections:
+Positive and Negative each contain:
 
-- Positive
-- Negative
+- multiline editable TextBox
+- independent Copy action
 
-Each contains:
+The final edited text can be saved to History.
 
-- Multiline editable `TextBox`
-- Copy button
-- Optional lightweight changed-state indicator later if useful
+## 4. Prompt Library
 
-Generated text is ordinary editable text. There is no hidden token/chip representation in V1.
+Top area:
 
-## 4. Prompt Library page
+- category selector: Character / Artist / Additional
+- search
+- tag filter
+- Gallery/List toggle
+- New prompt
 
-Top command area:
-
-- Category segmented/tab selector: Character / Artist / Additional
-- Search box
-- Tag filter
-- Gallery/List view toggle
-- New prompt button
+Search and tag filter stack vertically on narrow layouts.
 
 ### Gallery mode
 
-Prompt cards show:
+Cards show:
 
-- Representative image or placeholder
-- Title
-- A small number of tags
-- Overflow menu (`...`)
+- representative image
+- title
+- Positive prompt preview
+- tags
 
-Overflow menu:
-
-- Use / select
-- Edit
-- Duplicate
-- Delete
+Selecting a card opens the editor pane.
 
 ### List mode
 
-Optimized for scanning many entries. Show thumbnail, title, tags, updated date, and compact actions.
+Rows show:
+
+- thumbnail
+- title
+- Positive preview
+- Negative preview
+
+Selecting a row opens the same editor pane.
 
 ## 5. Prompt editor
 
-Prefer an in-app editor surface over repeated modal dialogs.
+The editor is an in-app side pane.
 
 Fields:
 
-- Representative image preview and Change/Remove actions
-- Title
-- Tags
+- representative image preview
+- Select image / Remove image
+- title
 - Positive Prompt
 - Negative Prompt
-- Memo
-- Save / Cancel
+- tags
+- memo
+- Duplicate / Delete / Save
+- close button
 
-Positive and Negative text areas receive most vertical space.
+The editor always opens scrolled to the top.
 
-## 6. History page
+## 6. History
 
-History is presented newest-first.
+History is newest-first.
 
-Each entry shows:
+The list provides a compact snapshot. Selecting an entry shows:
 
-- Timestamp
-- Character title, if available
-- Artist title, if available
-- Additional title(s), if available
-- Compact preview of final Positive text
+- timestamp
+- Character title
+- Artist / Style title
+- Additional title(s)
+- final Positive text
+- final Negative text
+- Restore to Mixer
+- Delete
 
-Opening an entry shows final Positive and Negative text and provides:
+History remains useful even after source prompts are renamed or deleted because final output and title snapshots are stored.
 
-- Restore to mixer
-- Copy Positive
-- Copy Negative
+## 7. Settings
 
-History must continue to display useful content even if a source prompt has later been renamed or deleted.
-
-## 7. Settings page
-
-Initial settings:
+Settings includes:
 
 - Theme: System / Light / Dark
-- Open application data folder
 - Create backup
 - Restore backup
-- About/version information
+- application version
 
-Avoid exposing settings that do not yet affect implemented behavior.
+Theme and backup controls stack below their descriptions on narrow layouts.
 
-## 8. Empty states
+## 8. Scrolling
 
-Every empty state should tell the user what to do next.
+Outer WPF page/editor ScrollViewers use `PreviewMouseWheel` routing so scrolling remains consistent even while the pointer is over nested editable controls.
 
-Examples:
+The Prompt Library gallery/list uses the native ListBox scrolling behavior.
 
-- Empty Character library: `No character prompts yet.` + `Add character prompt`
-- Random mode with no candidates: show `No prompts available` without treating it as an application error
-- Empty History: explain that combinations will appear after use
+## 9. Empty and error states
 
-## 9. Icon system
+Empty views explain why nothing is shown and what action is available next.
 
-Use native Fluent/Symbol icons for actions such as:
-
-- Add
-- Edit
-- Copy
-- Delete
-- Search
-- Shuffle/randomize
-- Settings
-- History
-- Gallery/List
-
-### Application icon concept
-
-The app icon represents prompt composition rather than generic AI imagery:
-
-- Three overlapping rounded prompt cards
-- A compact shuffle/combine motif
-- Simple geometry that remains recognizable at 16–32 px
-- One primary accent plus neutral foreground
-
-Avoid brain, robot, wand, or spark-heavy imagery.
-
-A vector source should be kept in `design/` and raster Windows assets derived from that source later.
+Errors from prompt persistence, images, settings, backup, and restore must be surfaced to the user rather than silently ignored.
 
 ## 10. Accessibility
 
-- Keyboard navigation must follow visual order.
-- Text contrast must rely on theme resources rather than hard-coded low-contrast colors.
-- Icon-only buttons require accessible labels/tooltips.
-- Do not communicate selection state by color alone.
-- Respect system text scaling where WinUI controls provide it.
+- keyboard navigation follows visual order
+- theme resources provide text/background contrast
+- icon-only controls expose automation names and tooltips
+- repeated controls such as per-category Randomize and Copy have category-specific automation names
+- compact navigation retains tooltips and automation names
+- selection state is not communicated by color alone
+
+## 11. Application icon
+
+The icon represents prompt composition:
+
+- three prompt cards
+- shuffle/combine motif
+- simple geometry suitable for small Windows icon sizes
+- restrained accent/neutral palette
