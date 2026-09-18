@@ -1,6 +1,6 @@
 # Current State
 
-Updated: 2026-09-18
+Updated: 2026-09-19
 
 ## Repository
 
@@ -117,21 +117,18 @@ The current WPF pipeline validates:
 
 The routed-wheel smoke specifically verifies scrolling while the wheel target is a nested TextBox. The WPF UI smoke seeds temporary prompt/history data, opens the actual MainWindow, switches all four views, verifies responsive navigation, checks navigation accessibility metadata, and confirms basic keyboard focus traversal.
 
-## Manual verification already confirmed
+## Manual verification status
 
-- WPF application launches on the user's Windows environment
-- mouse-wheel scrolling works normally in the WPF build
-- `scripts/verify-release.ps1 -Launch` completed successfully on the user's Windows environment
-- local Release build succeeded
-- all 15 automated tests passed locally
-- local self-contained `win-x64` publish succeeded
-- local WPF mouse-wheel and navigation/keyboard UI smoke modes passed
-- the published WPF executable launched successfully
+The earlier WPF single-selection candidate was verified successfully on the user's Windows environment, including normal mouse-wheel behavior and `scripts/verify-release.ps1 -Launch`.
+
+That candidate is now obsolete because V1 was expanded to multi-select, schema v2 history, Prompt Library → Mixer integration, and paged History. The expanded candidate must be verified again locally before release.
 
 ## Remaining before first release
 
-1. Run the remaining visual/manual checks in `docs/RELEASE_CHECKLIST.md` against real user data.
-2. Verify visible keyboard focus styling in Light and Dark themes.
-3. Validate backup/restore once from the exact release candidate artifact.
-4. Choose release version/tag.
-5. Merge only after the WPF build is approved for release.
+1. Finish the final expanded-candidate CI run and produce a new artifact.
+2. Pull the final `feature/wpf-ui` HEAD and run `scripts/verify-release.ps1 -Launch` again.
+3. Run the remaining visual/real-data checks in `docs/RELEASE_CHECKLIST.md`.
+4. Verify visible keyboard focus styling in Light and Dark themes.
+5. Validate backup/restore once from the exact expanded release-candidate artifact.
+6. Choose release version/tag.
+7. Merge only after the expanded WPF build is approved for release.
