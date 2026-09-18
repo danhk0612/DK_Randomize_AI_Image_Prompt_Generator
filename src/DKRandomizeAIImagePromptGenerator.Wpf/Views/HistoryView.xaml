@@ -15,7 +15,7 @@
 
             <Border Style="{StaticResource CardStyle}">
                 <Grid>
-                    <ListBox x:Name="HistoryListBox" ItemsSource="{Binding Items}" SelectionChanged="HistoryListBox_SelectionChanged">
+                    <ListBox x:Name="HistoryListBox" ItemsSource="{Binding Items}" SelectionChanged="HistoryListBox_SelectionChanged" AutomationProperties.Name="최근 기록 목록">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Margin="5,7">
@@ -40,8 +40,8 @@
                                 <TextBlock x:Name="CreatedAtText" Margin="0,3,0,0" Foreground="{DynamicResource TextSecondaryBrush}" />
                             </StackPanel>
                             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                                <Button Content="조합 화면으로 복원" Style="{StaticResource AccentButtonStyle}" Click="Restore_Click" />
-                                <Button Content="삭제" Margin="8,0,0,0" Click="Delete_Click" />
+                                <Button Content="조합 화면으로 복원" Style="{StaticResource AccentButtonStyle}" Click="Restore_Click" AutomationProperties.Name="선택한 기록을 조합 화면으로 복원" />
+                                <Button Content="삭제" Margin="8,0,0,0" Click="Delete_Click" AutomationProperties.Name="선택한 최근 기록 삭제" />
                             </StackPanel>
                         </Grid>
 
@@ -53,10 +53,10 @@
                         </Grid>
 
                         <TextBlock Text="Positive" Style="{StaticResource SectionTitleStyle}" Margin="0,20,0,0" />
-                        <TextBox x:Name="PositiveTextBox" Margin="0,8,0,0" Height="190" AcceptsReturn="True" IsReadOnly="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" />
+                        <TextBox x:Name="PositiveTextBox" Margin="0,8,0,0" Height="190" AcceptsReturn="True" IsReadOnly="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="기록 Positive 결과" />
 
                         <TextBlock Text="Negative" Style="{StaticResource SectionTitleStyle}" Margin="0,20,0,0" />
-                        <TextBox x:Name="NegativeTextBox" Margin="0,8,0,0" Height="150" AcceptsReturn="True" IsReadOnly="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" />
+                        <TextBox x:Name="NegativeTextBox" Margin="0,8,0,0" Height="150" AcceptsReturn="True" IsReadOnly="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="기록 Negative 결과" />
                     </StackPanel>
                 </ScrollViewer>
             </Border>
