@@ -129,6 +129,123 @@ public sealed class MixerViewModelTests
     }
 
     [Fact]
+    public async Task RestoreFromV2HistoryPreservesMultiSelectModesAndRandomCounts()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "DKRandomizeAIImagePromptGenerator.Tests",
+            Guid.NewGuid().ToString("N"));
+
+        var database = new DatabaseService(AppDataPaths.Create(root));
+        await database.InitializeAsync();
+
+        try
+        {
+            var prompts = new PromptRepository(database);
+            var historyRepository = new HistoryRepository(database);
+
+            var characterA = new PromptItem
+            {
+                Category = PromptCategory.Character,
+                Title = "Character A",
+                PositivePrompt = "character a"
+            };
+            var characterB = new PromptItem
+            {
+                Category = PromptCategory.Character,
+                Title = "Character B",
+                PositivePrompt = "character b"
+            };
+            var artistA = new PromptItem
+            {
+                Category = PromptCategory.Artist,
+                Title = "Artist A",
+                PositivePrompt = "artist a"
+            };
+            var artistB = new PromptItem
+            {
+                Category = PromptCategory.Artist,
+                Title = "Artist B",
+                PositivePrompt = "artist b"
+            };
+            var additional = new PromptItem
+            {
+                Category = PromptCategory.Additional,
+                Title = "Additional",
+                PositivePrompt = "additional"
+            };
+
+            foreach (var prompt in new[] { characterA, characterB, artistA, artistB, additional })
+            {
+                await prompts.CreateAsync(prompt);
+            }
+
+            var history = new CombinationHistory
+            {
+                CharacterMode = PromptSelectionMode.Fixed,
+                ArtistMode = PromptSelectionMode.Random,
+                AdditionalMode = PromptSelectionMode.Fixed,
+                CharacterRandomCount = 1,
+                ArtistRandomCount = 2,
+                AdditionalRandomCount = 1,
+                PositiveText = "manually edited v2 positive",
+                NegativeText = "manually edited v2 negative"
+            };
+            history.Items.AddRange(
+            [
+                new CombinationHistoryItem(PromptCategory.Character, characterB.Id, characterB.Title, 0),
+                new CombinationHistoryItem(PromptCategory.Character, characterA.Id, characterA.Title, 1),
+                new CombinationHistoryItem(PromptCategory.Artist, artistA.Id, artistA.Title, 0),
+                new CombinationHistoryItem(PromptCategory.Artist, artistB.Id, artistB.Title, 1),
+                new CombinationHistoryItem(PromptCategory.Additional, additional.Id, additional.Title, 0)
+            ]);
+
+            await historyRepository.SaveAsync(history);
+            var stored = await historyRepository.GetByIdAsync(history.Id);
+            Assert.NotNull(stored);
+
+            var viewModel = new MixerViewModel(
+                prompts,
+                historyRepository,
+                new CombinationService());
+            await viewModel.LoadAsync();
+            viewModel.RestoreFromHistory(stored);
+
+            Assert.Equal(
+                new[] { characterB.Id, characterA.Id },
+                viewModel.SelectedCharacters.Select(item => item.Id).ToArray());
+            Assert.Equal(
+                new[] { artistA.Id, artistB.Id },
+                viewModel.SelectedArtists.Select(item => item.Id).ToArray());
+            Assert.Equal(additional.Id, viewModel.SelectedAdditionals.Single().Id);
+
+            Assert.Equal(PromptSelectionMode.Fixed, viewModel.CharacterMode);
+            Assert.Equal(PromptSelectionMode.Random, viewModel.ArtistMode);
+            Assert.Equal(PromptSelectionMode.Fixed, viewModel.AdditionalMode);
+            Assert.Equal(2, viewModel.ArtistRandomCount);
+            Assert.Equal("manually edited v2 positive", viewModel.PositiveText);
+            Assert.Equal("manually edited v2 negative", viewModel.NegativeText);
+
+            viewModel.RandomizeCategory(PromptCategory.Artist);
+
+            Assert.Equal(2, viewModel.SelectedArtists.Count);
+            Assert.Equal(2, viewModel.SelectedArtists.Select(item => item.Id).Distinct().Count());
+            Assert.Equal(
+                new[] { characterB.Id, characterA.Id },
+                viewModel.SelectedCharacters.Select(item => item.Id).ToArray());
+            Assert.Equal(additional.Id, viewModel.SelectedAdditionals.Single().Id);
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task RestoreFromHistoryKeepsSelectionsButAllowsImmediateReroll()
     {
         var root = Path.Combine(
