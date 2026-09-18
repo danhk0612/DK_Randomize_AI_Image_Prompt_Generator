@@ -10,6 +10,7 @@ public partial class MixerView : UserControl
 {
     private bool _initialized;
     private bool _syncing;
+    private bool _hasLoaded;
 
     public MixerView()
     {
@@ -34,16 +35,53 @@ public partial class MixerView : UserControl
     private async void MixerView_Loaded(object sender, RoutedEventArgs e)
     {
         ApplyResponsiveCardLayout(ActualWidth);
-        await ViewModel.LoadAsync();
+
+        var firstLoad = !_hasLoaded;
+        if (firstLoad)
+        {
+            await ViewModel.LoadAsync();
+            _hasLoaded = true;
+        }
 
         var app = (App)Application.Current;
         if (app.PendingHistoryRestore is CombinationHistory history)
         {
             ViewModel.RestoreFromHistory(history);
             app.PendingHistoryRestore = null;
+            SyncControls();
+            return;
         }
 
+        if (firstLoad)
+        {
+            SyncControls();
+        }
+    }
+
+    public bool AddPromptFromLibrary(PromptItem item)
+    {
+        var added = ViewModel.AddSelectedItem(item.Category, item, switchToDirectMode: true);
         SyncControls();
+        return added;
+    }
+
+    public void NotifyPromptChanged(PromptItem item)
+    {
+        ViewModel.UpsertAvailableItem(item);
+    }
+
+    public void NotifyPromptDeleted(PromptItem item)
+    {
+        var wasSelected = ViewModel
+            .GetSelectedItems(item.Category)
+            .Any(selected => selected.Id == item.Id);
+
+        ViewModel.RemoveAvailableItem(item.Category, item.Id);
+
+        if (wasSelected)
+        {
+            SyncControls();
+        }
     }
 
     private void MixerView_SizeChanged(object sender, SizeChangedEventArgs e) =>
