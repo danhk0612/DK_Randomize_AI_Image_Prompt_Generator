@@ -36,9 +36,9 @@ public partial class App : Application
             await InitializeServicesAsync(paths);
             ClearStartupCrashLog(paths);
 
-            MainWindowInstance = new MainWindow();
-            MainWindow = MainWindowInstance;
-            MainWindowInstance.Show();
+            var window = new MainWindow();
+            RegisterMainWindow(window);
+            window.Show();
         }
         catch (Exception ex)
         {
@@ -50,6 +50,12 @@ public partial class App : Application
                 MessageBoxImage.Error);
             Shutdown(1);
         }
+    }
+
+    internal void RegisterMainWindow(MainWindow window)
+    {
+        MainWindowInstance = window;
+        MainWindow = window;
     }
 
     internal async Task InitializeServicesAsync(AppDataPaths paths)
