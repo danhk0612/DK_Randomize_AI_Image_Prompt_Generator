@@ -47,6 +47,15 @@ jobs:
             throw "WPF mouse wheel routing smoke test failed. Exit code: $($process.ExitCode)"
           }
 
+      - name: Smoke test WPF navigation and keyboard focus
+        shell: pwsh
+        run: |
+          $exe = Join-Path $PWD "artifacts/win-x64/DKRandomizeAIImagePromptGenerator.exe"
+          $process = Start-Process -FilePath $exe -ArgumentList "--ui-smoke" -Wait -PassThru
+          if ($process.ExitCode -ne 0) {
+            throw "WPF navigation/keyboard UI smoke test failed. Exit code: $($process.ExitCode)"
+          }
+
       - name: Smoke test published app startup
         shell: pwsh
         run: |
