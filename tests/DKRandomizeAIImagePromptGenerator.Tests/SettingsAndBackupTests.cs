@@ -94,6 +94,34 @@ public sealed class SettingsAndBackupTests
     }
 
     [Fact]
+    public async Task CorruptedSettingsFileFallsBackToDefaultsAndIsPreserved()
+    {
+        var root = CreateTemporaryRoot();
+
+        try
+        {
+            var paths = AppDataPaths.Create(root);
+            paths.EnsureDirectories();
+            await File.WriteAllTextAsync(paths.SettingsPath, "{ this is not valid json");
+
+            var settings = new SettingsService(paths);
+            await settings.LoadAsync();
+
+            Assert.Equal(AppTheme.System, settings.Current.Theme);
+            Assert.True(File.Exists(paths.SettingsPath));
+
+            var preserved = Directory
+                .EnumerateFiles(root, "settings.corrupt-*.json")
+                .ToArray();
+            Assert.Single(preserved);
+        }
+        finally
+        {
+            DeleteTemporaryRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task InvalidBackupDoesNotDeleteExistingImages()
     {
         var root = CreateTemporaryRoot();
