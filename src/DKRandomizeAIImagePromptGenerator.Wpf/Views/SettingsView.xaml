@@ -16,7 +16,7 @@
                         <TextBlock Text="테마" FontWeight="SemiBold" />
                         <TextBlock Text="시스템 설정을 따르거나 라이트/다크 테마를 고정합니다." Margin="0,4,0,0" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" />
                     </StackPanel>
-                    <ComboBox x:Name="ThemeComboBox" Grid.Column="1" SelectionChanged="ThemeComboBox_SelectionChanged">
+                    <ComboBox x:Name="ThemeComboBox" Grid.Column="1" SelectionChanged="ThemeComboBox_SelectionChanged" AutomationProperties.Name="테마 선택">
                         <ComboBoxItem Content="시스템 설정 따름" />
                         <ComboBoxItem Content="라이트" />
                         <ComboBoxItem Content="다크" />
@@ -33,8 +33,8 @@
                         <TextBlock Text="프롬프트, 최근 기록, 대표 이미지와 설정을 ZIP 파일 하나로 보관하거나 복원합니다." Margin="0,4,0,0" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" />
                     </StackPanel>
                     <StackPanel x:Name="BackupButtons" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
-                        <Button Content="백업" Click="Backup_Click" />
-                        <Button Content="복원" Margin="8,0,0,0" Click="Restore_Click" />
+                        <Button Content="백업" Click="Backup_Click" AutomationProperties.Name="데이터 백업 만들기" />
+                        <Button Content="복원" Margin="8,0,0,0" Click="Restore_Click" AutomationProperties.Name="데이터 백업 복원" />
                     </StackPanel>
                 </Grid>
             </Border>
