@@ -106,7 +106,7 @@ The earlier single-selection RC is obsolete after the V1 multi-select expansion.
 
 - [ ] Solution Restore succeeds on final HEAD.
 - [ ] Release Build succeeds on final HEAD.
-- [ ] All 24 automated tests pass on final HEAD.
+- [ ] All 23 automated tests pass on final HEAD.
 - [ ] Self-contained WPF win-x64 Publish succeeds.
 - [ ] WPF routed mouse-wheel smoke succeeds.
 - [ ] Expanded WPF UI smoke succeeds, including multi-select, shared Mixer session, Prompt Library integration, and History paging.
