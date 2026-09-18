@@ -306,7 +306,8 @@ public partial class PromptLibraryView : UserControl
             return;
         }
 
-        var window = ((App)Application.Current).MainWindowInstance;
+        var app = (App)Application.Current;
+        var window = Window.GetWindow(this) as MainWindow ?? app.MainWindowInstance;
         if (window is null)
         {
             StatusText.Text = "조합 화면에 연결할 수 없습니다.";
