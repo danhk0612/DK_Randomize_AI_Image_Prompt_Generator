@@ -72,6 +72,7 @@
 - [x] Restore compact navigation layout
 - [x] WPF accessibility code pass
 - [x] WPF navigation/keyboard automated smoke pass
+- [x] Local release verification script pass
 - [ ] WPF keyboard/focus visual manual smoke pass
 - [ ] Final WPF real-data smoke pass
 - [ ] Prepare first release
