@@ -71,7 +71,11 @@
                 <TextBlock Text="프롬프트" Style="{StaticResource PageTitleStyle}" />
                 <TextBlock Text="캐릭터, 작가, 추가 프롬프트를 저장하고 빠르게 찾습니다." Foreground="{DynamicResource TextSecondaryBrush}" />
             </StackPanel>
-            <Button Content="새 프롬프트" HorizontalAlignment="Right" VerticalAlignment="Top" Style="{StaticResource AccentButtonStyle}" Click="NewPrompt_Click" />
+            <Button Content="새 프롬프트"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Style="{StaticResource ActionButtonStyle}"
+                    Click="NewPrompt_Click" />
         </Grid>
 
         <Grid x:Name="FilterGrid" Grid.Row="1" Margin="0,20,0,0">
@@ -168,7 +172,10 @@
                                     Margin="8,0,0,0"
                                     Click="AddToMixer_Click"
                                     AutomationProperties.Name="현재 프롬프트를 조합에 추가" />
-                            <Button Grid.Column="4" Content="저장" Style="{StaticResource AccentButtonStyle}" Click="SavePrompt_Click" />
+                            <Button Grid.Column="4"
+                                    Content="저장"
+                                    Style="{StaticResource ActionButtonStyle}"
+                                    Click="SavePrompt_Click" />
                         </Grid>
                     </StackPanel>
                 </ScrollViewer>
