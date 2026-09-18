@@ -101,9 +101,10 @@ The current WPF pipeline validates:
 4. self-contained win-x64 WPF publish
 5. WPF routed mouse-wheel smoke
 6. published EXE startup smoke
-7. artifact upload
+7. WPF navigation / responsive shell / keyboard-focus UI smoke
+8. artifact upload
 
-The routed-wheel smoke specifically verifies scrolling while the wheel target is a nested TextBox.
+The routed-wheel smoke specifically verifies scrolling while the wheel target is a nested TextBox. The WPF UI smoke seeds temporary prompt/history data, opens the actual MainWindow, switches all four views, verifies responsive navigation, checks navigation accessibility metadata, and confirms basic keyboard focus traversal.
 
 ## Manual verification already confirmed
 
