@@ -113,10 +113,8 @@ The routed-wheel smoke specifically verifies scrolling while the wheel target is
 
 ## Remaining before first release
 
-1. Complete the WPF functional-equivalence smoke pass against real data.
-2. Check responsive layouts at narrow and wide window sizes.
-3. Check keyboard/focus/accessibility behavior in WPF.
-4. Validate backup/restore from the exact release artifact.
-5. Update any remaining WinUI-specific documentation.
-6. Choose release version/tag.
-7. Merge only after the WPF build is approved for release.
+1. Run the remaining visual/manual checks in `docs/RELEASE_CHECKLIST.md` against real user data.
+2. Verify visible keyboard focus styling in Light and Dark themes.
+3. Validate backup/restore once from the exact release candidate artifact.
+4. Choose release version/tag.
+5. Merge only after the WPF build is approved for release.
