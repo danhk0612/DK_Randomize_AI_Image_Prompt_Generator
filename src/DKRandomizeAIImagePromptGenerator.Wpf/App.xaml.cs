@@ -21,9 +21,10 @@ public partial class App : Application
             return;
         }
 
+        var paths = AppDataPaths.CreateDefault();
+
         try
         {
-            var paths = AppDataPaths.CreateDefault();
             Database = new DatabaseService(paths);
             Prompts = new PromptRepository(Database);
             History = new HistoryRepository(Database);
@@ -35,6 +36,7 @@ public partial class App : Application
             await Database.InitializeAsync();
             await Settings.LoadAsync();
             ApplyTheme(Settings.Current.Theme);
+            ClearStartupCrashLog(paths);
 
             MainWindowInstance = new MainWindow();
             MainWindow = MainWindowInstance;
@@ -42,12 +44,47 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
+            WriteStartupCrashLog(paths, ex);
             MessageBox.Show(
                 $"프로그램 시작 중 오류가 발생했습니다.\n\n{ex}",
                 "DK Randomize AI Image Prompt Generator",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
             Shutdown(1);
+        }
+    }
+
+    private static string GetStartupCrashLogPath(AppDataPaths paths) =>
+        Path.Combine(paths.RootDirectory, "startup-crash.log");
+
+    private static void ClearStartupCrashLog(AppDataPaths paths)
+    {
+        try
+        {
+            var path = GetStartupCrashLogPath(paths);
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        catch
+        {
+            // A stale diagnostics file must never prevent startup.
+        }
+    }
+
+    private static void WriteStartupCrashLog(AppDataPaths paths, Exception exception)
+    {
+        try
+        {
+            paths.EnsureDirectories();
+            File.WriteAllText(
+                GetStartupCrashLogPath(paths),
+                $"[{DateTimeOffset.Now:O}] WPF startup failure{Environment.NewLine}{exception}");
+        }
+        catch
+        {
+            // Fall back to the startup error dialog if logging itself fails.
         }
     }
 
