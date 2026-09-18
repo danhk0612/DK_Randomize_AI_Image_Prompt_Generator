@@ -416,6 +416,44 @@ public sealed class PersistenceTests
         }
     }
 
+    [Fact]
+    public async Task HistoryRepositoryReturnsPagedNewestFirstResults()
+    {
+        var (root, database) = await CreateDatabaseAsync();
+
+        try
+        {
+            var repository = new HistoryRepository(database);
+            var baseTime = DateTimeOffset.UtcNow.AddHours(-1);
+
+            for (var index = 0; index < 25; index++)
+            {
+                await repository.SaveAsync(new CombinationHistory
+                {
+                    PositiveText = $"positive {index}",
+                    NegativeText = $"negative {index}",
+                    CreatedAt = baseTime.AddMinutes(index)
+                });
+            }
+
+            Assert.Equal(25, await repository.GetCountAsync());
+
+            var firstPage = await repository.GetPageAsync(0, 20);
+            var secondPage = await repository.GetPageAsync(1, 20);
+
+            Assert.Equal(20, firstPage.Count);
+            Assert.Equal(5, secondPage.Count);
+            Assert.Equal("positive 24", firstPage[0].PositiveText);
+            Assert.Equal("positive 5", firstPage[^1].PositiveText);
+            Assert.Equal("positive 4", secondPage[0].PositiveText);
+            Assert.Equal("positive 0", secondPage[^1].PositiveText);
+        }
+        finally
+        {
+            Cleanup(root);
+        }
+    }
+
     private static async Task<(string Root, DatabaseService Database)> CreateDatabaseAsync()
     {
         var root = Path.Combine(
