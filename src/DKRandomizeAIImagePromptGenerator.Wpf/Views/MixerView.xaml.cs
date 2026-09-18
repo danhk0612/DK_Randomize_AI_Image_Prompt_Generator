@@ -1,6 +1,5 @@
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media.Imaging;
 using DKRandomizeAIImagePromptGenerator.Models;
 using DKRandomizeAIImagePromptGenerator.ViewModels;
 using DKRandomizeAIImagePromptGenerator.Wpf.Services;
@@ -16,12 +15,13 @@ public partial class MixerView : UserControl
     {
         var app = (App)Application.Current;
         ViewModel = new MixerViewModel(app.Prompts, app.History, app.Combination);
+
         InitializeComponent();
         DataContext = ViewModel;
 
-        CharacterPromptCombo.ItemsSource = ViewModel.CharacterItems;
-        ArtistPromptCombo.ItemsSource = ViewModel.ArtistItems;
-        AdditionalPromptCombo.ItemsSource = ViewModel.AdditionalItems;
+        CharacterSelectedList.ItemsSource = ViewModel.SelectedCharacters;
+        ArtistSelectedList.ItemsSource = ViewModel.SelectedArtists;
+        AdditionalSelectedList.ItemsSource = ViewModel.SelectedAdditionals;
 
         WheelScrollService.Enable(RootScrollViewer);
         Loaded += MixerView_Loaded;
@@ -35,6 +35,7 @@ public partial class MixerView : UserControl
     {
         ApplyResponsiveCardLayout(ActualWidth);
         await ViewModel.LoadAsync();
+
         var app = (App)Application.Current;
         if (app.PendingHistoryRestore is CombinationHistory history)
         {
@@ -106,17 +107,131 @@ public partial class MixerView : UserControl
         Grid.SetColumn(card, column);
     }
 
-    private void CharacterModeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) => SetMode(PromptCategory.Character, CharacterModeCombo.SelectedIndex);
-    private void ArtistModeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) => SetMode(PromptCategory.Artist, ArtistModeCombo.SelectedIndex);
-    private void AdditionalModeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) => SetMode(PromptCategory.Additional, AdditionalModeCombo.SelectedIndex);
-    private void CharacterPromptCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) => SetSelected(PromptCategory.Character, CharacterPromptCombo.SelectedItem as PromptItem);
-    private void ArtistPromptCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) => SetSelected(PromptCategory.Artist, ArtistPromptCombo.SelectedItem as PromptItem);
-    private void AdditionalPromptCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) => SetSelected(PromptCategory.Additional, AdditionalPromptCombo.SelectedItem as PromptItem);
+    private void ModeRadio_Checked(object sender, RoutedEventArgs e)
+    {
+        if (!_initialized || _syncing ||
+            sender is not FrameworkElement element ||
+            element.Tag is not string tag)
+        {
+            return;
+        }
 
-    private void CharacterRandom_Click(object sender, RoutedEventArgs e) { ViewModel.RandomizeCategory(PromptCategory.Character); SyncControls(); }
-    private void ArtistRandom_Click(object sender, RoutedEventArgs e) { ViewModel.RandomizeCategory(PromptCategory.Artist); SyncControls(); }
-    private void AdditionalRandom_Click(object sender, RoutedEventArgs e) { ViewModel.RandomizeCategory(PromptCategory.Additional); SyncControls(); }
-    private void RandomizeAll_Click(object sender, RoutedEventArgs e) { ViewModel.RandomizeAll(); SyncControls(); }
+        var parts = tag.Split(':', 2);
+        if (parts.Length != 2 ||
+            !Enum.TryParse<PromptCategory>(parts[0], out var category) ||
+            !Enum.TryParse<PromptSelectionMode>(parts[1], out var mode))
+        {
+            return;
+        }
+
+        ViewModel.SetMode(category, mode);
+        SyncControls();
+    }
+
+    private void RandomCountCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_initialized || _syncing ||
+            sender is not ComboBox combo ||
+            combo.Tag is not string tag ||
+            !Enum.TryParse<PromptCategory>(tag, out var category) ||
+            combo.SelectedItem is not int count)
+        {
+            return;
+        }
+
+        ViewModel.SetRandomCount(category, count);
+        SyncControls();
+    }
+
+    private void OpenPicker_Click(object sender, RoutedEventArgs e)
+    {
+        if (!TryGetCategory(sender, out var category) ||
+            ViewModel.GetMode(category) != PromptSelectionMode.Fixed)
+        {
+            return;
+        }
+
+        var dialog = new PromptPickerDialog(
+            category,
+            ViewModel.GetAvailableItems(category),
+            ViewModel.GetSelectedItems(category))
+        {
+            Owner = Window.GetWindow(this)
+        };
+
+        if (dialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        ViewModel.SetSelectedItems(category, dialog.SelectedItems);
+        SyncControls();
+    }
+
+    private void RemoveSelected_Click(object sender, RoutedEventArgs e)
+    {
+        if (!TryGetCategory(sender, out var category) ||
+            ViewModel.GetMode(category) != PromptSelectionMode.Fixed)
+        {
+            return;
+        }
+
+        var list = GetSelectedList(category);
+        if (list.SelectedItem is not PromptItem item)
+        {
+            return;
+        }
+
+        ViewModel.RemoveSelectedItem(category, item.Id);
+        SyncControls();
+    }
+
+    private void MoveUp_Click(object sender, RoutedEventArgs e) =>
+        MoveSelection(sender, -1);
+
+    private void MoveDown_Click(object sender, RoutedEventArgs e) =>
+        MoveSelection(sender, 1);
+
+    private void MoveSelection(object sender, int offset)
+    {
+        if (!TryGetCategory(sender, out var category) ||
+            ViewModel.GetMode(category) != PromptSelectionMode.Fixed)
+        {
+            return;
+        }
+
+        var list = GetSelectedList(category);
+        if (list.SelectedItem is not PromptItem item || list.SelectedIndex < 0)
+        {
+            return;
+        }
+
+        var targetIndex = list.SelectedIndex + offset;
+        if (ViewModel.MoveSelectedItem(category, list.SelectedIndex, targetIndex))
+        {
+            list.SelectedItem = item;
+            list.ScrollIntoView(item);
+            SyncOutputs();
+        }
+    }
+
+    private void RandomizeCategory_Click(object sender, RoutedEventArgs e)
+    {
+        if (!TryGetCategory(sender, out var category) ||
+            ViewModel.GetMode(category) != PromptSelectionMode.Random)
+        {
+            return;
+        }
+
+        ViewModel.RandomizeCategory(category);
+        SyncControls();
+    }
+
+    private void RandomizeAll_Click(object sender, RoutedEventArgs e)
+    {
+        ViewModel.RandomizeAll();
+        SyncControls();
+    }
 
     private void CopyPositive_Click(object sender, RoutedEventArgs e)
     {
@@ -134,7 +249,9 @@ public partial class MixerView : UserControl
     {
         try
         {
-            await ViewModel.SaveHistoryAsync(PositiveOutput.Text ?? string.Empty, NegativeOutput.Text ?? string.Empty);
+            await ViewModel.SaveHistoryAsync(
+                PositiveOutput.Text ?? string.Empty,
+                NegativeOutput.Text ?? string.Empty);
             StatusText.Text = "최근 기록에 저장했습니다.";
         }
         catch (Exception ex)
@@ -143,57 +260,53 @@ public partial class MixerView : UserControl
         }
     }
 
-    private void SetMode(PromptCategory category, int selectedIndex)
-    {
-        if (!_initialized || _syncing || selectedIndex < 0) return;
-        ViewModel.SetMode(category, (PromptSelectionMode)selectedIndex);
-        SyncControls();
-    }
-
-    private void SetSelected(PromptCategory category, PromptItem? item)
-    {
-        if (!_initialized || _syncing) return;
-        ViewModel.SetSelectedItem(category, item);
-        SyncControls();
-    }
-
     private void SyncControls()
     {
+        if (!_initialized)
+        {
+            return;
+        }
+
         _syncing = true;
         try
         {
-            CharacterModeCombo.SelectedIndex = (int)ViewModel.CharacterMode;
-            ArtistModeCombo.SelectedIndex = (int)ViewModel.ArtistMode;
-            AdditionalModeCombo.SelectedIndex = (int)ViewModel.AdditionalMode;
+            UpdateCategoryControls(
+                PromptCategory.Character,
+                CharacterDirectRadio,
+                CharacterRandomRadio,
+                CharacterDisabledRadio,
+                CharacterSelectedList,
+                CharacterSelectionSummary,
+                CharacterEmptySelectionText,
+                CharacterDirectControls,
+                CharacterRandomControls,
+                CharacterRandomCountCombo);
 
-            CharacterPromptCombo.SelectedItem = ViewModel.SelectedCharacter;
-            ArtistPromptCombo.SelectedItem = ViewModel.SelectedArtist;
-            AdditionalPromptCombo.SelectedItem = ViewModel.SelectedAdditional;
+            UpdateCategoryControls(
+                PromptCategory.Artist,
+                ArtistDirectRadio,
+                ArtistRandomRadio,
+                ArtistDisabledRadio,
+                ArtistSelectedList,
+                ArtistSelectionSummary,
+                ArtistEmptySelectionText,
+                ArtistDirectControls,
+                ArtistRandomControls,
+                ArtistRandomCountCombo);
 
-            CharacterPromptCombo.IsEnabled = ViewModel.CharacterMode == PromptSelectionMode.Fixed;
-            ArtistPromptCombo.IsEnabled = ViewModel.ArtistMode == PromptSelectionMode.Fixed;
-            AdditionalPromptCombo.IsEnabled = ViewModel.AdditionalMode == PromptSelectionMode.Fixed;
+            UpdateCategoryControls(
+                PromptCategory.Additional,
+                AdditionalDirectRadio,
+                AdditionalRandomRadio,
+                AdditionalDisabledRadio,
+                AdditionalSelectedList,
+                AdditionalSelectionSummary,
+                AdditionalEmptySelectionText,
+                AdditionalDirectControls,
+                AdditionalRandomControls,
+                AdditionalRandomCountCombo);
 
-            CharacterRandomButton.IsEnabled = ViewModel.CharacterMode == PromptSelectionMode.Random;
-            ArtistRandomButton.IsEnabled = ViewModel.ArtistMode == PromptSelectionMode.Random;
-            AdditionalRandomButton.IsEnabled = ViewModel.AdditionalMode == PromptSelectionMode.Random;
-
-            CharacterTitle.Text = ViewModel.SelectedCharacter?.Title ?? "선택된 캐릭터 없음";
-            ArtistTitle.Text = ViewModel.SelectedArtist?.Title ?? "선택된 작가 없음";
-            AdditionalTitle.Text = ViewModel.SelectedAdditional?.Title ?? "선택된 추가 프롬프트 없음";
-            CharacterMemo.Text = ViewModel.SelectedCharacter?.Memo ?? string.Empty;
-            ArtistMemo.Text = ViewModel.SelectedArtist?.Memo ?? string.Empty;
-            AdditionalMemo.Text = ViewModel.SelectedAdditional?.Memo ?? string.Empty;
-            CharacterTags.ItemsSource = ViewModel.SelectedCharacter?.Tags;
-            ArtistTags.ItemsSource = ViewModel.SelectedArtist?.Tags;
-            AdditionalTags.ItemsSource = ViewModel.SelectedAdditional?.Tags;
-
-            SetImage(CharacterImage, ViewModel.SelectedCharacter);
-            SetImage(ArtistImage, ViewModel.SelectedArtist);
-            SetImage(AdditionalImage, ViewModel.SelectedAdditional);
-
-            PositiveOutput.Text = ViewModel.PositiveText;
-            NegativeOutput.Text = ViewModel.NegativeText;
+            SyncOutputs();
         }
         finally
         {
@@ -201,26 +314,69 @@ public partial class MixerView : UserControl
         }
     }
 
-    private static void SetImage(Image image, PromptItem? item)
+    private void UpdateCategoryControls(
+        PromptCategory category,
+        RadioButton directRadio,
+        RadioButton randomRadio,
+        RadioButton disabledRadio,
+        ListBox selectedList,
+        TextBlock summary,
+        TextBlock emptyText,
+        Panel directControls,
+        Panel randomControls,
+        ComboBox randomCountCombo)
     {
-        image.Source = null;
-        if (item?.ImagePath is not string relativePath || string.IsNullOrWhiteSpace(relativePath)) return;
+        var mode = ViewModel.GetMode(category);
+        var selectedCount = ViewModel.GetSelectedItems(category).Count;
 
-        try
+        directRadio.IsChecked = mode == PromptSelectionMode.Fixed;
+        randomRadio.IsChecked = mode == PromptSelectionMode.Random;
+        disabledRadio.IsChecked = mode == PromptSelectionMode.Disabled;
+
+        summary.Text = mode switch
         {
-            var app = (App)Application.Current;
-            var fullPath = app.Images.ResolvePath(relativePath);
-            var bitmap = new BitmapImage();
-            bitmap.BeginInit();
-            bitmap.CacheOption = BitmapCacheOption.OnLoad;
-            bitmap.UriSource = new Uri(fullPath, UriKind.Absolute);
-            bitmap.EndInit();
-            bitmap.Freeze();
-            image.Source = bitmap;
-        }
-        catch
-        {
-            image.Source = null;
-        }
+            PromptSelectionMode.Fixed => $"직접 선택 {selectedCount}개",
+            PromptSelectionMode.Random => $"랜덤 결과 {selectedCount}개",
+            _ => "미사용"
+        };
+
+        emptyText.Visibility = selectedCount == 0
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+
+        selectedList.Opacity = mode == PromptSelectionMode.Disabled ? 0.55 : 1.0;
+        directControls.IsEnabled = mode == PromptSelectionMode.Fixed;
+        randomControls.IsEnabled = mode == PromptSelectionMode.Random;
+
+        var currentCount = ViewModel.GetRandomCount(category);
+        var max = Math.Max(
+            1,
+            Math.Max(ViewModel.GetAvailableItems(category).Count, currentCount));
+
+        randomCountCombo.ItemsSource = Enumerable.Range(1, max).ToArray();
+        randomCountCombo.SelectedItem = currentCount;
+    }
+
+    private void SyncOutputs()
+    {
+        PositiveOutput.Text = ViewModel.PositiveText;
+        NegativeOutput.Text = ViewModel.NegativeText;
+    }
+
+    private ListBox GetSelectedList(PromptCategory category) => category switch
+    {
+        PromptCategory.Character => CharacterSelectedList,
+        PromptCategory.Artist => ArtistSelectedList,
+        PromptCategory.Additional => AdditionalSelectedList,
+        _ => throw new ArgumentOutOfRangeException(nameof(category))
+    };
+
+    private static bool TryGetCategory(object sender, out PromptCategory category)
+    {
+        category = default;
+
+        return sender is FrameworkElement element &&
+               element.Tag is string tag &&
+               Enum.TryParse(tag, out category);
     }
 }
