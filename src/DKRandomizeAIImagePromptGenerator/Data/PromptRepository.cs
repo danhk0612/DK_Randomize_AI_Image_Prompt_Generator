@@ -38,8 +38,8 @@ public sealed class PromptRepository
 
         if (!string.IsNullOrWhiteSpace(tag))
         {
-            conditions.Add("EXISTS (SELECT 1 FROM PromptTags pt JOIN Tags t ON t.Id = pt.TagId WHERE pt.PromptId = p.Id AND t.NormalizedName = @tag)");
-            command.Parameters.AddWithValue("@tag", NormalizeTag(tag));
+            conditions.Add("EXISTS (SELECT 1 FROM PromptTags pt JOIN Tags t ON t.Id = pt.TagId WHERE pt.PromptId = p.Id AND t.NormalizedName LIKE @tag)");
+            command.Parameters.AddWithValue("@tag", $"%{NormalizeTag(tag)}%");
         }
 
         command.CommandText = $"""
