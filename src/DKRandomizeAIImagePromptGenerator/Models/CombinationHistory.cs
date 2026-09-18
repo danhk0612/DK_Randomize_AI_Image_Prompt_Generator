@@ -35,11 +35,26 @@ public sealed class CombinationHistory
 
     public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
 
+    public string CharacterTitleSummary => BuildTitleSummary(PromptCategory.Character);
+
+    public string ArtistTitleSummary => BuildTitleSummary(PromptCategory.Artist);
+
+    public string AdditionalTitleSummary => BuildTitleSummary(PromptCategory.Additional);
+
     public IReadOnlyList<CombinationHistoryItem> GetItems(PromptCategory category) =>
         Items
             .Where(item => item.Category == category)
             .OrderBy(item => item.SortOrder)
             .ToArray();
+
+    private string BuildTitleSummary(PromptCategory category)
+    {
+        var titles = GetItems(category)
+            .Select(item => item.TitleSnapshot ?? "삭제된 프롬프트")
+            .ToArray();
+
+        return titles.Length == 0 ? "없음" : string.Join(", ", titles);
+    }
 
     public PromptSelectionMode GetMode(PromptCategory category) => category switch
     {
