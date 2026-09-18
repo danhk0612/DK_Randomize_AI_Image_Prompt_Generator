@@ -44,7 +44,7 @@ public static class UiSmokeRunner
             }
 
             await DrainUiAsync(window.Dispatcher);
-            if (mixer.ViewModel.CharacterItems.Count < 2 ||
+            if (mixer.ViewModel.CharacterItems.Count < 3 ||
                 mixer.ViewModel.ArtistItems.Count == 0 ||
                 mixer.ViewModel.AdditionalItems.Count == 0 ||
                 mixer.CharacterSelectedList.Items.Count == 0 ||
@@ -90,6 +90,22 @@ public static class UiSmokeRunner
             }
             pickerSmoke.Close();
 
+            mixer.PositiveOutput.Text = "manual session text";
+            window.SettingsNavButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            await DrainUiAsync(window.Dispatcher);
+            if (window.PageHost.Content is not SettingsView)
+            {
+                return false;
+            }
+
+            window.MixerNavButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            await DrainUiAsync(window.Dispatcher);
+            if (!ReferenceEquals(window.PageHost.Content, mixer) ||
+                mixer.PositiveOutput.Text != "manual session text")
+            {
+                return false;
+            }
+
             if (!VerifyNavigationAccessibility(window))
             {
                 return false;
@@ -116,10 +132,46 @@ public static class UiSmokeRunner
                 return false;
             }
 
+            var missingCharacter = mixer.ViewModel.CharacterItems
+                .FirstOrDefault(item =>
+                    mixer.ViewModel.SelectedCharacters.All(selected => selected.Id != item.Id));
+            if (missingCharacter is null)
+            {
+                return false;
+            }
+
             window.LibraryNavButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             await DrainUiAsync(window.Dispatcher);
             if (window.PageHost.Content is not PromptLibraryView library ||
                 library.GalleryListBox.Items.Count == 0)
+            {
+                return false;
+            }
+
+            var libraryItem = library.ViewModel.Items
+                .FirstOrDefault(item => item.Id == missingCharacter.Id);
+            if (libraryItem is null)
+            {
+                return false;
+            }
+
+            library.GalleryListBox.SelectedItem = libraryItem;
+            await DrainUiAsync(window.Dispatcher);
+            if (library.AddToMixerButton.Visibility != Visibility.Visible)
+            {
+                return false;
+            }
+
+            library.AddToMixerButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            await DrainUiAsync(window.Dispatcher);
+            if (mixer.ViewModel.CharacterMode != PromptSelectionMode.Fixed ||
+                mixer.ViewModel.SelectedCharacters.Count != 3)
+            {
+                return false;
+            }
+
+            library.AddToMixerButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            if (mixer.ViewModel.SelectedCharacters.Count != 3)
             {
                 return false;
             }
@@ -142,7 +194,8 @@ public static class UiSmokeRunner
 
             window.MixerNavButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             await DrainUiAsync(window.Dispatcher);
-            return window.PageHost.Content is MixerView;
+            return ReferenceEquals(window.PageHost.Content, mixer) &&
+                   mixer.ViewModel.SelectedCharacters.Count == 3;
         }
         catch
         {
@@ -192,6 +245,16 @@ public static class UiSmokeRunner
         };
         characterSecond.Tags.Add("second");
 
+        var characterThird = new PromptItem
+        {
+            Category = PromptCategory.Character,
+            Title = "UI Smoke Character Third",
+            PositivePrompt = "character third positive",
+            NegativePrompt = "character third negative",
+            Memo = "third character memo"
+        };
+        characterThird.Tags.Add("third");
+
         var artist = new PromptItem
         {
             Category = PromptCategory.Artist,
@@ -214,6 +277,7 @@ public static class UiSmokeRunner
 
         await app.Prompts.CreateAsync(character);
         await app.Prompts.CreateAsync(characterSecond);
+        await app.Prompts.CreateAsync(characterThird);
         await app.Prompts.CreateAsync(artist);
         await app.Prompts.CreateAsync(additional);
 
