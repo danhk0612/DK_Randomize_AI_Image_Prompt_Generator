@@ -1,6 +1,6 @@
 # First Release Notes — Draft
 
-Current release-candidate source version: `1.0.0-rc.2`. RC1 remains published; RC2 changes the distribution to a compact runtime-dependent two-file package before final `v1.0.0`.
+Published current release candidate: `v1.0.0-rc.2`. RC1 remains available as the earlier runtime-bundled prerelease; RC2 uses the compact runtime-dependent two-file package intended for final `v1.0.0`.
 
 ## Highlights
 
