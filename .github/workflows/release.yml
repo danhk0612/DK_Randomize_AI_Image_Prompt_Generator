@@ -2,11 +2,16 @@ name: Release
 
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - "release/**"
+  workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   release-win-x64:
@@ -21,15 +26,39 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Verify tag matches project version
+      - name: Resolve release version
+        id: version
         shell: pwsh
         run: |
           [xml]$project = Get-Content "src/DKRandomizeAIImagePromptGenerator.Wpf/DKRandomizeAIImagePromptGenerator.Wpf.csproj"
           $projectVersion = [string]$project.Project.PropertyGroup.Version
-          $tagVersion = "${{ github.ref_name }}" -replace '^v', ''
-          if ($projectVersion -ne $tagVersion) {
-            throw "Tag version '$tagVersion' does not match project version '$projectVersion'."
+          if ([string]::IsNullOrWhiteSpace($projectVersion)) {
+            throw "WPF project Version is not set."
           }
+
+          $tag = "v$projectVersion"
+          $expectedBranch = "release/$tag"
+
+          if ("${{ github.event_name }}" -eq "push" -and "${{ github.ref_name }}" -ne $expectedBranch) {
+            throw "Release branch '${{ github.ref_name }}' does not match project version '$projectVersion'. Expected '$expectedBranch'."
+          }
+
+          "version=$projectVersion" >> $env:GITHUB_OUTPUT
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          Write-Host "Release version: $projectVersion"
+          Write-Host "Release tag: $tag"
+
+      - name: Ensure release does not already exist
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ steps.version.outputs.tag }}"
+          gh release view $tag --repo "${{ github.repository }}" *> $null
+          if ($LASTEXITCODE -eq 0) {
+            throw "GitHub Release '$tag' already exists."
+          }
+          $global:LASTEXITCODE = 0
 
       - name: Restore
         run: dotnet restore DK_Randomize_AI_Image_Prompt_Generator.sln -p:Platform=x64
@@ -91,20 +120,33 @@ jobs:
           if (Test-Path $zip) { Remove-Item $zip -Force }
           Compress-Archive -Path "artifacts/win-x64/*" -DestinationPath $zip -CompressionLevel Optimal
 
-      - name: Create GitHub Release
+      - name: Publish GitHub Release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $tag = "${{ github.ref_name }}"
+          $tag = "${{ steps.version.outputs.tag }}"
+          $version = "${{ steps.version.outputs.version }}"
           $zip = "artifacts/DK-Randomize-AI-Image-Prompt-Generator-WPF-win-x64.zip"
+
           $args = @(
             "release", "create", $tag, $zip,
+            "--repo", "${{ github.repository }}",
+            "--target", "${{ github.sha }}",
             "--title", $tag,
-            "--generate-notes",
-            "--verify-tag"
+            "--generate-notes"
           )
-          if ($tag.Contains("-")) {
+
+          if ($version.Contains("-")) {
             $args += "--prerelease"
           }
+
           gh @args
+
+      - name: Verify published release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ steps.version.outputs.tag }}"
+          gh release view $tag --repo "${{ github.repository }}" --json tagName,isPrerelease,assets,url
