@@ -35,13 +35,68 @@ jobs:
       - name: Test
         run: dotnet test tests/DKRandomizeAIImagePromptGenerator.Tests/DKRandomizeAIImagePromptGenerator.Tests.csproj -c Release -p:Platform=x64 --no-build --no-restore
 
-      - name: Publish WPF win-x64
-        run: dotnet publish src/DKRandomizeAIImagePromptGenerator.Wpf/DKRandomizeAIImagePromptGenerator.Wpf.csproj -c Release -r win-x64 -p:Platform=x64 --self-contained true --no-restore -o artifacts/win-x64
+      - name: Publish framework-dependent single-file WPF app
+        run: dotnet publish src/DKRandomizeAIImagePromptGenerator.Wpf/DKRandomizeAIImagePromptGenerator.Wpf.csproj -c Release -r win-x64 -p:Platform=x64 --self-contained false --no-restore -o artifacts/win-x64
+
+      - name: Build native runtime launcher
+        shell: pwsh
+        run: |
+          $programFilesX86 = [Environment]::GetFolderPath("ProgramFilesX86")
+          $vswhere = Join-Path $programFilesX86 "Microsoft Visual Studio\Installer\vswhere.exe"
+          $vsPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if ([string]::IsNullOrWhiteSpace($vsPath)) {
+            throw "Visual C++ build tools were not found."
+          }
+
+          $vcvars = Join-Path $vsPath "VC\Auxiliary\Build\vcvars64.bat"
+          $launcherDir = Join-Path $PWD "src\DKRandomizeAIImagePromptGenerator.Launcher"
+          $launcherExe = Join-Path $PWD "artifacts\win-x64\DKRandomizeAIImagePromptGenerator.exe"
+
+          Push-Location $launcherDir
+          try {
+            $command = '"' + $vcvars + '" >nul && rc /nologo /fo Launcher.res Launcher.rc && cl /nologo /std:c++20 /O2 /EHsc /DUNICODE /D_UNICODE Launcher.cpp Launcher.res /link /SUBSYSTEM:WINDOWS /OUT:"' + $launcherExe + '" user32.lib shell32.lib advapi32.lib'
+            & cmd.exe /d /s /c $command
+            if ($LASTEXITCODE -ne 0) {
+              throw "Native launcher build failed with exit code $LASTEXITCODE."
+            }
+          }
+          finally {
+            Remove-Item "Launcher.res" -Force -ErrorAction SilentlyContinue
+            Pop-Location
+          }
+
+      - name: Verify compact package layout
+        shell: pwsh
+        run: |
+          $publishDir = Join-Path $PWD "artifacts\win-x64"
+          $expected = @(
+            "DKRandomizeAIImagePromptGenerator.exe",
+            "DKRandomizeAIImagePromptGenerator.App.exe"
+          )
+          $files = @(Get-ChildItem -LiteralPath $publishDir -File | Select-Object -ExpandProperty Name | Sort-Object)
+          $unexpected = @($files | Where-Object { $_ -notin $expected })
+          $missing = @($expected | Where-Object { $_ -notin $files })
+
+          Write-Host "Published files:"
+          $files | ForEach-Object { Write-Host " - $_" }
+
+          if ($missing.Count -gt 0 -or $unexpected.Count -gt 0) {
+            throw "Compact package layout mismatch. Missing: $($missing -join ', '); Unexpected: $($unexpected -join ', ')"
+          }
+
+      - name: Smoke test native launcher runtime detection
+        shell: pwsh
+        run: |
+          $launcher = Join-Path $PWD "artifacts/win-x64/DKRandomizeAIImagePromptGenerator.exe"
+          $process = Start-Process -FilePath $launcher -ArgumentList "--runtime-check" -Wait -PassThru
+          if ($process.ExitCode -ne 0) {
+            throw "Native launcher did not detect .NET 10 Desktop Runtime. Exit code: $($process.ExitCode)"
+          }
 
       - name: Smoke test WPF mouse wheel routing
         shell: pwsh
         run: |
-          $exe = Join-Path $PWD "artifacts/win-x64/DKRandomizeAIImagePromptGenerator.exe"
+          $exe = Join-Path $PWD "artifacts/win-x64/DKRandomizeAIImagePromptGenerator.App.exe"
           $process = Start-Process -FilePath $exe -ArgumentList "--scroll-smoke" -Wait -PassThru
           if ($process.ExitCode -ne 0) {
             throw "WPF mouse wheel routing smoke test failed. Exit code: $($process.ExitCode)"
@@ -50,35 +105,39 @@ jobs:
       - name: Smoke test WPF navigation and keyboard focus
         shell: pwsh
         run: |
-          $exe = Join-Path $PWD "artifacts/win-x64/DKRandomizeAIImagePromptGenerator.exe"
+          $exe = Join-Path $PWD "artifacts/win-x64/DKRandomizeAIImagePromptGenerator.App.exe"
           $process = Start-Process -FilePath $exe -ArgumentList "--ui-smoke" -Wait -PassThru
           if ($process.ExitCode -ne 0) {
             throw "WPF navigation/keyboard UI smoke test failed. Exit code: $($process.ExitCode)"
           }
 
-      - name: Smoke test published app startup
+      - name: Smoke test launcher to published app startup
         shell: pwsh
         run: |
           $appData = Join-Path $env:LOCALAPPDATA "DK Randomize AI Image Prompt Generator"
           $log = Join-Path $appData "startup-crash.log"
           if (Test-Path $log) { Remove-Item $log -Force }
 
-          $exe = Join-Path $PWD "artifacts/win-x64/DKRandomizeAIImagePromptGenerator.exe"
-          $process = Start-Process -FilePath $exe -PassThru
+          $launcher = Join-Path $PWD "artifacts/win-x64/DKRandomizeAIImagePromptGenerator.exe"
+          $launcherProcess = Start-Process -FilePath $launcher -Wait -PassThru
+          if ($launcherProcess.ExitCode -ne 0) {
+            throw "Native launcher failed. Exit code: $($launcherProcess.ExitCode)"
+          }
+
           Start-Sleep -Seconds 5
 
           if (Test-Path $log) {
             Write-Host "WPF startup crash log:"
             Get-Content $log
-            if (-not $process.HasExited) { Stop-Process -Id $process.Id -Force }
             throw "Published WPF application reported a startup crash."
           }
 
-          if ($process.HasExited) {
-            throw "Published WPF application exited during startup smoke test. Exit code: $($process.ExitCode)"
+          $appProcesses = @(Get-Process -Name "DKRandomizeAIImagePromptGenerator.App" -ErrorAction SilentlyContinue)
+          if ($appProcesses.Count -eq 0) {
+            throw "Native launcher did not start the published WPF application."
           }
 
-          Stop-Process -Id $process.Id -Force
+          $appProcesses | Stop-Process -Force
 
       - name: Upload win-x64 artifact
         uses: actions/upload-artifact@v4
