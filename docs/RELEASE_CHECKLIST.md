@@ -1,8 +1,8 @@
-# First Release Validation Checklist
+# Release Validation Checklist
 
-Use this checklist on the exact expanded WPF win-x64 release-candidate artifact intended for the first release.
+Use this checklist for release/regression validation of the Windows x64 build.
 
-The earlier single-selection RC is obsolete after the V1 multi-select expansion.
+`v1.0.0` is already published. Unchecked items below are additional manual coverage targets rather than claims about automated CI status.
 
 ## Launch and shell
 
@@ -107,7 +107,7 @@ The earlier single-selection RC is obsolete after the V1 multi-select expansion.
 - [ ] Confirm icon-only controls expose meaningful automation names.
 - [ ] Confirm navigation buttons remain understandable in compact mode via tooltip/accessibility name.
 
-## Local release verification — expanded candidate
+## Local release verification
 
 - [ ] Pull the final `feature/wpf-ui` HEAD.
 - [ ] Run `scripts/verify-release.ps1 -Launch`.
