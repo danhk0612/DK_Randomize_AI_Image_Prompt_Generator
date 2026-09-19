@@ -3,7 +3,6 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
   </PropertyGroup>
@@ -12,14 +11,4 @@
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.12" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="..\DKRandomizeAIImagePromptGenerator\Models\**\*.cs" Link="Models\%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="..\DKRandomizeAIImagePromptGenerator\Data\**\*.cs" Link="Data\%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="..\DKRandomizeAIImagePromptGenerator\Services\BackupService.cs" Link="Services\BackupService.cs" />
-    <Compile Include="..\DKRandomizeAIImagePromptGenerator\Services\CombinationService.cs" Link="Services\CombinationService.cs" />
-    <Compile Include="..\DKRandomizeAIImagePromptGenerator\Services\ImageStorageService.cs" Link="Services\ImageStorageService.cs" />
-    <Compile Include="..\DKRandomizeAIImagePromptGenerator\Services\SettingsService.cs" Link="Services\SettingsService.cs" />
-    <Compile Include="..\DKRandomizeAIImagePromptGenerator\Services\GitHubUpdateService.cs" Link="Services\GitHubUpdateService.cs" />
-    <Compile Include="..\DKRandomizeAIImagePromptGenerator\ViewModels\**\*.cs" Link="ViewModels\%(RecursiveDir)%(Filename)%(Extension)" />
-  </ItemGroup>
 </Project>
