@@ -30,7 +30,7 @@ Version/tag remains open until the expanded multi-select release candidate passe
 
 ## Reliability
 
-- 23 automated tests in the expanded candidate pipeline.
+- 25 automated tests in the expanded candidate pipeline.
 - Explicit schema-v1 → schema-v2 migration coverage.
 - Multi-select ordering, unique random count, paging, exact History restore, and schema-v2 backup/restore regression coverage.
 - CI mouse-wheel routing smoke with a nested TextBox target.
