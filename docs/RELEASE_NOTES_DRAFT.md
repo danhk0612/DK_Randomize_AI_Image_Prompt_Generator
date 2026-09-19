@@ -22,6 +22,8 @@ Version/tag remains open until the expanded multi-select release candidate passe
 - Per-item removal and drag ordering in Mixer; double-click add/remove and drag ordering in the picker.
 - Paged recent history: 20 records per page, multi-selection summaries, source thumbnails, exact Mixer restore, and clear-all history.
 - System, Light, and Dark themes with theme-aware buttons, selections, ComboBoxes, dialogs, and disabled/random states.
+- Choose between per-user LocalAppData storage and executable-folder portable storage.
+- Main window remembers its previous size, position, and maximized state.
 - ZIP backup/restore for prompts, schema-v2 history, representative images, and settings.
 - Responsive desktop layouts and compact navigation at narrow widths.
 - Existing LocalAppData and schema-v1 history are migrated forward automatically.
