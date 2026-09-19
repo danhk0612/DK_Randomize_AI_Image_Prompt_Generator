@@ -40,17 +40,6 @@ public static class UiSmokeRunner
             window.Opacity = 0.01;
             window.Left = -10000;
             window.Top = -10000;
-            /* window configured for hidden smoke execution */
-            /*
-                Width = 1280,
-                Height = 820,
-                WindowStyle = WindowStyle.None,
-                ShowInTaskbar = false,
-                Opacity = 0.01,
-                Left = -10000,
-                Top = -10000
-            };
-            */
 
             app.RegisterMainWindow(window);
             window.Show();
