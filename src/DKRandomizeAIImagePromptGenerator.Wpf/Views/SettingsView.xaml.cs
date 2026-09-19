@@ -251,6 +251,15 @@ public partial class SettingsView : UserControl
                 throw new InvalidOperationException("현재 실행 파일 경로를 확인할 수 없습니다.");
             }
 
+            if (!string.Equals(
+                    Path.GetFileName(executablePath),
+                    "DKRandomizeAIImagePromptGenerator.exe",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    "자동 업데이트는 게시된 DKRandomizeAIImagePromptGenerator.exe에서 실행할 때만 사용할 수 있습니다.");
+            }
+
             UpdateStatusText.Text = $"업데이트 {release.Version} 다운로드 중...";
             await app.Updates.DownloadAndStartUpdateAsync(
                 release,
