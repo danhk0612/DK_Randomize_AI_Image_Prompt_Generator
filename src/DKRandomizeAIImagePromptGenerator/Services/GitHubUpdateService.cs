@@ -436,7 +436,7 @@ catch {
         {
             var core = $"{Major}.{Minor}.{Patch}";
             return IsPrerelease
-                ? $"{core}-{string.Join('.', Prerelease)}"
+                ? $"{core}-{string.Join(".", Prerelease)}"
                 : core;
         }
     }
