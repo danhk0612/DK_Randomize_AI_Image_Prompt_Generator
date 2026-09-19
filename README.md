@@ -7,18 +7,20 @@ Windows desktop application for storing reusable AI image-generation prompts and
 - Manage Character, Artist / Style, and Additional prompt groups.
 - Store title, representative image, Positive prompt, Negative prompt, tags, and memo.
 - Browse prompts in gallery or list view.
-- Search prompt text and filter by tag.
+- Search prompt text and partially match tags; click a displayed tag to filter immediately.
+- Sort prompts by updated time, created time, or title.
 - Create, edit, duplicate, and delete prompt items.
 - Choose Direct / Random / Disabled independently for each group.
 - Select and order multiple prompts in Character, Artist / Style, and Additional.
+- Remove items directly and reorder them with buttons or drag-and-drop.
 - Choose a unique random item count independently for each category.
-- Search title, tags, memo, Positive, and Negative together from the Mixer picker.
+- Search title, tags, memo, Positive, and Negative together from the Mixer picker, with double-click add/remove and drag ordering.
 - Randomize one group or all random-mode groups.
 - Mixer selections show thumbnail, title, memo, and tags.
 - Add a prompt directly from Prompt Library to the active Mixer session.
 - Edit combined Positive / Negative output before copying.
 - Copy Positive and Negative independently.
-- Save final edited output plus selection order/modes to paged recent history and restore it later.
+- Save final edited output plus selection order/modes to paged recent history, restore it later, or clear saved history.
 - Follow the Windows system theme or force Light / Dark.
 - Back up and restore local data as a ZIP.
 
