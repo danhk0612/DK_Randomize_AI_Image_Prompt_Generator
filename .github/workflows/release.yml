@@ -153,7 +153,11 @@ jobs:
           if (Test-Path $log) { Remove-Item $log -Force }
 
           $launcher = Join-Path $PWD "artifacts/win-x64/DKRandomizeAIImagePromptGenerator.exe"
-          $launcherProcess = Start-Process -FilePath $launcher -Wait -PassThru
+          $launcherProcess = Start-Process -FilePath $launcher -PassThru
+          if (-not $launcherProcess.WaitForExit(5000)) {
+            Stop-Process -Id $launcherProcess.Id -Force
+            throw "Native launcher did not exit after starting the WPF application."
+          }
           if ($launcherProcess.ExitCode -ne 0) {
             throw "Native launcher failed. Exit code: $($launcherProcess.ExitCode)"
           }
@@ -165,12 +169,12 @@ jobs:
             throw "Published WPF application reported a startup crash."
           }
 
-          $appProcesses = @(Get-Process -Name "DKRandomizeAIImagePromptGenerator.App" -ErrorAction SilentlyContinue)
+          $appProcesses = @(Get-CimInstance Win32_Process -Filter "Name = 'DKRandomizeAIImagePromptGenerator.App.exe'")
           if ($appProcesses.Count -eq 0) {
             throw "Native launcher did not start the published WPF application."
           }
 
-          $appProcesses | Stop-Process -Force
+          $appProcesses | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
 
       - name: Create release ZIP
         shell: pwsh
