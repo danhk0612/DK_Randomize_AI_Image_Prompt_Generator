@@ -80,7 +80,7 @@
 - [x] Local release verification script pass
 - [ ] WPF keyboard/focus visual manual smoke pass
 - [x] Final WPF real-data smoke pass
-- [ ] Prepare first release
+- [x] Prepare and publish first release `v1.0.0`
 
 ## Milestone 7 — V1 multi-select mixer expansion
 
