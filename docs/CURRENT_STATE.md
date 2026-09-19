@@ -25,13 +25,16 @@ The WPF migration was made after repeated WinUI mouse-wheel routing problems. Th
 - Generated outputs remain manually editable before copy
 - Recent-history records preserve final edited text
 - No direct AI API/image-generation feature in V1
-- First release target: self-contained win-x64 portable ZIP
+- First release target: compact win-x64 portable ZIP with a native runtime-check launcher and framework-dependent single-file WPF app
 
 ## Implemented
 
 ### WPF application shell
 
 - WPF / .NET 10 application
+- framework-dependent single-file publish for the actual WPF application
+- native Windows launcher detects .NET 10 Desktop Runtime x64 before starting the WPF app
+- missing runtime prompt can open Microsoft's official .NET 10 download page
 - Mixer, Prompt Library, History, and Settings views
 - left navigation shell with compact mode for narrow windows
 - System / Light / Dark theme support
@@ -140,14 +143,15 @@ The final release gate still requires an exact release-candidate pass for keyboa
 
 ## Release candidate status
 
-- `v1.0.0-rc.1` is published as a GitHub prerelease.
-- Release branch: `release/v1.0.0-rc.1`
-- Release workflow passed Restore, Build, 26 automated tests, Publish, routed-wheel smoke, expanded UI smoke, startup smoke, ZIP creation, GitHub Release publishing, and post-publish verification.
-- Release asset: `DK-Randomize-AI-Image-Prompt-Generator-WPF-win-x64.zip`
+- `v1.0.0-rc.1` is published as the earlier self-contained GitHub prerelease.
+- The current source version is `1.0.0-rc.2`.
+- RC2 changes distribution to two files: native launcher + framework-dependent single-file WPF app.
+- RC2 must pass the compact-package CI checks before `release/v1.0.0-rc.2` is created and published.
 
 ## Remaining before final v1.0.0
 
-1. Complete any remaining manual RC checks in `docs/RELEASE_CHECKLIST.md`, especially the real update-from-older-build path and backup/restore from the published RC.
-2. If no RC defects are found, change the project version from `1.0.0-rc.1` to `1.0.0`.
-3. Create `release/v1.0.0` from the approved final commit and trigger the Release workflow.
-4. Merge the approved release state to the main development line as appropriate.
+1. Publish and manually verify `v1.0.0-rc.2`, including launcher behavior with .NET 10 Desktop Runtime present and absent.
+2. Verify the real in-app update path from the published `v1.0.0-rc.1` build to `v1.0.0-rc.2`.
+3. Confirm portable and LocalAppData user data survive the two-file update.
+4. If no RC2 defects are found, change the project version from `1.0.0-rc.2` to `1.0.0`.
+5. Create `release/v1.0.0` from the approved final commit and trigger the Release workflow.
