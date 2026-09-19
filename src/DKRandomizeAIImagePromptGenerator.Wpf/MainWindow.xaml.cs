@@ -13,10 +13,108 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        RestoreWindowPlacement();
+
         _mixerView = new MixerView();
         Loaded += MainWindow_Loaded;
         SizeChanged += MainWindow_SizeChanged;
         NavigateToMixer();
+    }
+
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        SaveWindowPlacement();
+        base.OnClosing(e);
+    }
+
+    private void RestoreWindowPlacement()
+    {
+        var settings = ((App)Application.Current).Settings.Current;
+        if (settings.WindowWidth is not double savedWidth ||
+            settings.WindowHeight is not double savedHeight ||
+            !double.IsFinite(savedWidth) ||
+            !double.IsFinite(savedHeight) ||
+            savedWidth <= 0 ||
+            savedHeight <= 0)
+        {
+            return;
+        }
+
+        Width = Math.Clamp(
+            savedWidth,
+            MinWidth,
+            Math.Max(MinWidth, SystemParameters.VirtualScreenWidth));
+        Height = Math.Clamp(
+            savedHeight,
+            MinHeight,
+            Math.Max(MinHeight, SystemParameters.VirtualScreenHeight));
+
+        if (settings.WindowLeft is double savedLeft &&
+            settings.WindowTop is double savedTop &&
+            double.IsFinite(savedLeft) &&
+            double.IsFinite(savedTop) &&
+            IsPlacementVisible(savedLeft, savedTop, Width, Height))
+        {
+            WindowStartupLocation = WindowStartupLocation.Manual;
+            Left = savedLeft;
+            Top = savedTop;
+        }
+
+        if (settings.WindowMaximized)
+        {
+            WindowState = WindowState.Maximized;
+        }
+    }
+
+    private void SaveWindowPlacement()
+    {
+        var settingsService = ((App)Application.Current).Settings;
+        var settings = settingsService.Current;
+        var bounds = WindowState == WindowState.Normal
+            ? new Rect(Left, Top, ActualWidth, ActualHeight)
+            : RestoreBounds;
+
+        if (!bounds.IsEmpty &&
+            double.IsFinite(bounds.Left) &&
+            double.IsFinite(bounds.Top) &&
+            double.IsFinite(bounds.Width) &&
+            double.IsFinite(bounds.Height) &&
+            bounds.Width > 0 &&
+            bounds.Height > 0)
+        {
+            settings.WindowLeft = bounds.Left;
+            settings.WindowTop = bounds.Top;
+            settings.WindowWidth = bounds.Width;
+            settings.WindowHeight = bounds.Height;
+        }
+
+        settings.WindowMaximized = WindowState == WindowState.Maximized;
+
+        try
+        {
+            settingsService.SaveAsync().GetAwaiter().GetResult();
+        }
+        catch
+        {
+            // Window placement persistence must not block application shutdown.
+        }
+    }
+
+    private static bool IsPlacementVisible(
+        double left,
+        double top,
+        double width,
+        double height)
+    {
+        var virtualLeft = SystemParameters.VirtualScreenLeft;
+        var virtualTop = SystemParameters.VirtualScreenTop;
+        var virtualRight = virtualLeft + SystemParameters.VirtualScreenWidth;
+        var virtualBottom = virtualTop + SystemParameters.VirtualScreenHeight;
+
+        var visibleWidth = Math.Min(left + width, virtualRight) - Math.Max(left, virtualLeft);
+        var visibleHeight = Math.Min(top + height, virtualBottom) - Math.Max(top, virtualTop);
+
+        return visibleWidth >= 100 && visibleHeight >= 60;
     }
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e) =>
