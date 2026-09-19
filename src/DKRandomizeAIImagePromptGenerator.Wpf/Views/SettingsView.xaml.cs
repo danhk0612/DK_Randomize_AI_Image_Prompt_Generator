@@ -1,4 +1,5 @@
 using System.IO;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using DKRandomizeAIImagePromptGenerator.Data;
@@ -35,10 +36,12 @@ public partial class SettingsView : UserControl
         _syncingStorage = false;
         UpdateDataPathText(app);
 
-        var version = typeof(App).Assembly.GetName().Version;
-        VersionText.Text = version is null
+        var version = typeof(App).Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+            .InformationalVersion;
+        VersionText.Text = string.IsNullOrWhiteSpace(version)
             ? "버전 정보 없음"
-            : $"버전 {version.Major}.{version.Minor}.{version.Build}";
+            : $"버전 {version}";
     }
 
     private void SettingsView_SizeChanged(object sender, SizeChangedEventArgs e) =>
