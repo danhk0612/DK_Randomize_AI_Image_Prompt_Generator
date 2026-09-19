@@ -124,7 +124,7 @@
 - [x] docs/release checklist refresh
 - [x] create and publish `v1.0.0-rc.1` release candidate
 - [x] switch RC2 packaging to native runtime launcher + framework-dependent single-file app
-- [ ] create and publish `v1.0.0-rc.2` compact release candidate
+- [x] create and publish `v1.0.0-rc.2` compact release candidate
 
 ## Deferred
 
