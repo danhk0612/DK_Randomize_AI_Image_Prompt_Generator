@@ -79,6 +79,33 @@
             </Border>
 
             <Border Style="{StaticResource CardStyle}" Margin="0,14,0,0">
+                <Grid x:Name="UpdateGrid">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                    <StackPanel x:Name="UpdateDescription">
+                        <TextBlock Text="앱 업데이트" FontWeight="SemiBold" />
+                        <TextBlock Text="GitHub Releases에서 새 버전을 확인하고, win-x64 패키지를 다운로드해 자동으로 교체한 뒤 다시 실행합니다."
+                                   Margin="0,4,0,0"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   TextWrapping="Wrap" />
+                        <TextBlock x:Name="UpdateStatusText"
+                                   Margin="0,6,0,0"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                    <Button x:Name="UpdateButton"
+                            Grid.Column="1"
+                            Content="업데이트 확인"
+                            Margin="16,0,0,0"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource ActionButtonStyle}"
+                            Click="Update_Click"
+                            AutomationProperties.Name="GitHub에서 프로그램 업데이트 확인" />
+                </Grid>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}" Margin="0,14,0,0">
                 <StackPanel>
                     <TextBlock Text="정보" FontWeight="SemiBold" />
                     <TextBlock Text="DK Randomize AI Image Prompt Generator" Margin="0,5,0,0" />
