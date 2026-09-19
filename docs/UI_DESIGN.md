@@ -158,11 +158,15 @@ Restore reproduces selection order, category modes, random counts, and exact fin
 Settings includes:
 
 - Theme: System / Light / Dark
+- Data storage location: LocalAppData / executable-folder Portable
 - Create backup
 - Restore backup
+- GitHub Releases update check/install
 - application version
 
-Theme and backup controls stack below their descriptions on narrow layouts.
+The main window also persists its last normal position, size, and maximized state.
+
+Settings controls stack below their descriptions on narrow layouts.
 
 ## 8. Scrolling
 
