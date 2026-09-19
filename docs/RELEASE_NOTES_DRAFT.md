@@ -17,9 +17,11 @@ Version/tag remains open until the expanded multi-select release candidate passe
 - Non-empty prompt fragments are joined with one line break.
 - Editable final output with independent clipboard copy actions.
 - SQLite storage with tags, search, representative images, and notes.
-- Gallery and list views for prompt management.
-- Paged recent history: 20 records per page, multi-selection summaries, source thumbnails, and exact Mixer restore.
-- System, Light, and Dark themes.
+- Gallery and list views for prompt management, with updated/created/title sorting.
+- Partial tag filtering plus clickable tag shortcuts.
+- Per-item removal and drag ordering in Mixer; double-click add/remove and drag ordering in the picker.
+- Paged recent history: 20 records per page, multi-selection summaries, source thumbnails, exact Mixer restore, and clear-all history.
+- System, Light, and Dark themes with theme-aware buttons, selections, ComboBoxes, dialogs, and disabled/random states.
 - ZIP backup/restore for prompts, schema-v2 history, representative images, and settings.
 - Responsive desktop layouts and compact navigation at narrow widths.
 - Existing LocalAppData and schema-v1 history are migrated forward automatically.
