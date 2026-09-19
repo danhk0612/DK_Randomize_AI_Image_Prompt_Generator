@@ -6,6 +6,7 @@
         <conv:ImagePathConverter x:Key="ImagePathConverter" />
 
         <Style x:Key="HistoryCellTextStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
             <Setter Property="TextWrapping" Value="Wrap" />
             <Setter Property="TextTrimming" Value="CharacterEllipsis" />
             <Setter Property="MaxHeight" Value="38" />
