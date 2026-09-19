@@ -124,9 +124,9 @@ The earlier single-selection RC is obsolete after the V1 multi-select expansion.
 - [x] Solution Restore succeeds on the RC release commit.
 - [x] Release Build succeeds on the RC release commit.
 - [x] All 26 automated tests pass on the RC release commit.
-- [ ] Framework-dependent single-file WPF win-x64 Publish succeeds.
-- [ ] Native runtime-check launcher compiles successfully.
-- [ ] CI confirms the published package contains exactly two EXE files.
+- [x] Framework-dependent single-file WPF win-x64 Publish succeeds.
+- [x] Native runtime-check launcher compiles successfully.
+- [x] CI confirms the published package contains exactly two EXE files.
 - [x] WPF routed mouse-wheel smoke succeeds.
 - [x] Expanded WPF UI smoke succeeds, including multi-select, shared Mixer session, Prompt Library integration, and History paging.
 - [x] Published WPF startup smoke succeeds.
