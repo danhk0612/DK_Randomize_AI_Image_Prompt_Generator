@@ -24,13 +24,15 @@ Current release-candidate version: `1.0.0-rc.1`. Final `v1.0.0` remains gated on
 - System, Light, and Dark themes with theme-aware buttons, selections, ComboBoxes, dialogs, and disabled/random states.
 - Choose between per-user LocalAppData storage and executable-folder portable storage.
 - Main window remembers its previous size, position, and maximized state.
+- Settings includes a GitHub Releases update checker and user-confirmed automatic download/install/restart flow.
+- Tag-driven GitHub Release workflow publishes the self-contained win-x64 ZIP used by the updater.
 - ZIP backup/restore for prompts, schema-v2 history, representative images, and settings.
 - Responsive desktop layouts and compact navigation at narrow widths.
 - Existing LocalAppData and schema-v1 history are migrated forward automatically.
 
 ## Reliability
 
-- 25 automated tests in the expanded candidate pipeline.
+- 26 automated tests in the expanded candidate pipeline.
 - Explicit schema-v1 → schema-v2 migration coverage.
 - Multi-select ordering, unique random count, paging, exact History restore, and schema-v2 backup/restore regression coverage.
 - CI mouse-wheel routing smoke with a nested TextBox target.
@@ -54,7 +56,7 @@ Current release-candidate version: `1.0.0-rc.1`. Final `v1.0.0` remains gated on
 - Mixer session state is preserved while the app runs but is not restored across application restarts.
 - History thumbnails use the current representative image when the source prompt still exists; deleted prompts retain title snapshots but no archived image copy.
 - First release is x64 only.
-- No automatic updater is included in the first release.
+- Updates require access to GitHub Releases; offline environments can continue using manual ZIP replacement.
 
 ## Before publishing
 
