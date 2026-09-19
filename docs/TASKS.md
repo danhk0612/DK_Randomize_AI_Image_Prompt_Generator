@@ -56,6 +56,8 @@
 - [x] History list/detail
 - [x] Restore history to mixer
 - [x] Theme setting
+- [x] Select LocalAppData or executable-folder portable data storage
+- [x] Remember main-window size, position, and maximized state
 - [x] Backup
 - [x] Restore
 - [x] About/version
