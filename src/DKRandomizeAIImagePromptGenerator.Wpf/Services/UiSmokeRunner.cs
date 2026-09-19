@@ -23,12 +23,15 @@ public static class UiSmokeRunner
             await app.InitializeServicesAsync(paths);
             await SeedAsync(app);
 
-            app.Settings.Current.WindowWidth = 1110;
-            app.Settings.Current.WindowHeight = 710;
+            // CI Windows sessions can report a very small virtual desktop.
+            // Use the application's minimum supported size so placement restore
+            // remains deterministic both interactively and in headless CI.
+            app.Settings.Current.WindowWidth = 800;
+            app.Settings.Current.WindowHeight = 640;
 
             window = new MainWindow();
-            if (Math.Abs(window.Width - 1110) > 0.5 ||
-                Math.Abs(window.Height - 710) > 0.5)
+            if (Math.Abs(window.Width - 800) > 0.5 ||
+                Math.Abs(window.Height - 640) > 0.5)
             {
                 return false;
             }
