@@ -6,6 +6,8 @@
         Width="920" Height="680"
         MinWidth="760" MinHeight="520"
         WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource WindowBackgroundBrush}"
+        Foreground="{DynamicResource TextPrimaryBrush}"
         ShowInTaskbar="False">
     <Window.Resources>
         <conv:ImagePathConverter x:Key="ImagePathConverter" />
@@ -41,7 +43,8 @@
         </DataTemplate>
     </Window.Resources>
 
-    <Grid Margin="20">
+    <Grid Margin="20"
+          Background="{DynamicResource WindowBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
