@@ -1,6 +1,6 @@
-# First Release Notes — Draft
+# v1.0.0 Release Notes
 
-Published current release candidate: `v1.0.0-rc.2`. RC1 remains available as the earlier runtime-bundled prerelease; RC2 uses the compact runtime-dependent two-file package intended for final `v1.0.0`.
+Final release version: `v1.0.0`. The final distribution uses the compact runtime-dependent two-file package validated in `v1.0.0-rc.2`.
 
 ## Highlights
 
@@ -25,7 +25,7 @@ Published current release candidate: `v1.0.0-rc.2`. RC1 remains available as the
 - Choose between per-user LocalAppData storage and executable-folder portable storage.
 - Main window remembers its previous size, position, and maximized state.
 - Settings includes a GitHub Releases update checker and user-confirmed automatic download/install/restart flow.
-- Versioned release-branch workflow validates the candidate, creates the matching Git tag, and publishes the self-contained win-x64 ZIP used by the updater.
+- Versioned release-branch workflow validates the candidate, creates the matching Git tag, and publishes the compact win-x64 ZIP used by the updater.
 - ZIP backup/restore for prompts, schema-v2 history, representative images, and settings.
 - Responsive desktop layouts and compact navigation at narrow widths.
 - Existing LocalAppData and schema-v1 history are migrated forward automatically.
@@ -62,6 +62,6 @@ Published current release candidate: `v1.0.0-rc.2`. RC1 remains available as the
 - Microsoft .NET 10 Desktop Runtime x64 is required and is intentionally not bundled.
 - Updates require access to GitHub Releases; offline environments can continue using manual ZIP replacement.
 
-## Before publishing
+## Release validation
 
-Complete the remaining manual items in `docs/RELEASE_CHECKLIST.md` using the exact expanded release-candidate artifact. Then choose the version/tag and publish the GitHub Release.
+The compact two-file distribution and normal startup were manually confirmed from the RC2 artifact. CI additionally validates build, tests, package layout, runtime detection, WPF smoke tests, launcher-to-app startup, and release publishing.
