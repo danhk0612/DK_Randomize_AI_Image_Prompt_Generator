@@ -106,6 +106,11 @@ The WPF migration was made after repeated WinUI mouse-wheel routing problems. Th
 - changing the data root does not automatically move existing data; backup/restore can be used when moving data
 - main-window normal bounds and maximized state persist in `settings.json`
 - invalid/off-screen saved placement falls back to a visible startup position
+- Settings can check GitHub Releases for a newer compatible `win-x64` ZIP
+- updates are user-initiated: download, close, replace application files, and restart automatically
+- updater preserves executable-folder portable data roots such as `portable.mode`, `settings.json`, `data`, `images`, and `backups`
+- stable builds ignore prerelease GitHub releases; prerelease builds can move to newer prerelease or stable releases
+- tag-driven `.github/workflows/release.yml` validates the build and publishes the update ZIP to GitHub Releases
 - ZIP backup/restore
 - version display
 - responsive History and Settings layouts
@@ -116,7 +121,7 @@ The current WPF pipeline validates:
 
 1. Solution restore
 2. Release build
-3. 25 automated tests
+3. 26 automated tests
 4. self-contained win-x64 WPF publish
 5. WPF routed mouse-wheel smoke
 6. published EXE startup smoke
@@ -137,6 +142,6 @@ The final release gate still requires an exact release-candidate pass for keyboa
 
 1. Create the release-candidate artifact from the final approved `feature/wpf-ui` HEAD.
 2. Run `scripts/verify-release.ps1 -Launch` against that exact HEAD/artifact.
-3. Complete the remaining unchecked items in `docs/RELEASE_CHECKLIST.md`, especially keyboard focus in Light/Dark, storage-location restart behavior, window placement restore, and backup/restore from the exact RC.
+3. Complete the remaining unchecked items in `docs/RELEASE_CHECKLIST.md`, especially keyboard focus in Light/Dark, storage-location restart behavior, window placement restore, GitHub update check, and backup/restore from the exact RC.
 4. Choose release version/tag.
 5. Merge only after the release-candidate build is approved for release.
