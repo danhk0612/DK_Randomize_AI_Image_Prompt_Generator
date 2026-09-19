@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using DKRandomizeAIImagePromptGenerator.Data;
 using DKRandomizeAIImagePromptGenerator.Models;
 using DKRandomizeAIImagePromptGenerator.Wpf.Services;
 using Microsoft.Win32;
