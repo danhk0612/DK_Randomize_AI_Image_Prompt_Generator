@@ -92,7 +92,7 @@ public partial class MainWindow : Window
 
         try
         {
-            settingsService.SaveAsync().GetAwaiter().GetResult();
+            settingsService.Save();
         }
         catch
         {
