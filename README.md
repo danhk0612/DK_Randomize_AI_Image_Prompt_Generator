@@ -22,13 +22,15 @@ Windows desktop application for storing reusable AI image-generation prompts and
 - Copy Positive and Negative independently.
 - Save final edited output plus selection order/modes to paged recent history, restore it later, or clear saved history.
 - Follow the Windows system theme or force Light / Dark.
+- Choose per-user LocalAppData storage or executable-folder portable storage.
+- Remember the last main-window size, position, and maximized state.
 - Back up and restore local data as a ZIP.
 
 The application does **not** generate images directly. It prepares prompt text for use in other image-generation tools and services.
 
 ## Data storage
 
-Application data is local to the current Windows user.
+By default, application data is stored for the current Windows user:
 
 ```text
 %LOCALAPPDATA%\DK Randomize AI Image Prompt Generator\
@@ -38,7 +40,19 @@ Application data is local to the current Windows user.
 └─ settings.json
 ```
 
-Representative images are copied into application-managed storage. Original image files are not modified.
+Settings can switch the data root to the executable folder for portable use. Portable mode is indicated by a `portable.mode` marker next to the executable and takes effect on the next launch:
+
+```text
+<executable folder>\
+├─ DKRandomizeAIImagePromptGenerator.exe
+├─ portable.mode
+├─ data\prompts.db
+├─ images\
+├─ backups\
+└─ settings.json
+```
+
+Changing storage mode does not automatically move data between roots. Use backup/restore when moving an existing library. Representative images are copied into application-managed storage; original image files are not modified.
 
 ## Platform and development stack
 
