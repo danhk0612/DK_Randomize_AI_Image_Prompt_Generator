@@ -151,10 +151,13 @@ The final release gate still requires an exact release-candidate pass for keyboa
 - RC2 release ZIP is approximately 1.52 MB, compared with the earlier runtime-bundled package of roughly 66 MB.
 - RC2 Release workflow passed Restore, Build, 26 tests, single-file Publish, native launcher build/runtime detection, compact package validation, routed-wheel smoke, UI smoke, launcher-to-app startup smoke, ZIP creation, release publishing, and post-publish verification.
 
-## Remaining before final v1.0.0
+## v1.0.0 release status
 
-1. Publish and manually verify `v1.0.0-rc.2`, including launcher behavior with .NET 10 Desktop Runtime present and absent.
-2. Verify the real in-app update path from the published `v1.0.0-rc.1` build to `v1.0.0-rc.2`.
-3. Confirm portable and LocalAppData user data survive the two-file update.
-4. Project version is now `1.0.0`; run the final CI against this exact candidate.
-5. Create `release/v1.0.0` from the CI-approved final commit and trigger the Release workflow.
+- `v1.0.0` is published as the first stable GitHub Release.
+- Release branch: `release/v1.0.0`
+- Release commit/tag: `2b7f0c22a1a2fa347b07c9054db913af7f0b5dd8`
+- Final Build workflow passed Restore, Build, 26 tests, framework-dependent single-file Publish, native launcher compilation/runtime detection, exact two-file package validation, WPF smoke tests, launcher-to-app startup, and artifact upload.
+- Final Release workflow repeated the complete validation and successfully created the tag, stable GitHub Release, and update ZIP.
+- Stable release asset: `DK-Randomize-AI-Image-Prompt-Generator-WPF-win-x64.zip` (approximately 1.52 MB).
+- The user manually confirmed the compact two-file RC2 folder and normal application startup before stable promotion.
+- Optional post-release validation remains for the missing-runtime dialog/download-link path on a Windows machine without .NET 10 Desktop Runtime x64.
