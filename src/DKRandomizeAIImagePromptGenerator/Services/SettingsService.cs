@@ -68,6 +68,16 @@ public sealed class SettingsService
             cancellationToken);
     }
 
+    public void Save()
+    {
+        _paths.EnsureDirectories();
+        using var stream = File.Create(_paths.SettingsPath);
+        JsonSerializer.Serialize(
+            stream,
+            Current,
+            new JsonSerializerOptions { WriteIndented = true });
+    }
+
     public async Task SetThemeAsync(
         AppTheme theme,
         CancellationToken cancellationToken = default)
