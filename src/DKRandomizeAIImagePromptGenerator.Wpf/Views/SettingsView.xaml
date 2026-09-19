@@ -34,6 +34,33 @@
             </Border>
 
             <Border Style="{StaticResource CardStyle}" Margin="0,14,0,0">
+                <Grid x:Name="StorageGrid">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="220" /></Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                    <StackPanel x:Name="StorageDescription">
+                        <TextBlock Text="데이터 저장 위치" FontWeight="SemiBold" />
+                        <TextBlock Text="프롬프트, 최근 기록, 대표 이미지, 백업과 설정을 저장할 위치입니다. 변경은 다음 실행부터 적용되며 기존 데이터는 자동 이동하지 않습니다."
+                                   Margin="0,4,0,0"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   TextWrapping="Wrap" />
+                        <TextBlock x:Name="CurrentDataPathText"
+                                   Margin="0,6,0,0"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                    <ComboBox x:Name="StorageLocationComboBox"
+                              Grid.Column="1"
+                              VerticalAlignment="Center"
+                              SelectionChanged="StorageLocationComboBox_SelectionChanged"
+                              AutomationProperties.Name="데이터 저장 위치 선택">
+                        <ComboBoxItem Content="사용자 데이터 폴더" />
+                        <ComboBoxItem Content="실행 파일 폴더 (Portable)" />
+                    </ComboBox>
+                </Grid>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}" Margin="0,14,0,0">
                 <Grid x:Name="BackupGrid">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                     <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
