@@ -1,6 +1,6 @@
 # First Release Notes — Draft
 
-Published release candidate: `v1.0.0-rc.1`. Final `v1.0.0` remains gated on the remaining manual release-candidate validation checks.
+Current release-candidate source version: `1.0.0-rc.2`. RC1 remains published; RC2 changes the distribution to a compact runtime-dependent two-file package before final `v1.0.0`.
 
 ## Highlights
 
@@ -45,9 +45,12 @@ Published release candidate: `v1.0.0-rc.1`. Final `v1.0.0` remains gated on the 
 
 - Windows `win-x64`
 - WPF / .NET 10
-- Unpackaged self-contained portable build
-- No separate .NET runtime installation required
-- Distributed as a ZIP archive for the first release
+- Portable ZIP with two application files
+- Native `DKRandomizeAIImagePromptGenerator.exe` launcher
+- Framework-dependent single-file `DKRandomizeAIImagePromptGenerator.App.exe`
+- Requires Microsoft .NET 10 Desktop Runtime x64
+- If the runtime is missing, the native launcher offers to open Microsoft's official .NET 10 download page
+- The .NET runtime itself is not bundled in the release ZIP
 
 ## Current limitations
 
@@ -56,6 +59,7 @@ Published release candidate: `v1.0.0-rc.1`. Final `v1.0.0` remains gated on the 
 - Mixer session state is preserved while the app runs but is not restored across application restarts.
 - History thumbnails use the current representative image when the source prompt still exists; deleted prompts retain title snapshots but no archived image copy.
 - First release is x64 only.
+- Microsoft .NET 10 Desktop Runtime x64 is required and is intentionally not bundled.
 - Updates require access to GitHub Releases; offline environments can continue using manual ZIP replacement.
 
 ## Before publishing
