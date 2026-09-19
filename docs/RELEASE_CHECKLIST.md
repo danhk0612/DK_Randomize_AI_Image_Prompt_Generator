@@ -28,7 +28,9 @@ The earlier single-selection RC is obsolete after the V1 multi-select expansion.
 - [ ] Save Positive, Negative, tags, and memo and confirm persistence after restart.
 - [ ] Add, replace, and remove a representative image; confirm the source file is unchanged.
 - [ ] Verify gallery/list switching.
-- [ ] Verify title/prompt search and tag filtering.
+- [ ] Verify sorting by updated time, created time, and title.
+- [ ] Verify title/prompt search and partial tag filtering.
+- [ ] Click a displayed tag and confirm it applies the tag filter immediately.
 - [ ] Duplicate, edit, and delete an item.
 - [ ] Confirm the editor always opens at the top.
 - [ ] Confirm search/tag filters stack correctly on a narrow window.
@@ -44,9 +46,10 @@ The earlier single-selection RC is obsolete after the V1 multi-select expansion.
 - [ ] Confirm Random disables manual selection controls and enables random-count/reroll controls.
 - [ ] Confirm Disabled disables both manual and random controls and omits the category.
 - [ ] Select at least 2 prompts in each category.
-- [ ] Reorder Direct items and confirm output order changes accordingly.
-- [ ] Remove an item and confirm output is recomposed.
+- [ ] Reorder Direct items with both buttons and drag-and-drop; confirm output order changes accordingly.
+- [ ] Remove an item with the per-item X and confirm output is recomposed.
 - [ ] Search the category picker by title, tag, memo, Positive text, and Negative text.
+- [ ] Add by double-click, remove by double-click, and drag-reorder the selected list.
 - [ ] Add several search results, cancel once, then apply once; confirm cancel/apply semantics.
 - [ ] Set Random count to 2+ and confirm results are unique within that category.
 - [ ] Request more random items than available and confirm it safely uses all available candidates.
@@ -71,6 +74,7 @@ The earlier single-selection RC is obsolete after the V1 multi-select expansion.
 - [ ] Reroll a restored Random category and confirm its saved random count is used.
 - [ ] Delete a source prompt and confirm saved title snapshot/final text remain readable.
 - [ ] Delete a history record and confirm paging remains valid.
+- [ ] Clear all recent history, confirm the warning dialog, and confirm the empty state/paging reset correctly.
 
 ## Settings / schema-v2 backup
 
@@ -82,8 +86,9 @@ The earlier single-selection RC is obsolete after the V1 multi-select expansion.
 - [ ] Confirm prompts, images, theme, history item order, modes, random counts, and final text are restored.
 - [ ] Confirm displayed application version.
 
-## Keyboard and accessibility
+## Visual theme / keyboard and accessibility
 
+- [ ] Confirm page/section titles, list selections, buttons, picker background, random-result surfaces, and ComboBoxes remain readable in both Light and Dark.
 - [ ] Navigate primary controls with Tab / Shift+Tab.
 - [ ] Activate buttons, radio buttons, ComboBoxes, picker lists, and history paging with keyboard input.
 - [ ] Confirm focus remains visible in Light and Dark themes.
