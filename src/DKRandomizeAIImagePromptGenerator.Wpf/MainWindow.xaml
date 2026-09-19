@@ -1,0 +1,42 @@
+<Window x:Class="DKRandomizeAIImagePromptGenerator.Wpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="DK Randomize AI Image Prompt Generator"
+        Width="1280" Height="820"
+        MinWidth="800" MinHeight="640"
+        WindowStartupLocation="CenterScreen"
+        Icon="Assets/AppIcon.ico">
+    <Grid Background="{DynamicResource WindowBackgroundBrush}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="NavigationColumn" Width="220" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="{DynamicResource PaneBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel x:Name="BrandPanel" Margin="18,20,18,14">
+                    <TextBlock Text="Prompt Generator" FontSize="20" FontWeight="SemiBold" />
+                    <TextBlock Text="DK Randomize AI" Margin="0,3,0,0" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" />
+                </StackPanel>
+
+                <StackPanel Grid.Row="1" Margin="0,8,0,0">
+                    <Button x:Name="MixerNavButton" Style="{StaticResource NavButtonStyle}" Click="MixerNavButton_Click" Content="⤨  프롬프트 조합" ToolTip="프롬프트 조합" AutomationProperties.Name="프롬프트 조합" />
+                    <Button x:Name="LibraryNavButton" Style="{StaticResource NavButtonStyle}" Click="LibraryNavButton_Click" Content="▦  프롬프트 관리" ToolTip="프롬프트 관리" AutomationProperties.Name="프롬프트 관리" />
+                    <Button x:Name="HistoryNavButton" Style="{StaticResource NavButtonStyle}" Click="HistoryNavButton_Click" Content="◷  최근 기록" ToolTip="최근 기록" AutomationProperties.Name="최근 기록" />
+                </StackPanel>
+
+                <Button Grid.Row="2" x:Name="SettingsNavButton" Style="{StaticResource NavButtonStyle}" Click="SettingsNavButton_Click" Content="⚙  설정" ToolTip="설정" AutomationProperties.Name="설정" Margin="8,8,8,14" />
+            </Grid>
+        </Border>
+
+        <ContentControl x:Name="PageHost"
+                        Grid.Column="1"
+                        ClipToBounds="True" />
+    </Grid>
+</Window>

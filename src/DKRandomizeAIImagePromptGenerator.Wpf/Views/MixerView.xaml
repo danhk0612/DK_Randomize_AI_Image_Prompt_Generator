@@ -1,0 +1,358 @@
+<UserControl x:Class="DKRandomizeAIImagePromptGenerator.Wpf.Views.MixerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:DKRandomizeAIImagePromptGenerator.Wpf.Converters">
+    <UserControl.Resources>
+        <conv:ImagePathConverter x:Key="ImagePathConverter" />
+
+        <Style x:Key="SelectedPromptListItemStyle"
+               TargetType="ListBoxItem"
+               BasedOn="{StaticResource {x:Type ListBoxItem}}">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+
+        <DataTemplate x:Key="SelectedPromptTemplate">
+            <Grid Margin="2" MinHeight="62">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="56" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="34" />
+                </Grid.ColumnDefinitions>
+                <Border Width="52" Height="52" CornerRadius="6" Background="{DynamicResource SurfaceSecondaryBrush}">
+                    <Image Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}}" Stretch="Uniform" />
+                </Border>
+                <StackPanel Grid.Column="1" Margin="9,0,6,0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding Memo}" FontSize="11"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               TextWrapping="Wrap" MaxHeight="28" />
+                    <ItemsControl ItemsSource="{Binding Tags}" Margin="0,2,0,0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{DynamicResource SurfaceSecondaryBrush}"
+                                        CornerRadius="7" Padding="4,1" Margin="0,0,3,2">
+                                    <TextBlock Text="{Binding}" FontSize="10" />
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+                <Button Grid.Column="2"
+                        Content="✕"
+                        Style="{StaticResource DangerIconButtonStyle}"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Click="RemovePromptItem_Click"
+                        ToolTip="조합에서 제거"
+                        AutomationProperties.Name="선택 프롬프트 제거" />
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <ScrollViewer x:Name="RootScrollViewer"
+                  VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="24,26,24,34">
+            <TextBlock Text="프롬프트 조합" Style="{StaticResource PageTitleStyle}" />
+            <TextBlock Text="각 분류에서 여러 프롬프트를 직접 선택하거나, 지정한 개수만큼 랜덤으로 조합합니다."
+                       Foreground="{DynamicResource TextSecondaryBrush}" />
+
+            <Grid x:Name="CardsGrid" Margin="0,22,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Character -->
+                <Border x:Name="CharacterCard" Grid.Column="0" Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="캐릭터" Style="{StaticResource SectionTitleStyle}" />
+
+                        <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                            <RadioButton x:Name="CharacterDirectRadio"
+                                         Content="직접 선택"
+                                         GroupName="CharacterMode"
+                                         Tag="Character:Fixed"
+                                         Checked="ModeRadio_Checked" />
+                            <RadioButton x:Name="CharacterRandomRadio"
+                                         Content="랜덤"
+                                         GroupName="CharacterMode"
+                                         Tag="Character:Random"
+                                         Margin="14,0,0,0"
+                                         Checked="ModeRadio_Checked" />
+                            <RadioButton x:Name="CharacterDisabledRadio"
+                                         Content="미사용"
+                                         GroupName="CharacterMode"
+                                         Tag="Character:Disabled"
+                                         Margin="14,0,0,0"
+                                         Checked="ModeRadio_Checked" />
+                        </StackPanel>
+
+                        <TextBlock x:Name="CharacterSelectionSummary"
+                                   Margin="0,12,0,5"
+                                   FontWeight="SemiBold" />
+                        <Grid>
+                            <ListBox x:Name="CharacterSelectedList"
+                                     Height="190"
+                                     ItemContainerStyle="{StaticResource SelectedPromptListItemStyle}"
+                                     Tag="Character"
+                                     AllowDrop="True"
+                                     PreviewMouseLeftButtonDown="SelectedList_PreviewMouseLeftButtonDown"
+                                     PreviewMouseMove="SelectedList_PreviewMouseMove"
+                                     DragOver="SelectedList_DragOver"
+                                     Drop="SelectedList_Drop"
+                                     ItemTemplate="{StaticResource SelectedPromptTemplate}"
+                                     AutomationProperties.Name="선택된 캐릭터 프롬프트" />
+                            <TextBlock x:Name="CharacterEmptySelectionText"
+                                       Text="선택된 프롬프트가 없습니다."
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextSecondaryBrush}" />
+                        </Grid>
+
+                        <WrapPanel x:Name="CharacterDirectControls" Margin="0,10,0,0">
+                            <Button Content="검색해서 선택"
+                                    Style="{StaticResource ActionButtonStyle}"
+                                    Tag="Character"
+                                    Click="OpenPicker_Click" />
+                            <Button Content="제거" Tag="Character" Margin="6,0,0,0" Click="RemoveSelected_Click" />
+                            <Button Content="위" Tag="Character" Margin="6,0,0,0" Click="MoveUp_Click" />
+                            <Button Content="아래" Tag="Character" Margin="6,0,0,0" Click="MoveDown_Click" />
+                        </WrapPanel>
+
+                        <WrapPanel x:Name="CharacterRandomControls" Margin="0,10,0,0">
+                            <TextBlock Text="랜덤 개수" VerticalAlignment="Center" />
+                            <ComboBox x:Name="CharacterRandomCountCombo"
+                                      Width="72"
+                                      Margin="8,0,0,0"
+                                      Tag="Character"
+                                      SelectionChanged="RandomCountCombo_SelectionChanged"
+                                      AutomationProperties.Name="캐릭터 랜덤 개수" />
+                            <Button Content="다시"
+                                    Tag="Character"
+                                    Margin="8,0,0,0"
+                                    Click="RandomizeCategory_Click"
+                                    AutomationProperties.Name="캐릭터 다시 랜덤 선택" />
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Artist -->
+                <Border x:Name="ArtistCard" Grid.Column="2" Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="작가 / 스타일" Style="{StaticResource SectionTitleStyle}" />
+
+                        <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                            <RadioButton x:Name="ArtistDirectRadio"
+                                         Content="직접 선택"
+                                         GroupName="ArtistMode"
+                                         Tag="Artist:Fixed"
+                                         Checked="ModeRadio_Checked" />
+                            <RadioButton x:Name="ArtistRandomRadio"
+                                         Content="랜덤"
+                                         GroupName="ArtistMode"
+                                         Tag="Artist:Random"
+                                         Margin="14,0,0,0"
+                                         Checked="ModeRadio_Checked" />
+                            <RadioButton x:Name="ArtistDisabledRadio"
+                                         Content="미사용"
+                                         GroupName="ArtistMode"
+                                         Tag="Artist:Disabled"
+                                         Margin="14,0,0,0"
+                                         Checked="ModeRadio_Checked" />
+                        </StackPanel>
+
+                        <TextBlock x:Name="ArtistSelectionSummary"
+                                   Margin="0,12,0,5"
+                                   FontWeight="SemiBold" />
+                        <Grid>
+                            <ListBox x:Name="ArtistSelectedList"
+                                     Height="190"
+                                     ItemContainerStyle="{StaticResource SelectedPromptListItemStyle}"
+                                     Tag="Artist"
+                                     AllowDrop="True"
+                                     PreviewMouseLeftButtonDown="SelectedList_PreviewMouseLeftButtonDown"
+                                     PreviewMouseMove="SelectedList_PreviewMouseMove"
+                                     DragOver="SelectedList_DragOver"
+                                     Drop="SelectedList_Drop"
+                                     ItemTemplate="{StaticResource SelectedPromptTemplate}"
+                                     AutomationProperties.Name="선택된 작가 스타일 프롬프트" />
+                            <TextBlock x:Name="ArtistEmptySelectionText"
+                                       Text="선택된 프롬프트가 없습니다."
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextSecondaryBrush}" />
+                        </Grid>
+
+                        <WrapPanel x:Name="ArtistDirectControls" Margin="0,10,0,0">
+                            <Button Content="검색해서 선택" Style="{StaticResource ActionButtonStyle}" Tag="Artist" Click="OpenPicker_Click" />
+                            <Button Content="제거" Tag="Artist" Margin="6,0,0,0" Click="RemoveSelected_Click" />
+                            <Button Content="위" Tag="Artist" Margin="6,0,0,0" Click="MoveUp_Click" />
+                            <Button Content="아래" Tag="Artist" Margin="6,0,0,0" Click="MoveDown_Click" />
+                        </WrapPanel>
+
+                        <WrapPanel x:Name="ArtistRandomControls" Margin="0,10,0,0">
+                            <TextBlock Text="랜덤 개수" VerticalAlignment="Center" />
+                            <ComboBox x:Name="ArtistRandomCountCombo"
+                                      Width="72"
+                                      Margin="8,0,0,0"
+                                      Tag="Artist"
+                                      SelectionChanged="RandomCountCombo_SelectionChanged"
+                                      AutomationProperties.Name="작가 스타일 랜덤 개수" />
+                            <Button Content="다시"
+                                    Tag="Artist"
+                                    Margin="8,0,0,0"
+                                    Click="RandomizeCategory_Click"
+                                    AutomationProperties.Name="작가 스타일 다시 랜덤 선택" />
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Additional -->
+                <Border x:Name="AdditionalCard" Grid.Column="4" Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="추가" Style="{StaticResource SectionTitleStyle}" />
+
+                        <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                            <RadioButton x:Name="AdditionalDirectRadio"
+                                         Content="직접 선택"
+                                         GroupName="AdditionalMode"
+                                         Tag="Additional:Fixed"
+                                         Checked="ModeRadio_Checked" />
+                            <RadioButton x:Name="AdditionalRandomRadio"
+                                         Content="랜덤"
+                                         GroupName="AdditionalMode"
+                                         Tag="Additional:Random"
+                                         Margin="14,0,0,0"
+                                         Checked="ModeRadio_Checked" />
+                            <RadioButton x:Name="AdditionalDisabledRadio"
+                                         Content="미사용"
+                                         GroupName="AdditionalMode"
+                                         Tag="Additional:Disabled"
+                                         Margin="14,0,0,0"
+                                         Checked="ModeRadio_Checked" />
+                        </StackPanel>
+
+                        <TextBlock x:Name="AdditionalSelectionSummary"
+                                   Margin="0,12,0,5"
+                                   FontWeight="SemiBold" />
+                        <Grid>
+                            <ListBox x:Name="AdditionalSelectedList"
+                                     Height="190"
+                                     ItemContainerStyle="{StaticResource SelectedPromptListItemStyle}"
+                                     Tag="Additional"
+                                     AllowDrop="True"
+                                     PreviewMouseLeftButtonDown="SelectedList_PreviewMouseLeftButtonDown"
+                                     PreviewMouseMove="SelectedList_PreviewMouseMove"
+                                     DragOver="SelectedList_DragOver"
+                                     Drop="SelectedList_Drop"
+                                     ItemTemplate="{StaticResource SelectedPromptTemplate}"
+                                     AutomationProperties.Name="선택된 추가 프롬프트" />
+                            <TextBlock x:Name="AdditionalEmptySelectionText"
+                                       Text="선택된 프롬프트가 없습니다."
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextSecondaryBrush}" />
+                        </Grid>
+
+                        <WrapPanel x:Name="AdditionalDirectControls" Margin="0,10,0,0">
+                            <Button Content="검색해서 선택" Style="{StaticResource ActionButtonStyle}" Tag="Additional" Click="OpenPicker_Click" />
+                            <Button Content="제거" Tag="Additional" Margin="6,0,0,0" Click="RemoveSelected_Click" />
+                            <Button Content="위" Tag="Additional" Margin="6,0,0,0" Click="MoveUp_Click" />
+                            <Button Content="아래" Tag="Additional" Margin="6,0,0,0" Click="MoveDown_Click" />
+                        </WrapPanel>
+
+                        <WrapPanel x:Name="AdditionalRandomControls" Margin="0,10,0,0">
+                            <TextBlock Text="랜덤 개수" VerticalAlignment="Center" />
+                            <ComboBox x:Name="AdditionalRandomCountCombo"
+                                      Width="72"
+                                      Margin="8,0,0,0"
+                                      Tag="Additional"
+                                      SelectionChanged="RandomCountCombo_SelectionChanged"
+                                      AutomationProperties.Name="추가 프롬프트 랜덤 개수" />
+                            <Button Content="다시"
+                                    Tag="Additional"
+                                    Margin="8,0,0,0"
+                                    Click="RandomizeCategory_Click"
+                                    AutomationProperties.Name="추가 프롬프트 다시 랜덤 선택" />
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Button Content="전체 다시 조합"
+                    HorizontalAlignment="Right"
+                    Margin="0,16,0,0"
+                    Click="RandomizeAll_Click" />
+
+            <Grid Margin="0,24,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid>
+                    <TextBlock Text="Positive" Style="{StaticResource SectionTitleStyle}" />
+                    <Button Content="복사"
+                            HorizontalAlignment="Right"
+                            Click="CopyPositive_Click"
+                            AutomationProperties.Name="Positive 프롬프트 복사" />
+                </Grid>
+                <TextBox x:Name="PositiveOutput"
+                         Grid.Row="1"
+                         Margin="0,8,0,0"
+                         Height="190"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         VerticalContentAlignment="Top"
+                         VerticalScrollBarVisibility="Auto"
+                         AutomationProperties.Name="Positive 결과" />
+                <Grid Grid.Row="2" Margin="0,20,0,0">
+                    <TextBlock Text="Negative" Style="{StaticResource SectionTitleStyle}" />
+                    <Button Content="복사"
+                            HorizontalAlignment="Right"
+                            Click="CopyNegative_Click"
+                            AutomationProperties.Name="Negative 프롬프트 복사" />
+                </Grid>
+                <TextBox x:Name="NegativeOutput"
+                         Grid.Row="3"
+                         Margin="0,8,0,0"
+                         Height="150"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         VerticalContentAlignment="Top"
+                         VerticalScrollBarVisibility="Auto"
+                         AutomationProperties.Name="Negative 결과" />
+            </Grid>
+
+            <Grid Margin="0,16,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="StatusText"
+                           Margin="0,0,16,0"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           TextWrapping="Wrap" />
+                <Button Grid.Column="1"
+                        Content="현재 결과 기록 저장"
+                        HorizontalAlignment="Right"
+                        Style="{StaticResource ActionButtonStyle}"
+                        Click="SaveHistory_Click" />
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

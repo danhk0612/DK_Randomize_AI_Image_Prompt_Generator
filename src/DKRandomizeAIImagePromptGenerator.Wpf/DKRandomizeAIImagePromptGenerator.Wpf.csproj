@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Authors>danhk0612</Authors>
+    <Copyright>Copyright © 2026 danhk0612</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/danhk0612/DK_Randomize_AI_Image_Prompt_Generator</RepositoryUrl>
+    <AssemblyName>DKRandomizeAIImagePromptGenerator.App</AssemblyName>
+    <RootNamespace>DKRandomizeAIImagePromptGenerator.Wpf</RootNamespace>
+    <ApplicationIcon>..\DKRandomizeAIImagePromptGenerator\Assets\AppIcon.ico</ApplicationIcon>
+    <Platforms>x64</Platforms>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <InformationalVersion>1.0.0</InformationalVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DKRandomizeAIImagePromptGenerator.Core\DKRandomizeAIImagePromptGenerator.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="..\DKRandomizeAIImagePromptGenerator\Assets\AppIcon.ico" Link="Assets\AppIcon.ico" />
+  </ItemGroup>
+</Project>

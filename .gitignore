@@ -1,0 +1,28 @@
+# Build output
+bin/
+obj/
+artifacts/
+
+# Visual Studio / IDE
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.idea/
+.vscode/
+
+# Test results
+TestResults/
+coverage/
+
+# Local application data
+*.db
+*.db-shm
+*.db-wal
+local-data/
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
