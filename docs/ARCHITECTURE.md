@@ -8,7 +8,7 @@
 - Pattern: MVVM-oriented separation
 - Local database: SQLite
 - Minimum OS target: Windows 10 1809+
-- First distribution target: self-contained win-x64
+- Distribution target: compact win-x64 ZIP with native launcher + framework-dependent single-file WPF app
 
 The application is local-first. V1 has no server dependency and no direct AI API/image-generation dependency.
 
@@ -17,7 +17,10 @@ The application is local-first. V1 has no server dependency and no direct AI API
 ```text
 src/
 ├─ DKRandomizeAIImagePromptGenerator.Core/
-│  └─ links the shared Models, Data, Services, and ViewModels
+│  ├─ Models/
+│  ├─ Data/
+│  ├─ Services/
+│  └─ ViewModels/
 ├─ DKRandomizeAIImagePromptGenerator.Wpf/
 │  ├─ Converters/
 │  ├─ Services/
@@ -26,8 +29,10 @@ src/
 │  ├─ App.xaml.cs
 │  ├─ MainWindow.xaml
 │  └─ MainWindow.xaml.cs
+├─ DKRandomizeAIImagePromptGenerator.Launcher/
+│  └─ native .NET Desktop Runtime check/startup launcher
 └─ DKRandomizeAIImagePromptGenerator/
-   └─ legacy WinUI implementation retained as migration/reference source
+   └─ shared application icon resources
 
 tests/
 └─ DKRandomizeAIImagePromptGenerator.Tests/
@@ -45,12 +50,12 @@ docs/
 
 ### Core
 
-The Core project reuses the existing UI-independent application code:
+The Core project owns all UI-independent application code:
 
 - Models
 - SQLite repositories and database initialization
 - combination/history/settings logic
-- image storage and backup services
+- image storage, backup, and update services
 - ViewModels
 
 UI-framework-specific code does not belong in Core.
@@ -66,10 +71,6 @@ The WPF project owns:
 - image conversion for WPF
 - mouse-wheel routing for outer page scroll areas
 - responsive desktop layout behavior
-
-### Legacy WinUI project
-
-The original WinUI implementation remains in the repository during migration as a reference and recovery point. It is not the active release target.
 
 ## 4. Navigation
 
@@ -146,13 +147,13 @@ SQLite stores structured records. Images remain regular files.
 
 Schema version 2 adds generic `CombinationHistoryItems` and `CombinationHistoryCategoryState` tables so every category can store multiple ordered source prompts plus mode/random-count state. Existing schema-v1 history is migrated forward automatically while the original V1 tables remain for compatibility.
 
-Application data stays under:
+By default, application data stays under:
 
 ```text
 %LOCALAPPDATA%\DK Randomize AI Image Prompt Generator\
 ```
 
-The WPF migration intentionally reuses the same database, images, backup, and settings locations as the original implementation.
+Settings can switch the data root to the executable folder for portable use. The selected root contains the same database, images, backup, and settings structure.
 
 ## 9. Image storage
 
@@ -174,9 +175,9 @@ CI contains a routed-wheel smoke mode that creates a TextBox inside a ScrollView
 
 ## 11. Packaging strategy
 
-V1 distribution is an unpackaged, self-contained `win-x64` WPF publish distributed as a ZIP archive.
+Distribution uses an unpackaged `win-x64` ZIP containing a native launcher and a framework-dependent single-file WPF application.
 
-No MSIX signing or Windows App SDK runtime is required by the active WPF release target.
+The launcher detects Microsoft .NET 10 Desktop Runtime x64 and can direct the user to Microsoft's download page when it is missing. No MSIX signing or Windows App SDK runtime is required.
 
 ## 12. Testing priorities
 
