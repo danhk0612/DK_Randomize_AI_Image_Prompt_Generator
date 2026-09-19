@@ -101,6 +101,11 @@ The WPF migration was made after repeated WinUI mouse-wheel routing problems. Th
 - restore history to Mixer
 - delete one history record or clear all history with confirmation
 - System / Light / Dark theme persistence
+- selectable data root: per-user LocalAppData or executable-folder portable mode
+- portable mode is persisted by an executable-side `portable.mode` marker and takes effect on the next launch
+- changing the data root does not automatically move existing data; backup/restore can be used when moving data
+- main-window normal bounds and maximized state persist in `settings.json`
+- invalid/off-screen saved placement falls back to a visible startup position
 - ZIP backup/restore
 - version display
 - responsive History and Settings layouts
@@ -132,6 +137,6 @@ The final release gate still requires an exact release-candidate pass for keyboa
 
 1. Create the release-candidate artifact from the final approved `feature/wpf-ui` HEAD.
 2. Run `scripts/verify-release.ps1 -Launch` against that exact HEAD/artifact.
-3. Complete the remaining unchecked items in `docs/RELEASE_CHECKLIST.md`, especially keyboard focus in Light/Dark and backup/restore from the exact RC.
+3. Complete the remaining unchecked items in `docs/RELEASE_CHECKLIST.md`, especially keyboard focus in Light/Dark, storage-location restart behavior, window placement restore, and backup/restore from the exact RC.
 4. Choose release version/tag.
 5. Merge only after the release-candidate build is approved for release.
