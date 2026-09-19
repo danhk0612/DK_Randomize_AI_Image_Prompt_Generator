@@ -486,12 +486,14 @@ public partial class MixerView : UserControl
             ? Visibility.Visible
             : Visibility.Collapsed;
 
-        selectedList.IsEnabled = mode == PromptSelectionMode.Fixed;
+        selectedList.IsEnabled = true;
+        selectedList.IsHitTestVisible = mode == PromptSelectionMode.Fixed;
+        selectedList.Focusable = mode == PromptSelectionMode.Fixed;
         selectedList.Opacity = mode switch
         {
             PromptSelectionMode.Fixed => 1.0,
-            PromptSelectionMode.Random => 0.68,
-            _ => 0.34
+            PromptSelectionMode.Random => 0.88,
+            _ => 0.42
         };
 
         directControls.IsEnabled = mode == PromptSelectionMode.Fixed;
