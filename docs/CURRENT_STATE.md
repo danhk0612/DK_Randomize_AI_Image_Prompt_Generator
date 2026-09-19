@@ -125,9 +125,9 @@ The current WPF pipeline validates:
 1. Solution restore
 2. Release build
 3. 26 automated tests
-4. self-contained win-x64 WPF publish
+4. framework-dependent single-file win-x64 WPF publish
 5. WPF routed mouse-wheel smoke
-6. published EXE startup smoke
+6. native launcher/runtime detection and published-app startup smoke
 7. WPF navigation / responsive shell / keyboard-focus UI smoke
 8. artifact upload
 
@@ -156,5 +156,5 @@ The final release gate still requires an exact release-candidate pass for keyboa
 1. Publish and manually verify `v1.0.0-rc.2`, including launcher behavior with .NET 10 Desktop Runtime present and absent.
 2. Verify the real in-app update path from the published `v1.0.0-rc.1` build to `v1.0.0-rc.2`.
 3. Confirm portable and LocalAppData user data survive the two-file update.
-4. If no RC2 defects are found, change the project version from `1.0.0-rc.2` to `1.0.0`.
-5. Create `release/v1.0.0` from the approved final commit and trigger the Release workflow.
+4. Project version is now `1.0.0`; run the final CI against this exact candidate.
+5. Create `release/v1.0.0` from the CI-approved final commit and trigger the Release workflow.
