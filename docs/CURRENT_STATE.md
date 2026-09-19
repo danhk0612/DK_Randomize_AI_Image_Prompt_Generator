@@ -143,10 +143,13 @@ The final release gate still requires an exact release-candidate pass for keyboa
 
 ## Release candidate status
 
-- `v1.0.0-rc.1` is published as the earlier self-contained GitHub prerelease.
-- The current source version is `1.0.0-rc.2`.
-- RC2 changes distribution to two files: native launcher + framework-dependent single-file WPF app.
-- RC2 must pass the compact-package CI checks before `release/v1.0.0-rc.2` is created and published.
+- `v1.0.0-rc.1` remains published as the earlier self-contained GitHub prerelease.
+- `v1.0.0-rc.2` is published as the current compact GitHub prerelease.
+- RC2 release branch: `release/v1.0.0-rc.2`
+- RC2 release commit/tag: `f268bee17fa759aa403237be29d343d6f38cd655`
+- RC2 distribution contains exactly two application files: native launcher + framework-dependent single-file WPF app.
+- RC2 release ZIP is approximately 1.52 MB, compared with the earlier runtime-bundled package of roughly 66 MB.
+- RC2 Release workflow passed Restore, Build, 26 tests, single-file Publish, native launcher build/runtime detection, compact package validation, routed-wheel smoke, UI smoke, launcher-to-app startup smoke, ZIP creation, release publishing, and post-publish verification.
 
 ## Remaining before final v1.0.0
 
