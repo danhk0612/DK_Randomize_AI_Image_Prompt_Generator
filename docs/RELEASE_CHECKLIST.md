@@ -133,3 +133,6 @@ The earlier single-selection RC is obsolete after the V1 multi-select expansion.
 - [x] Pre-RC build workflow artifact upload succeeds.
 - [x] Release-branch workflow creates `DK-Randomize-AI-Image-Prompt-Generator-WPF-win-x64.zip` and attaches it to the GitHub prerelease.
 - [x] Generated release tag version matches the WPF project version.
+- [x] Final `v1.0.0` Build workflow succeeds on the stable release commit.
+- [x] Final `v1.0.0` Release workflow succeeds and publishes a non-prerelease GitHub Release.
+- [x] Final stable ZIP asset is attached and verified after publishing.
