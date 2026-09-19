@@ -122,7 +122,7 @@
 - [x] expanded WPF UI smoke
 - [x] final Light/Dark UI visual polish pass
 - [x] docs/release checklist refresh
-- [ ] create new release candidate from the final approved HEAD
+- [x] create and publish `v1.0.0-rc.1` release candidate
 
 ## Deferred
 
