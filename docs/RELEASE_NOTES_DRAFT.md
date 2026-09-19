@@ -1,6 +1,6 @@
 # First Release Notes — Draft
 
-Current release-candidate version: `1.0.0-rc.1`. Final `v1.0.0` remains gated on the release-candidate validation checklist.
+Published release candidate: `v1.0.0-rc.1`. Final `v1.0.0` remains gated on the remaining manual release-candidate validation checks.
 
 ## Highlights
 
@@ -25,7 +25,7 @@ Current release-candidate version: `1.0.0-rc.1`. Final `v1.0.0` remains gated on
 - Choose between per-user LocalAppData storage and executable-folder portable storage.
 - Main window remembers its previous size, position, and maximized state.
 - Settings includes a GitHub Releases update checker and user-confirmed automatic download/install/restart flow.
-- Tag-driven GitHub Release workflow publishes the self-contained win-x64 ZIP used by the updater.
+- Versioned release-branch workflow validates the candidate, creates the matching Git tag, and publishes the self-contained win-x64 ZIP used by the updater.
 - ZIP backup/restore for prompts, schema-v2 history, representative images, and settings.
 - Responsive desktop layouts and compact navigation at narrow widths.
 - Existing LocalAppData and schema-v1 history are migrated forward automatically.
