@@ -128,7 +128,6 @@
 
 ## Deferred
 
-- Multiple Additional prompts in the UI
 - Tag-constrained random pools
 - Direct image generation
 - OpenRouter integration
