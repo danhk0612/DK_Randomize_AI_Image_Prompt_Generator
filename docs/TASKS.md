@@ -58,6 +58,8 @@
 - [x] Theme setting
 - [x] Select LocalAppData or executable-folder portable data storage
 - [x] Remember main-window size, position, and maximized state
+- [x] GitHub Releases update check/download/self-update
+- [x] Tag-driven GitHub Release ZIP workflow
 - [x] Backup
 - [x] Restore
 - [x] About/version
