@@ -1,7 +1,9 @@
 #include <windows.h>
 #include <shellapi.h>
 
+#include <cwchar>
 #include <filesystem>
+#include <iterator>
 #include <string>
 #include <vector>
 
