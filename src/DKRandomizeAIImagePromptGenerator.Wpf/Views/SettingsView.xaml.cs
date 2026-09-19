@@ -9,6 +9,7 @@ namespace DKRandomizeAIImagePromptGenerator.Wpf.Views;
 public partial class SettingsView : UserControl
 {
     private bool _syncingTheme;
+    private bool _syncingStorage;
 
     public SettingsView()
     {
@@ -26,6 +27,11 @@ public partial class SettingsView : UserControl
         _syncingTheme = true;
         ThemeComboBox.SelectedIndex = (int)app.Settings.Current.Theme;
         _syncingTheme = false;
+
+        _syncingStorage = true;
+        StorageLocationComboBox.SelectedIndex = AppDataPaths.IsPortableModeEnabled() ? 1 : 0;
+        _syncingStorage = false;
+        UpdateDataPathText(app);
 
         var version = typeof(App).Assembly.GetName().Version;
         VersionText.Text = version is null
@@ -47,6 +53,13 @@ public partial class SettingsView : UserControl
             Grid.SetColumnSpan(ThemeComboBox, 2);
             ThemeComboBox.Margin = new Thickness(0, 12, 0, 0);
 
+            StorageGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+            StorageGrid.ColumnDefinitions[1].Width = new GridLength(0);
+            Grid.SetRow(StorageLocationComboBox, 1);
+            Grid.SetColumn(StorageLocationComboBox, 0);
+            Grid.SetColumnSpan(StorageLocationComboBox, 2);
+            StorageLocationComboBox.Margin = new Thickness(0, 12, 0, 0);
+
             BackupGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
             BackupGrid.ColumnDefinitions[1].Width = new GridLength(0);
             Grid.SetRow(BackupButtons, 1);
@@ -62,6 +75,13 @@ public partial class SettingsView : UserControl
             Grid.SetColumn(ThemeComboBox, 1);
             Grid.SetColumnSpan(ThemeComboBox, 1);
             ThemeComboBox.Margin = new Thickness(0);
+
+            StorageGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+            StorageGrid.ColumnDefinitions[1].Width = new GridLength(220);
+            Grid.SetRow(StorageLocationComboBox, 0);
+            Grid.SetColumn(StorageLocationComboBox, 1);
+            Grid.SetColumnSpan(StorageLocationComboBox, 1);
+            StorageLocationComboBox.Margin = new Thickness(0);
 
             BackupGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
             BackupGrid.ColumnDefinitions[1].Width = GridLength.Auto;
@@ -88,6 +108,75 @@ public partial class SettingsView : UserControl
         {
             ShowError("테마 저장 실패", ex);
         }
+    }
+
+    private void StorageLocationComboBox_SelectionChanged(
+        object sender,
+        SelectionChangedEventArgs e)
+    {
+        if (_syncingStorage || StorageLocationComboBox.SelectedIndex < 0)
+        {
+            return;
+        }
+
+        var portable = StorageLocationComboBox.SelectedIndex == 1;
+        var currentPortable = AppDataPaths.IsPortableModeEnabled();
+        if (portable == currentPortable)
+        {
+            return;
+        }
+
+        var locationName = portable
+            ? "실행 파일 폴더 (Portable)"
+            : "사용자 데이터 폴더(LocalAppData)";
+
+        if (MessageBox.Show(
+                $"데이터 저장 위치를 '{locationName}'로 변경합니다.\n\n" +
+                "변경은 다음 실행부터 적용되며 기존 데이터는 자동 이동하지 않습니다. " +
+                "필요하면 변경 전에 백업을 만들어 두세요.\n\n계속할까요?",
+                "데이터 저장 위치 변경",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning) != MessageBoxResult.Yes)
+        {
+            _syncingStorage = true;
+            StorageLocationComboBox.SelectedIndex = currentPortable ? 1 : 0;
+            _syncingStorage = false;
+            return;
+        }
+
+        try
+        {
+            AppDataPaths.SetPortableModeEnabled(portable);
+            var app = (App)Application.Current;
+            UpdateDataPathText(app);
+            StatusText.Text = "데이터 저장 위치를 변경했습니다. 다음 실행부터 새 위치를 사용합니다.";
+        }
+        catch (Exception ex)
+        {
+            _syncingStorage = true;
+            StorageLocationComboBox.SelectedIndex = currentPortable ? 1 : 0;
+            _syncingStorage = false;
+            ShowError("데이터 저장 위치 변경 실패", ex);
+        }
+    }
+
+    private static void UpdateDataPathText(App app)
+    {
+        var nextRoot = AppDataPaths.IsPortableModeEnabled()
+            ? AppDataPaths.GetExecutableRootDirectory()
+            : AppDataPaths.GetLocalRootDirectory();
+
+        var currentRoot = Path.GetFullPath(app.DataPaths.RootDirectory)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        nextRoot = Path.GetFullPath(nextRoot)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+        CurrentDataPathText.Text = string.Equals(
+                currentRoot,
+                nextRoot,
+                StringComparison.OrdinalIgnoreCase)
+            ? $"현재 위치: {currentRoot}"
+            : $"현재 위치: {currentRoot}\n다음 실행 위치: {nextRoot}";
     }
 
     private async void Backup_Click(object sender, RoutedEventArgs e)
