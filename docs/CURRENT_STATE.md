@@ -4,11 +4,9 @@ Updated: 2026-09-19
 
 ## Repository
 
-Active development is now on `feature/wpf-ui`.
+Active development is on `feature/wpf-ui`.
 
-The original WinUI implementation remains on `feature/bootstrap` and in the legacy source folder for reference/recovery, but it is no longer the active release target.
-
-The WPF migration was made after repeated WinUI mouse-wheel routing problems. The WPF build has been confirmed locally to scroll correctly by the user.
+The current tree contains only the active WPF application, Core library, native launcher, tests, and shared icon resources. The older WinUI implementation remains available through Git history / the historical `feature/bootstrap` branch rather than being duplicated in the active source tree.
 
 ## Decisions fixed for V1
 
@@ -139,7 +137,7 @@ The expanded WPF build has now been exercised on the user's Windows environment 
 
 The latest visual pass fixed theme-aware page/section titles, themed ComboBoxes, picker-window background, random-result surfaces, selection colors, button hierarchy, and overflow/alignment issues.
 
-The final release gate still requires an exact release-candidate pass for keyboard focus visibility and backup/restore, plus the remaining checklist items that are specifically release-artifact checks.
+`v1.0.0` has been published successfully. Remaining unchecked items in the release checklist are optional/manual coverage items rather than blockers for the published stable release.
 
 ## Release candidate status
 
