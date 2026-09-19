@@ -17,6 +17,7 @@
     <Compile Include="..\DKRandomizeAIImagePromptGenerator\Services\CombinationService.cs" Link="Services\CombinationService.cs" />
     <Compile Include="..\DKRandomizeAIImagePromptGenerator\Services\ImageStorageService.cs" Link="Services\ImageStorageService.cs" />
     <Compile Include="..\DKRandomizeAIImagePromptGenerator\Services\SettingsService.cs" Link="Services\SettingsService.cs" />
+    <Compile Include="..\DKRandomizeAIImagePromptGenerator\Services\GitHubUpdateService.cs" Link="Services\GitHubUpdateService.cs" />
     <Compile Include="..\DKRandomizeAIImagePromptGenerator\ViewModels\**\*.cs" Link="ViewModels\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>
