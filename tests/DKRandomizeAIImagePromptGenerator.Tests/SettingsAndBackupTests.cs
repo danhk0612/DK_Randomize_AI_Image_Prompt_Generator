@@ -32,6 +32,59 @@ public sealed class SettingsAndBackupTests
     }
 
     [Fact]
+    public async Task WindowPlacementSettingsPersistAcrossServiceInstances()
+    {
+        var root = CreateTemporaryRoot();
+        try
+        {
+            var paths = AppDataPaths.Create(root);
+            var settings = new SettingsService(paths);
+            settings.Current.WindowLeft = 120;
+            settings.Current.WindowTop = 80;
+            settings.Current.WindowWidth = 1440;
+            settings.Current.WindowHeight = 900;
+            settings.Current.WindowMaximized = true;
+            await settings.SaveAsync();
+
+            var reloaded = new SettingsService(paths);
+            await reloaded.LoadAsync();
+
+            Assert.Equal(120, reloaded.Current.WindowLeft);
+            Assert.Equal(80, reloaded.Current.WindowTop);
+            Assert.Equal(1440, reloaded.Current.WindowWidth);
+            Assert.Equal(900, reloaded.Current.WindowHeight);
+            Assert.True(reloaded.Current.WindowMaximized);
+        }
+        finally
+        {
+            DeleteTemporaryRoot(root);
+        }
+    }
+
+    [Fact]
+    public void PortableModeMarkerCanBeEnabledAndDisabled()
+    {
+        var root = CreateTemporaryRoot();
+        try
+        {
+            Directory.CreateDirectory(root);
+
+            Assert.False(AppDataPaths.IsPortableModeEnabled(root));
+
+            AppDataPaths.SetPortableModeEnabled(true, root);
+            Assert.True(AppDataPaths.IsPortableModeEnabled(root));
+            Assert.True(File.Exists(AppDataPaths.GetPortableModeMarkerPath(root)));
+
+            AppDataPaths.SetPortableModeEnabled(false, root);
+            Assert.False(AppDataPaths.IsPortableModeEnabled(root));
+        }
+        finally
+        {
+            DeleteTemporaryRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task BackupAndRestoreRoundTripsDatabaseImagesAndSettings()
     {
         var root = CreateTemporaryRoot();
