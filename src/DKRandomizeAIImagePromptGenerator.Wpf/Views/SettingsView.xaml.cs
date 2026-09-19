@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Windows;
@@ -36,12 +37,13 @@ public partial class SettingsView : UserControl
         _syncingStorage = false;
         UpdateDataPathText(app);
 
-        var version = typeof(App).Assembly
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
-            .InformationalVersion;
+        var version = GetCurrentVersion();
         VersionText.Text = string.IsNullOrWhiteSpace(version)
             ? "버전 정보 없음"
             : $"버전 {version}";
+        UpdateStatusText.Text = string.IsNullOrWhiteSpace(version)
+            ? "현재 버전을 확인할 수 없습니다."
+            : $"현재 버전: {version}";
     }
 
     private void SettingsView_SizeChanged(object sender, SizeChangedEventArgs e) =>
@@ -71,6 +73,14 @@ public partial class SettingsView : UserControl
             Grid.SetColumn(BackupButtons, 0);
             Grid.SetColumnSpan(BackupButtons, 2);
             BackupButtons.Margin = new Thickness(0, 12, 0, 0);
+
+            UpdateGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+            UpdateGrid.ColumnDefinitions[1].Width = new GridLength(0);
+            Grid.SetRow(UpdateButton, 1);
+            Grid.SetColumn(UpdateButton, 0);
+            Grid.SetColumnSpan(UpdateButton, 2);
+            UpdateButton.HorizontalAlignment = HorizontalAlignment.Left;
+            UpdateButton.Margin = new Thickness(0, 12, 0, 0);
         }
         else
         {
@@ -94,6 +104,14 @@ public partial class SettingsView : UserControl
             Grid.SetColumn(BackupButtons, 1);
             Grid.SetColumnSpan(BackupButtons, 1);
             BackupButtons.Margin = new Thickness(16, 0, 0, 0);
+
+            UpdateGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+            UpdateGrid.ColumnDefinitions[1].Width = GridLength.Auto;
+            Grid.SetRow(UpdateButton, 0);
+            Grid.SetColumn(UpdateButton, 1);
+            Grid.SetColumnSpan(UpdateButton, 1);
+            UpdateButton.HorizontalAlignment = HorizontalAlignment.Right;
+            UpdateButton.Margin = new Thickness(16, 0, 0, 0);
         }
     }
 
@@ -182,6 +200,95 @@ public partial class SettingsView : UserControl
                 StringComparison.OrdinalIgnoreCase)
             ? $"현재 위치: {currentRoot}"
             : $"현재 위치: {currentRoot}\n다음 실행 위치: {nextRoot}";
+    }
+
+    private async void Update_Click(object sender, RoutedEventArgs e)
+    {
+        var currentVersion = GetCurrentVersion();
+        if (string.IsNullOrWhiteSpace(currentVersion))
+        {
+            UpdateStatusText.Text = "현재 버전을 확인할 수 없어 업데이트를 진행할 수 없습니다.";
+            return;
+        }
+
+        UpdateButton.IsEnabled = false;
+        var updateStarted = false;
+
+        try
+        {
+            var app = (App)Application.Current;
+            UpdateStatusText.Text = "GitHub Releases에서 업데이트를 확인하고 있습니다...";
+
+            var release = await app.Updates.CheckForUpdateAsync(currentVersion);
+            if (release is null)
+            {
+                UpdateStatusText.Text = "현재 설치된 버전보다 새로운 GitHub Release가 없습니다.";
+                return;
+            }
+
+            var sizeMb = release.AssetSize / 1024d / 1024d;
+            UpdateStatusText.Text =
+                $"새 버전 {release.Version} 사용 가능 ({sizeMb:0.0} MB)";
+
+            var prereleaseText = release.IsPrerelease ? "\n이 버전은 사전 릴리스입니다." : string.Empty;
+            if (MessageBox.Show(
+                    $"새 버전 {release.Version}을(를) 설치합니다.\n\n" +
+                    $"GitHub Release: {release.DisplayName}\n" +
+                    $"다운로드: {release.AssetName} ({sizeMb:0.0} MB)" +
+                    prereleaseText +
+                    "\n\n다운로드 후 프로그램을 종료하고 파일을 교체한 뒤 자동으로 다시 실행합니다. 계속할까요?",
+                    "프로그램 업데이트",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Information) != MessageBoxResult.Yes)
+            {
+                UpdateStatusText.Text = $"업데이트 {release.Version} 설치를 취소했습니다.";
+                return;
+            }
+
+            var executablePath = Environment.ProcessPath;
+            if (string.IsNullOrWhiteSpace(executablePath) || !File.Exists(executablePath))
+            {
+                throw new InvalidOperationException("현재 실행 파일 경로를 확인할 수 없습니다.");
+            }
+
+            UpdateStatusText.Text = $"업데이트 {release.Version} 다운로드 중...";
+            await app.Updates.DownloadAndStartUpdateAsync(
+                release,
+                executablePath,
+                Environment.ProcessId);
+
+            updateStarted = true;
+            UpdateStatusText.Text = "업데이트 적용을 시작합니다. 프로그램을 종료합니다.";
+            Application.Current.Shutdown();
+        }
+        catch (Exception ex)
+        {
+            ShowError("업데이트 실패", ex);
+        }
+        finally
+        {
+            if (!updateStarted)
+            {
+                UpdateButton.IsEnabled = true;
+            }
+        }
+    }
+
+    private static string GetCurrentVersion()
+    {
+        var informationalVersion = typeof(App).Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+            .InformationalVersion;
+
+        if (string.IsNullOrWhiteSpace(informationalVersion))
+        {
+            return string.Empty;
+        }
+
+        var metadataIndex = informationalVersion.IndexOf('+');
+        return metadataIndex >= 0
+            ? informationalVersion[..metadataIndex]
+            : informationalVersion;
     }
 
     private async void Backup_Click(object sender, RoutedEventArgs e)
