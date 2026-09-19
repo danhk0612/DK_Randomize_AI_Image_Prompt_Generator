@@ -8,13 +8,48 @@ public sealed record AppDataPaths(
     string BackupsDirectory,
     string SettingsPath)
 {
-    public static AppDataPaths CreateDefault()
-    {
-        var root = Path.Combine(
+    public const string PortableModeMarkerFileName = "portable.mode";
+
+    public static AppDataPaths CreateDefault() =>
+        Create(IsPortableModeEnabled()
+            ? GetExecutableRootDirectory()
+            : GetLocalRootDirectory());
+
+    public static string GetLocalRootDirectory() =>
+        Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "DK Randomize AI Image Prompt Generator");
 
-        return Create(root);
+    public static string GetExecutableRootDirectory(string? executableDirectory = null) =>
+        Path.GetFullPath(executableDirectory ?? AppContext.BaseDirectory)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+    public static string GetPortableModeMarkerPath(string? executableDirectory = null) =>
+        Path.Combine(
+            GetExecutableRootDirectory(executableDirectory),
+            PortableModeMarkerFileName);
+
+    public static bool IsPortableModeEnabled(string? executableDirectory = null) =>
+        File.Exists(GetPortableModeMarkerPath(executableDirectory));
+
+    public static void SetPortableModeEnabled(
+        bool enabled,
+        string? executableDirectory = null)
+    {
+        var markerPath = GetPortableModeMarkerPath(executableDirectory);
+
+        if (enabled)
+        {
+            File.WriteAllText(
+                markerPath,
+                "DK Randomize AI Image Prompt Generator portable data mode");
+            return;
+        }
+
+        if (File.Exists(markerPath))
+        {
+            File.Delete(markerPath);
+        }
     }
 
     public static AppDataPaths Create(string rootDirectory)
