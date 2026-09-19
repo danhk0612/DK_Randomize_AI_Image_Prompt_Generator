@@ -80,6 +80,11 @@ The earlier single-selection RC is obsolete after the V1 multi-select expansion.
 
 - [ ] Switch System / Light / Dark and restart to confirm persistence.
 - [ ] Confirm the settings layout stacks correctly at narrow width.
+- [ ] Resize/move the main window, restart, and confirm normal size/position is restored.
+- [ ] Maximize the main window, restart, and confirm maximized state is restored.
+- [ ] Select executable-folder portable storage, restart, and confirm the active data path changes to the executable folder.
+- [ ] Switch back to LocalAppData storage, restart, and confirm the original per-user data path is used.
+- [ ] Confirm changing storage mode does not silently move/delete the data in the previous location.
 - [ ] Create a backup containing prompts, representative images, and multi-select history.
 - [ ] Make visible changes, including deleting/changing prompts/history.
 - [ ] Restore the backup.
