@@ -132,9 +132,9 @@ The UI follows a restrained Fluent-style desktop design with clear hierarchy, ge
 
 ## 9. Local data
 
-Application data is stored under the current user's local application data directory.
+Application data is stored under the current user's local application data directory by default. Settings can switch the data root to the executable folder for portable use.
 
-Suggested structure:
+Default structure:
 
 ```text
 %LOCALAPPDATA%\DK Randomize AI Image Prompt Generator\
@@ -146,6 +146,8 @@ Suggested structure:
 ```
 
 Structured data uses SQLite. Representative images are stored as files and referenced by relative path from the database.
+
+Changing the selected data root takes effect on the next launch and must not silently move or delete the previous data root.
 
 ## 10. Backup and restore
 
@@ -159,7 +161,13 @@ A backup contains:
 
 Backup/restore must not include unrelated files from the user's machine.
 
-## 11. Out of scope for V1
+## 11. Updates
+
+V1 can check GitHub Releases for newer compatible versions. Updates are user-initiated and preserve application-owned user data while replacing program files.
+
+Stable builds do not automatically offer prerelease-only updates.
+
+## 12. Out of scope for V1
 
 The following are deliberately excluded from V1:
 
