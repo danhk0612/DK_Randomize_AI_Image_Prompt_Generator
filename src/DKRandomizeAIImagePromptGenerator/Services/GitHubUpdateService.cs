@@ -70,6 +70,8 @@ public sealed class GitHubUpdateService
         var installDirectory = Path.GetDirectoryName(executablePath)
             ?? throw new InvalidOperationException("실행 파일 폴더를 확인할 수 없습니다.");
 
+        EnsureInstallDirectoryWritable(installDirectory);
+
         var updateRoot = Path.Combine(
             Path.GetTempPath(),
             "DKPromptGeneratorUpdate",
@@ -137,6 +139,39 @@ public sealed class GitHubUpdateService
         SemanticVersion.TryParse(candidateVersion, out var candidate) &&
         SemanticVersion.TryParse(currentVersion, out var current) &&
         candidate.CompareTo(current) > 0;
+
+    private static void EnsureInstallDirectoryWritable(string installDirectory)
+    {
+        var probePath = Path.Combine(
+            installDirectory,
+            $".dk-update-write-test-{Guid.NewGuid():N}.tmp");
+
+        try
+        {
+            File.WriteAllText(probePath, "update write test");
+        }
+        catch (Exception ex)
+        {
+            throw new UnauthorizedAccessException(
+                "현재 실행 폴더에 업데이트 파일을 쓸 수 없습니다. " +
+                "쓰기 가능한 폴더로 프로그램을 옮기거나 권한을 확인해 주세요.",
+                ex);
+        }
+        finally
+        {
+            try
+            {
+                if (File.Exists(probePath))
+                {
+                    File.Delete(probePath);
+                }
+            }
+            catch
+            {
+                // Best-effort cleanup only.
+            }
+        }
+    }
 
     private CandidateRelease? ToCandidate(GitHubReleaseDto dto)
     {
@@ -316,11 +351,13 @@ catch {
             var core = dashIndex >= 0 ? normalized[..dashIndex] : normalized;
             var prereleaseText = dashIndex >= 0 ? normalized[(dashIndex + 1)..] : string.Empty;
             var parts = core.Split('.');
+            var patch = 0;
 
             if (parts.Length < 2 ||
+                parts.Length > 3 ||
                 !int.TryParse(parts[0], out var major) ||
                 !int.TryParse(parts[1], out var minor) ||
-                (parts.Length >= 3 && !int.TryParse(parts[2], out var patch)))
+                (parts.Length == 3 && !int.TryParse(parts[2], out patch)))
             {
                 return false;
             }
@@ -332,7 +369,7 @@ catch {
             version = new SemanticVersion(
                 major,
                 minor,
-                parts.Length >= 3 ? patch : 0,
+                patch,
                 prerelease);
             return true;
         }
