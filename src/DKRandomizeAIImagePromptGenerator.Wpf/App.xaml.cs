@@ -60,6 +60,7 @@ public partial class App : Application
 
     internal async Task InitializeServicesAsync(AppDataPaths paths)
     {
+        DataPaths = paths;
         Database = new DatabaseService(paths);
         Prompts = new PromptRepository(Database);
         History = new HistoryRepository(Database);
@@ -107,6 +108,7 @@ public partial class App : Application
         }
     }
 
+    public AppDataPaths DataPaths { get; private set; } = null!;
     public DatabaseService Database { get; private set; } = null!;
     public PromptRepository Prompts { get; private set; } = null!;
     public HistoryRepository History { get; private set; } = null!;
