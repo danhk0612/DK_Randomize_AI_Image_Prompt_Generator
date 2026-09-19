@@ -1,6 +1,6 @@
 # First Release Notes — Draft
 
-Version/tag remains open until the expanded multi-select release candidate passes the final manual Windows smoke test.
+Current release-candidate version: `1.0.0-rc.1`. Final `v1.0.0` remains gated on the release-candidate validation checklist.
 
 ## Highlights
 
