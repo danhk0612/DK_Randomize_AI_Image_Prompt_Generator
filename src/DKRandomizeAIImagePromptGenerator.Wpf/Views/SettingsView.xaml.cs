@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using DKRandomizeAIImagePromptGenerator.Data;
@@ -161,7 +162,7 @@ public partial class SettingsView : UserControl
         }
     }
 
-    private static void UpdateDataPathText(App app)
+    private void UpdateDataPathText(App app)
     {
         var nextRoot = AppDataPaths.IsPortableModeEnabled()
             ? AppDataPaths.GetExecutableRootDirectory()
