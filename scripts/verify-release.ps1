@@ -41,7 +41,7 @@ function Build-NativeLauncher {
     Write-Host "==> Build native .NET runtime launcher"
     Push-Location $launcherSourceDir
     try {
-        $command = '"' + $vcvars + '" >nul && rc /nologo /fo Launcher.res Launcher.rc && cl /nologo /std:c++20 /O2 /EHsc /DUNICODE /D_UNICODE Launcher.cpp Launcher.res /link /SUBSYSTEM:WINDOWS /OUT:"' + $launcherExe + '" user32.lib shell32.lib advapi32.lib'
+        $command = '"' + $vcvars + '" >nul && rc /nologo /fo Launcher.res Launcher.rc && cl /nologo /std:c++20 /O2 /EHsc /utf-8 /DUNICODE /D_UNICODE Launcher.cpp Launcher.res /link /SUBSYSTEM:WINDOWS /OUT:"' + $launcherExe + '" user32.lib shell32.lib advapi32.lib'
         & cmd.exe /d /s /c $command
         if ($LASTEXITCODE -ne 0) {
             throw "Native launcher build failed with exit code $LASTEXITCODE."
