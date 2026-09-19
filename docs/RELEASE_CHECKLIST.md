@@ -6,9 +6,9 @@ The earlier single-selection RC is obsolete after the V1 multi-select expansion.
 
 ## Launch and shell
 
-- [ ] Extract the WPF win-x64 ZIP to a normal user-writable folder.
-- [ ] Confirm the ZIP contains only `DKRandomizeAIImagePromptGenerator.exe` and `DKRandomizeAIImagePromptGenerator.App.exe`.
-- [ ] On a PC with .NET 10 Desktop Runtime x64, launch `DKRandomizeAIImagePromptGenerator.exe` and confirm the WPF app starts.
+- [x] Extract the WPF win-x64 ZIP to a normal user-writable folder.
+- [x] Confirm the ZIP contains only `DKRandomizeAIImagePromptGenerator.exe` and `DKRandomizeAIImagePromptGenerator.App.exe`.
+- [x] On a PC with .NET 10 Desktop Runtime x64, launch `DKRandomizeAIImagePromptGenerator.exe` and confirm the WPF app starts.
 - [ ] On a PC without .NET 10 Desktop Runtime x64, launch `DKRandomizeAIImagePromptGenerator.exe` and confirm the runtime 안내 dialog appears.
 - [ ] Confirm the missing-runtime dialog can open Microsoft's official .NET 10 download page.
 - [ ] Confirm the executable/taskbar icon.
@@ -113,10 +113,10 @@ The earlier single-selection RC is obsolete after the V1 multi-select expansion.
 - [ ] Run `scripts/verify-release.ps1 -Launch`.
 - [ ] Local Release build succeeds.
 - [ ] All current automated tests pass locally.
-- [ ] Local self-contained `win-x64` Publish succeeds.
+- [x] Local framework-dependent single-file `win-x64` Publish succeeds.
 - [ ] Local WPF mouse-wheel routing smoke succeeds.
 - [ ] Local expanded WPF UI smoke succeeds.
-- [ ] Locally published WPF executable launches.
+- [x] Locally published WPF executable launches.
 - [ ] Perform the real-data checks above from that exact published build.
 
 ## CI / release output
