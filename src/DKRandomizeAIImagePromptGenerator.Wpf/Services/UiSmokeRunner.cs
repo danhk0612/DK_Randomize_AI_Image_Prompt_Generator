@@ -23,8 +23,25 @@ public static class UiSmokeRunner
             await app.InitializeServicesAsync(paths);
             await SeedAsync(app);
 
-            window = new MainWindow
+            app.Settings.Current.WindowWidth = 1110;
+            app.Settings.Current.WindowHeight = 710;
+
+            window = new MainWindow();
+            if (Math.Abs(window.Width - 1110) > 0.5 ||
+                Math.Abs(window.Height - 710) > 0.5)
             {
+                return false;
+            }
+
+            window.Width = 1280;
+            window.Height = 820;
+            window.WindowStyle = WindowStyle.None;
+            window.ShowInTaskbar = false;
+            window.Opacity = 0.01;
+            window.Left = -10000;
+            window.Top = -10000;
+            /* window configured for hidden smoke execution */
+            /*
                 Width = 1280,
                 Height = 820,
                 WindowStyle = WindowStyle.None,
@@ -33,6 +50,7 @@ public static class UiSmokeRunner
                 Left = -10000,
                 Top = -10000
             };
+            */
 
             app.RegisterMainWindow(window);
             window.Show();
@@ -216,7 +234,8 @@ public static class UiSmokeRunner
             window.SettingsNavButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             await DrainUiAsync(window.Dispatcher);
             if (window.PageHost.Content is not SettingsView settings ||
-                settings.ThemeComboBox.Items.Count != 3)
+                settings.ThemeComboBox.Items.Count != 3 ||
+                settings.StorageLocationComboBox.Items.Count != 2)
             {
                 return false;
             }
