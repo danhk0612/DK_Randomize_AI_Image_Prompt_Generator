@@ -65,7 +65,9 @@ The WPF migration was made after repeated WinUI mouse-wheel routing problems. Th
 
 - category switching
 - gallery and list modes
-- search and tag filter
+- search plus partial tag filtering
+- clickable tags that immediately apply the tag filter
+- sort by updated time, created time, or title
 - create / edit / duplicate / delete
 - add an existing prompt directly to the shared Mixer session
 - prompt create/update/delete changes synchronize with the active Mixer session
@@ -77,9 +79,10 @@ The WPF migration was made after repeated WinUI mouse-wheel routing problems. Th
 ### Mixer
 
 - Direct / Random / Disabled radio modes for all categories
-- multi-select result lists with remove and ordering controls
+- multi-select result lists with per-item remove, ordering controls, and drag reorder
 - per-category random count
 - integrated category search dialog across title/tags/memo/Positive/Negative
+- picker supports double-click add/remove and drag reorder
 - direct selection with thumbnail, title, memo, and tags
 - per-category randomize
 - randomize all
@@ -96,7 +99,7 @@ The WPF migration was made after repeated WinUI mouse-wheel routing problems. Th
 - multi-selection summaries and current representative-image thumbnails
 - exact selection mode/order/random-count restore into Mixer
 - restore history to Mixer
-- delete history
+- delete one history record or clear all history with confirmation
 - System / Light / Dark theme persistence
 - ZIP backup/restore
 - version display
@@ -119,16 +122,16 @@ The routed-wheel smoke specifically verifies scrolling while the wheel target is
 
 ## Manual verification status
 
-The earlier WPF single-selection candidate was verified successfully on the user's Windows environment, including normal mouse-wheel behavior and `scripts/verify-release.ps1 -Launch`.
+The expanded WPF build has now been exercised on the user's Windows environment with real prompt data. Core navigation, Mixer interaction, picker behavior, Prompt Library changes, History UI, responsive layout, and the Dark-theme visual fixes have been confirmed working in normal use.
 
-That candidate is now obsolete because V1 was expanded to multi-select, schema v2 history, Prompt Library → Mixer integration, and paged History. The expanded candidate must be verified again locally before release.
+The latest visual pass fixed theme-aware page/section titles, themed ComboBoxes, picker-window background, random-result surfaces, selection colors, button hierarchy, and overflow/alignment issues.
+
+The final release gate still requires an exact release-candidate pass for keyboard focus visibility and backup/restore, plus the remaining checklist items that are specifically release-artifact checks.
 
 ## Remaining before first release
 
-1. Finish the final expanded-candidate CI run and produce a new artifact.
-2. Pull the final `feature/wpf-ui` HEAD and run `scripts/verify-release.ps1 -Launch` again.
-3. Run the remaining visual/real-data checks in `docs/RELEASE_CHECKLIST.md`.
-4. Verify visible keyboard focus styling in Light and Dark themes.
-5. Validate backup/restore once from the exact expanded release-candidate artifact.
-6. Choose release version/tag.
-7. Merge only after the expanded WPF build is approved for release.
+1. Create the release-candidate artifact from the final approved `feature/wpf-ui` HEAD.
+2. Run `scripts/verify-release.ps1 -Launch` against that exact HEAD/artifact.
+3. Complete the remaining unchecked items in `docs/RELEASE_CHECKLIST.md`, especially keyboard focus in Light/Dark and backup/restore from the exact RC.
+4. Choose release version/tag.
+5. Merge only after the release-candidate build is approved for release.
