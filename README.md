@@ -86,7 +86,7 @@ dotnet run `
 
 GitHub Actions validates build, automated tests, WPF routed mouse-wheel behavior, navigation/keyboard UI behavior, self-contained publish, and published application startup.
 
-Pushing a version tag such as `v1.0.0-rc.1` runs the Release workflow. The workflow verifies that the tag matches the WPF project version, rebuilds and smoke-tests the application, creates `DK-Randomize-AI-Image-Prompt-Generator-WPF-win-x64.zip`, and publishes it as a GitHub Release asset. The Settings update button checks those GitHub Releases and can download/install a newer compatible package.
+Release publishing is driven by a versioned branch such as `release/v1.0.0-rc.1`. A push to that branch runs the Release workflow, verifies that the branch matches the WPF project version, rebuilds and smoke-tests the application, creates the matching Git tag and GitHub Release, and attaches `DK-Randomize-AI-Image-Prompt-Generator-WPF-win-x64.zip`. The Settings update button checks those GitHub Releases and can download/install a newer compatible package.
 
 For a local release-style verification and optional launch:
 
