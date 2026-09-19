@@ -7,7 +7,10 @@ The earlier single-selection RC is obsolete after the V1 multi-select expansion.
 ## Launch and shell
 
 - [ ] Extract the WPF win-x64 ZIP to a normal user-writable folder.
-- [ ] Launch `DKRandomizeAIImagePromptGenerator.exe` without installing a separate .NET runtime.
+- [ ] Confirm the ZIP contains only `DKRandomizeAIImagePromptGenerator.exe` and `DKRandomizeAIImagePromptGenerator.App.exe`.
+- [ ] On a PC with .NET 10 Desktop Runtime x64, launch `DKRandomizeAIImagePromptGenerator.exe` and confirm the WPF app starts.
+- [ ] On a PC without .NET 10 Desktop Runtime x64, launch `DKRandomizeAIImagePromptGenerator.exe` and confirm the runtime 안내 dialog appears.
+- [ ] Confirm the missing-runtime dialog can open Microsoft's official .NET 10 download page.
 - [ ] Confirm the executable/taskbar icon.
 - [ ] Confirm Mixer, Prompt Library, History, and Settings navigation.
 - [ ] Resize from wide to the minimum supported width.
@@ -121,7 +124,9 @@ The earlier single-selection RC is obsolete after the V1 multi-select expansion.
 - [x] Solution Restore succeeds on the RC release commit.
 - [x] Release Build succeeds on the RC release commit.
 - [x] All 26 automated tests pass on the RC release commit.
-- [x] Self-contained WPF win-x64 Publish succeeds.
+- [ ] Framework-dependent single-file WPF win-x64 Publish succeeds.
+- [ ] Native runtime-check launcher compiles successfully.
+- [ ] CI confirms the published package contains exactly two EXE files.
 - [x] WPF routed mouse-wheel smoke succeeds.
 - [x] Expanded WPF UI smoke succeeds, including multi-select, shared Mixer session, Prompt Library integration, and History paging.
 - [x] Published WPF startup smoke succeeds.
