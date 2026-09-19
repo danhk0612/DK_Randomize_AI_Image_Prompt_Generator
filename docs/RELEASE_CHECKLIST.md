@@ -118,13 +118,13 @@ The earlier single-selection RC is obsolete after the V1 multi-select expansion.
 
 ## CI / release output
 
-- [ ] Solution Restore succeeds on final HEAD.
-- [ ] Release Build succeeds on final HEAD.
-- [ ] All 26 automated tests pass on final HEAD.
-- [ ] Self-contained WPF win-x64 Publish succeeds.
-- [ ] WPF routed mouse-wheel smoke succeeds.
-- [ ] Expanded WPF UI smoke succeeds, including multi-select, shared Mixer session, Prompt Library integration, and History paging.
-- [ ] Published WPF startup smoke succeeds.
-- [ ] Artifact upload succeeds.
-- [ ] Tag workflow creates `DK-Randomize-AI-Image-Prompt-Generator-WPF-win-x64.zip` and attaches it to the GitHub Release.
-- [ ] Release tag version matches the WPF project version.
+- [x] Solution Restore succeeds on the RC release commit.
+- [x] Release Build succeeds on the RC release commit.
+- [x] All 26 automated tests pass on the RC release commit.
+- [x] Self-contained WPF win-x64 Publish succeeds.
+- [x] WPF routed mouse-wheel smoke succeeds.
+- [x] Expanded WPF UI smoke succeeds, including multi-select, shared Mixer session, Prompt Library integration, and History paging.
+- [x] Published WPF startup smoke succeeds.
+- [x] Pre-RC build workflow artifact upload succeeds.
+- [x] Release-branch workflow creates `DK-Randomize-AI-Image-Prompt-Generator-WPF-win-x64.zip` and attaches it to the GitHub prerelease.
+- [x] Generated release tag version matches the WPF project version.
