@@ -68,6 +68,9 @@ public partial class App : Application
         Combination = new CombinationService();
         Settings = new SettingsService(paths);
         Backup = new BackupService(paths);
+        Updates = new GitHubUpdateService(
+            "danhk0612",
+            "DK_Randomize_AI_Image_Prompt_Generator");
 
         await Database.InitializeAsync();
         await Settings.LoadAsync();
@@ -116,6 +119,7 @@ public partial class App : Application
     public CombinationService Combination { get; private set; } = null!;
     public SettingsService Settings { get; private set; } = null!;
     public BackupService Backup { get; private set; } = null!;
+    public GitHubUpdateService Updates { get; private set; } = null!;
     public MainWindow? MainWindowInstance { get; private set; }
     public CombinationHistory? PendingHistoryRestore { get; set; }
 
