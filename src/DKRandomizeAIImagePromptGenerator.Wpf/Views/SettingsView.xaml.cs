@@ -245,25 +245,34 @@ public partial class SettingsView : UserControl
                 return;
             }
 
-            var executablePath = Environment.ProcessPath;
-            if (string.IsNullOrWhiteSpace(executablePath) || !File.Exists(executablePath))
+            var applicationPath = Environment.ProcessPath;
+            if (string.IsNullOrWhiteSpace(applicationPath) || !File.Exists(applicationPath))
             {
                 throw new InvalidOperationException("현재 실행 파일 경로를 확인할 수 없습니다.");
             }
 
             if (!string.Equals(
-                    Path.GetFileName(executablePath),
-                    "DKRandomizeAIImagePromptGenerator.exe",
+                    Path.GetFileName(applicationPath),
+                    "DKRandomizeAIImagePromptGenerator.App.exe",
                     StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException(
-                    "자동 업데이트는 게시된 DKRandomizeAIImagePromptGenerator.exe에서 실행할 때만 사용할 수 있습니다.");
+                    "자동 업데이트는 게시된 DKRandomizeAIImagePromptGenerator.App.exe에서 실행할 때만 사용할 수 있습니다.");
+            }
+
+            var launcherPath = Path.Combine(
+                AppContext.BaseDirectory,
+                "DKRandomizeAIImagePromptGenerator.exe");
+            if (!File.Exists(launcherPath))
+            {
+                throw new InvalidOperationException(
+                    "업데이트 후 다시 실행할 런처(DKRandomizeAIImagePromptGenerator.exe)를 찾을 수 없습니다.");
             }
 
             UpdateStatusText.Text = $"업데이트 {release.Version} 다운로드 중...";
             await app.Updates.DownloadAndStartUpdateAsync(
                 release,
-                executablePath,
+                launcherPath,
                 Environment.ProcessId);
 
             updateStarted = true;
