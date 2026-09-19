@@ -85,6 +85,16 @@ public sealed class SettingsAndBackupTests
     }
 
     [Fact]
+    public void GitHubUpdateVersionComparisonHandlesStableAndPrereleaseVersions()
+    {
+        Assert.True(GitHubUpdateService.IsNewerVersion("1.0.0-rc.2", "1.0.0-rc.1"));
+        Assert.True(GitHubUpdateService.IsNewerVersion("v1.0.0", "1.0.0-rc.2"));
+        Assert.True(GitHubUpdateService.IsNewerVersion("1.1.0", "1.0.9"));
+        Assert.False(GitHubUpdateService.IsNewerVersion("1.0.0-rc.1", "1.0.0-rc.1"));
+        Assert.False(GitHubUpdateService.IsNewerVersion("1.0.0-beta.2", "1.0.0-rc.1"));
+    }
+
+    [Fact]
     public async Task BackupAndRestoreRoundTripsDatabaseImagesAndSettings()
     {
         var root = CreateTemporaryRoot();
