@@ -24,6 +24,7 @@ Windows desktop application for storing reusable AI image-generation prompts and
 - Follow the Windows system theme or force Light / Dark.
 - Choose per-user LocalAppData storage or executable-folder portable storage.
 - Remember the last main-window size, position, and maximized state.
+- Check GitHub Releases for updates and install a newer win-x64 release from Settings.
 - Back up and restore local data as a ZIP.
 
 The application does **not** generate images directly. It prepares prompt text for use in other image-generation tools and services.
@@ -84,6 +85,8 @@ dotnet run `
 ```
 
 GitHub Actions validates build, automated tests, WPF routed mouse-wheel behavior, navigation/keyboard UI behavior, self-contained publish, and published application startup.
+
+Pushing a version tag such as `v1.0.0-rc.1` runs the Release workflow. The workflow verifies that the tag matches the WPF project version, rebuilds and smoke-tests the application, creates `DK-Randomize-AI-Image-Prompt-Generator-WPF-win-x64.zip`, and publishes it as a GitHub Release asset. The Settings update button checks those GitHub Releases and can download/install a newer compatible package.
 
 For a local release-style verification and optional launch:
 
