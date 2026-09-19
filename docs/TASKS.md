@@ -35,7 +35,8 @@
 - [x] Gallery/list
 - [x] Categories
 - [x] Search
-- [x] Tag filter
+- [x] Partial tag filter and clickable tag shortcuts
+- [x] Sort by updated/created/title
 - [x] Create/edit/duplicate/delete
 - [x] Representative image management
 
@@ -92,6 +93,9 @@
 - [x] Direct / Random / Disabled radio modes
 - [x] Disable manual picker in Random / Disabled modes
 - [x] Multi-selected item display and ordering
+- [x] Direct remove button per selected item
+- [x] Drag reorder in Mixer and picker selected list
+- [x] Reverse double-click removal in picker
 - [x] Random count UI
 - [x] Integrated category search / add / apply / cancel picker
 
@@ -106,13 +110,15 @@
 - [x] Multi-selection summaries
 - [x] Selected prompt thumbnails
 - [x] Exact multi-selection/mode restore
+- [x] Clear all recent history with confirmation
 
 ### 7.5 Verification / release candidate
 - [x] v1 database migration smoke
 - [x] backup/restore regression
 - [x] expanded WPF UI smoke
+- [x] final Light/Dark UI visual polish pass
 - [x] docs/release checklist refresh
-- [ ] create new release candidate
+- [ ] create new release candidate from the final approved HEAD
 
 ## Deferred
 
