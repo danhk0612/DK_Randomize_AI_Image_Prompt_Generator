@@ -63,7 +63,7 @@ Active release target:
 - C# / .NET 10
 - WPF / XAML
 - SQLite (`Microsoft.Data.Sqlite`)
-- self-contained win-x64 portable publish
+- compact win-x64 portable publish: native launcher + framework-dependent single-file WPF app
 
 The earlier WinUI implementation is retained in the repository as migration/reference code but is not the active release target.
 
@@ -86,7 +86,16 @@ dotnet run `
 
 GitHub Actions validates build, automated tests, WPF routed mouse-wheel behavior, navigation/keyboard UI behavior, self-contained publish, and published application startup.
 
-Release publishing is driven by a versioned branch such as `release/v1.0.0-rc.1`. A push to that branch runs the Release workflow, verifies that the branch matches the WPF project version, rebuilds and smoke-tests the application, creates the matching Git tag and GitHub Release, and attaches `DK-Randomize-AI-Image-Prompt-Generator-WPF-win-x64.zip`. The Settings update button checks those GitHub Releases and can download/install a newer compatible package.
+Release publishing is driven by a versioned branch such as `release/v1.0.0-rc.2`. A push to that branch runs the Release workflow, verifies that the branch matches the WPF project version, rebuilds and smoke-tests the application, creates the matching Git tag and GitHub Release, and attaches `DK-Randomize-AI-Image-Prompt-Generator-WPF-win-x64.zip`. The Settings update button checks those GitHub Releases and can download/install a newer compatible package.
+
+The release ZIP contains only two application files:
+
+```text
+DKRandomizeAIImagePromptGenerator.exe
+DKRandomizeAIImagePromptGenerator.App.exe
+```
+
+The first file is a native Windows launcher. It checks for Microsoft .NET 10 Desktop Runtime x64 and opens the official Microsoft download page when the runtime is missing. The second file is the framework-dependent single-file WPF application. User data remains outside these binaries in LocalAppData or the selected portable data root.
 
 For a local release-style verification and optional launch:
 
