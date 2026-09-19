@@ -227,7 +227,9 @@ public static class UiSmokeRunner
             await DrainUiAsync(window.Dispatcher);
             if (window.PageHost.Content is not SettingsView settings ||
                 settings.ThemeComboBox.Items.Count != 3 ||
-                settings.StorageLocationComboBox.Items.Count != 2)
+                settings.StorageLocationComboBox.Items.Count != 2 ||
+                settings.UpdateButton.Content?.ToString() != "업데이트 확인" ||
+                !settings.UpdateButton.IsEnabled)
             {
                 return false;
             }
