@@ -90,6 +90,10 @@ The earlier single-selection RC is obsolete after the V1 multi-select expansion.
 - [ ] Restore the backup.
 - [ ] Confirm prompts, images, theme, history item order, modes, random counts, and final text are restored.
 - [ ] Confirm displayed application version.
+- [ ] Click **업데이트 확인** with no newer compatible GitHub Release and confirm a clear no-update status.
+- [ ] From an older published build, verify a newer GitHub Release is detected and its win-x64 ZIP is selected.
+- [ ] Confirm update installation closes the app, replaces application files, preserves LocalAppData/portable user data, and restarts the updated EXE.
+- [ ] Confirm a stable build does not offer prerelease-only updates.
 
 ## Visual theme / keyboard and accessibility
 
@@ -116,9 +120,11 @@ The earlier single-selection RC is obsolete after the V1 multi-select expansion.
 
 - [ ] Solution Restore succeeds on final HEAD.
 - [ ] Release Build succeeds on final HEAD.
-- [ ] All 25 automated tests pass on final HEAD.
+- [ ] All 26 automated tests pass on final HEAD.
 - [ ] Self-contained WPF win-x64 Publish succeeds.
 - [ ] WPF routed mouse-wheel smoke succeeds.
 - [ ] Expanded WPF UI smoke succeeds, including multi-select, shared Mixer session, Prompt Library integration, and History paging.
 - [ ] Published WPF startup smoke succeeds.
 - [ ] Artifact upload succeeds.
+- [ ] Tag workflow creates `DK-Randomize-AI-Image-Prompt-Generator-WPF-win-x64.zip` and attaches it to the GitHub Release.
+- [ ] Release tag version matches the WPF project version.
