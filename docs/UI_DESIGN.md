@@ -90,6 +90,7 @@ Top area:
 - search
 - tag filter
 - Gallery/List toggle
+- Import
 - New prompt
 
 Search and tag filter stack vertically on narrow layouts.
@@ -103,6 +104,21 @@ Cards show representative image, title, Positive preview, and tags.
 Rows show thumbnail, title, Positive preview, and Negative preview.
 
 Selecting a card/row opens the same editor pane.
+
+### Bulk import dialog
+
+**Import** opens a dedicated dialog for batch registration.
+
+The dialog shows:
+
+- target category
+- Folder selection and multi-file selection actions
+- selected TXT file count
+- title, source file, matched image, and status per item
+- Start import and Close actions
+- final success / failure / total summary
+
+Rows transition through Waiting → Processing → Complete or Failed with a short reason. A failed row does not stop later rows.
 
 ## 5. Prompt editor
 
