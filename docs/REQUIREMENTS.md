@@ -51,6 +51,24 @@ For each category, the user can:
 
 Representative images are copied into application-managed local storage. The original source file must never be modified.
 
+## 4.1 Bulk prompt import
+
+Prompt Library supports importing multiple UTF-8 `.txt` files from either a selected folder or a multi-file selection.
+
+Import rules:
+
+- The current Prompt Library category is used for every selected file.
+- The TXT file name without extension becomes the prompt title.
+- Supported sections are `[Positive]`, `[Negative]`, `[Tags]`, and `[Memo]`.
+- Title plus at least one non-empty Positive or Negative prompt is required.
+- Tags, memo, and representative image are optional.
+- Tags are comma-separated.
+- A same-basename image in the same source folder is imported automatically when its extension is PNG, WebP, JPG, JPEG, or BMP.
+- Missing images are not errors.
+- A title already present in the same category is rejected without overwriting existing data.
+- Each source file is processed independently. One failure must not stop the remaining files.
+- The import UI reports waiting, processing, success, or a short failure reason per file and shows a final success/failure count.
+
 ## 5. Mixer
 
 Each category has exactly one selection mode:
