@@ -46,6 +46,8 @@ DKRandomizeAIImagePromptGenerator.App.exe   ← 실제 프로그램
   - 갤러리 / 목록 보기
   - 수정일·생성일·제목 정렬
   - 생성, 수정, 복제, 삭제
+  - 규격화된 TXT 파일/폴더 일괄 가져오기
+  - 동일 파일명의 대표 이미지 자동 연결
 
 - **Mixer**
   - 카테고리별 Direct / Random / Disabled
@@ -69,6 +71,45 @@ DKRandomizeAIImagePromptGenerator.App.exe   ← 실제 프로그램
   - LocalAppData 또는 실행 파일 폴더(Portable) 저장 방식 선택
   - ZIP 백업 / 복원
   - GitHub Releases 기반 업데이트 확인 및 설치
+
+## TXT 프롬프트 일괄 가져오기
+
+Prompt Library의 **가져오기** 버튼에서 폴더 하나 또는 여러 TXT 파일을 선택할 수 있습니다. 현재 선택한 Character / Artist · Style / Additional 분류로 등록됩니다.
+
+TXT 파일명은 프롬프트 제목이 됩니다. 파일은 UTF-8 형식을 사용하며 아래 섹션을 지원합니다.
+
+```text
+[Positive]
+1girl, long hair, blue eyes
+
+[Negative]
+low quality, blurry
+
+[Tags]
+character, sample
+
+[Memo]
+메모 내용
+```
+
+가져오기 규칙:
+
+- 제목은 TXT 파일명에서 자동 지정됩니다.
+- `[Positive]` 또는 `[Negative]` 중 하나에는 반드시 내용이 있어야 합니다.
+- `[Tags]`와 `[Memo]`는 없어도 됩니다.
+- 같은 분류에 같은 제목이 이미 있으면 해당 파일은 실패 처리되고 기존 데이터는 변경하지 않습니다.
+- TXT와 같은 폴더에 같은 이름의 `.png`, `.webp`, `.jpg`, `.jpeg`, `.bmp`가 있으면 대표 이미지로 자동 등록합니다.
+- 이미지가 없어도 정상적으로 가져옵니다.
+- 여러 파일 중 하나가 실패해도 나머지 파일은 계속 처리됩니다.
+
+예:
+
+```text
+stellive_rin.txt
+stellive_rin.png
+stellive_lize.txt
+stellive_lize.webp
+```
 
 ## 빠른 사용법
 
