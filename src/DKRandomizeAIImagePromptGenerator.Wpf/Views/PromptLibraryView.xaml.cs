@@ -195,6 +195,39 @@ public partial class PromptLibraryView : UserControl
         _suppressSelection = false;
     }
 
+    private async void ImportPrompts_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var app = (App)Application.Current;
+            var dialog = new PromptImportDialog(
+                ViewModel.SelectedCategory,
+                app.PromptImport)
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            dialog.ShowDialog();
+
+            if (dialog.ImportedItems.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var item in dialog.ImportedItems)
+            {
+                app.MainWindowInstance?.NotifyPromptChanged(item);
+            }
+
+            await RefreshAsync();
+            StatusText.Text = $"{dialog.ImportedItems.Count}개의 프롬프트를 가져왔습니다.";
+        }
+        catch (Exception ex)
+        {
+            ShowError("프롬프트 가져오기 실패", ex);
+        }
+    }
+
     private void NewPrompt_Click(object sender, RoutedEventArgs e)
     {
         _editingItem = null;
