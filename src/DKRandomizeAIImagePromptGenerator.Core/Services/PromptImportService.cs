@@ -82,8 +82,11 @@ public sealed class PromptImportService
                     cancellationToken);
             }
 
-            item = existing ?? new PromptItem();
-            item.Category = category;
+            item = existing ?? new PromptItem
+            {
+                Category = category,
+                Title = preview.Title
+            };
             item.Title = preview.Title;
             item.PositivePrompt = parsed.PositivePrompt;
             item.NegativePrompt = parsed.NegativePrompt;
