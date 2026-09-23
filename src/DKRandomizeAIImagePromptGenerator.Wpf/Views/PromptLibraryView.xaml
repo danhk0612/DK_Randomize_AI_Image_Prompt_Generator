@@ -108,11 +108,17 @@
                            Foreground="{DynamicResource TextSecondaryBrush}"
                            TextWrapping="Wrap" />
             </StackPanel>
-            <Button Grid.Column="1"
-                    Content="새 프롬프트"
-                    VerticalAlignment="Top"
-                    Style="{StaticResource ActionButtonStyle}"
-                    Click="NewPrompt_Click" />
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Top">
+                <Button Content="가져오기"
+                        Click="ImportPrompts_Click"
+                        AutomationProperties.Name="텍스트 파일에서 프롬프트 가져오기" />
+                <Button Content="새 프롬프트"
+                        Margin="8,0,0,0"
+                        Style="{StaticResource ActionButtonStyle}"
+                        Click="NewPrompt_Click" />
+            </StackPanel>
         </Grid>
 
         <Grid x:Name="FilterGrid" Grid.Row="1" Margin="0,20,0,0">
