@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Prompt Library bulk import from a selected folder or multiple UTF-8 TXT files
+- `[Positive]`, `[Negative]`, `[Tags]`, and `[Memo]` import sections
+- automatic same-basename representative image matching
+- per-file import progress, success/failure results, and duplicate-title protection
+
 ## v1.0.0 — 2026-09-19
 
 첫 정식 릴리스.
