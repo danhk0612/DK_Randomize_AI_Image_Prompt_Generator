@@ -53,21 +53,25 @@ public sealed class PromptImportService
     public async Task<PromptItem> ImportAsync(
         string sourcePath,
         PromptCategory category,
+        bool overwriteExisting = false,
         CancellationToken cancellationToken = default)
     {
         var preview = Inspect(sourcePath);
         var parsed = await ParseAsync(sourcePath, cancellationToken);
+        var existing = await _prompts.GetByTitleAsync(
+            category,
+            preview.Title,
+            cancellationToken);
 
-        if (await _prompts.ExistsByTitleAsync(
-                category,
-                preview.Title,
-                cancellationToken))
+        if (existing is not null && !overwriteExisting)
         {
             throw new InvalidOperationException(
                 "같은 분류에 동일한 제목의 프롬프트가 이미 존재합니다.");
         }
 
         string? storedImagePath = null;
+        var previousImagePath = existing?.ImagePath;
+        PromptItem item;
 
         try
         {
@@ -78,19 +82,24 @@ public sealed class PromptImportService
                     cancellationToken);
             }
 
-            var item = new PromptItem
-            {
-                Category = category,
-                Title = preview.Title,
-                PositivePrompt = parsed.PositivePrompt,
-                NegativePrompt = parsed.NegativePrompt,
-                Memo = parsed.Memo,
-                ImagePath = storedImagePath
-            };
+            item = existing ?? new PromptItem();
+            item.Category = category;
+            item.Title = preview.Title;
+            item.PositivePrompt = parsed.PositivePrompt;
+            item.NegativePrompt = parsed.NegativePrompt;
+            item.Memo = parsed.Memo;
+            item.ImagePath = storedImagePath;
+            item.Tags.Clear();
             item.Tags.AddRange(parsed.Tags);
 
-            await _prompts.CreateAsync(item, cancellationToken);
-            return item;
+            if (existing is null)
+            {
+                await _prompts.CreateAsync(item, cancellationToken);
+            }
+            else
+            {
+                await _prompts.UpdateAsync(item, cancellationToken);
+            }
         }
         catch
         {
@@ -110,6 +119,27 @@ public sealed class PromptImportService
 
             throw;
         }
+
+        if (existing is not null &&
+            previousImagePath is not null &&
+            !string.Equals(
+                previousImagePath,
+                storedImagePath,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                await _images.DeleteIfUnreferencedAsync(
+                    previousImagePath,
+                    cancellationToken);
+            }
+            catch
+            {
+                // The prompt update succeeded; orphan cleanup can be retried later.
+            }
+        }
+
+        return item;
     }
 
     private static async Task<ParsedPromptFile> ParseAsync(
