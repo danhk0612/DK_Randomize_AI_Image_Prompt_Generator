@@ -68,6 +68,36 @@ public sealed class PromptRepository
         return items;
     }
 
+    public async Task<PromptItem?> GetByTitleAsync(
+        PromptCategory category,
+        string title,
+        CancellationToken cancellationToken = default)
+    {
+        await using var connection = await _database.OpenConnectionAsync(cancellationToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT Id, Category, Title, PositivePrompt, NegativePrompt,
+                   Memo, ImagePath, CreatedAtUtc, UpdatedAtUtc
+            FROM PromptItems
+            WHERE Category = @category
+              AND Title = @title COLLATE NOCASE
+            LIMIT 1;
+            """;
+        command.Parameters.AddWithValue("@category", (int)category);
+        command.Parameters.AddWithValue("@title", title.Trim());
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
+        {
+            return null;
+        }
+
+        var item = ReadPrompt(reader);
+        await reader.DisposeAsync();
+        item.Tags.AddRange(await GetTagsAsync(connection, item.Id, cancellationToken));
+        return item;
+    }
+
     public async Task<bool> ExistsByTitleAsync(
         PromptCategory category,
         string title,

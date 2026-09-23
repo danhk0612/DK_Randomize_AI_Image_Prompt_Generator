@@ -146,7 +146,8 @@ public partial class PromptImportDialog : Window
             {
                 var item = await _importService.ImportAsync(
                     row.SourcePath,
-                    _category);
+                    _category,
+                    ForceMergeCheckBox.IsChecked == true);
                 _importedItems.Add(item);
                 row.Status = "완료";
                 successCount++;
@@ -169,6 +170,7 @@ public partial class PromptImportDialog : Window
     {
         ChooseFolderButton.IsEnabled = enabled;
         ChooseFilesButton.IsEnabled = enabled;
+        ForceMergeCheckBox.IsEnabled = enabled;
     }
 
     private void Close_Click(object sender, RoutedEventArgs e)

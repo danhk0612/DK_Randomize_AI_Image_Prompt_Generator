@@ -164,6 +164,82 @@ public sealed class PromptImportServiceTests
     }
 
     [Fact]
+    public async Task ForceMergeOverwritesExistingPromptWithSameTitle()
+    {
+        var root = CreateTemporaryRoot();
+
+        try
+        {
+            var input = Path.Combine(root, "input");
+            Directory.CreateDirectory(input);
+
+            var txtPath = Path.Combine(input, "duplicate.txt");
+            var imagePath = Path.Combine(input, "duplicate.png");
+
+            await File.WriteAllTextAsync(
+                txtPath,
+                """
+                [Positive]
+                original positive
+
+                [Tags]
+                original
+
+                [Memo]
+                original memo
+                """);
+            await File.WriteAllBytesAsync(imagePath, [1, 2, 3, 4]);
+
+            var (repository, images, service) = await CreateServicesAsync(root);
+            var original = await service.ImportAsync(
+                txtPath,
+                PromptCategory.Character);
+            var originalId = original.Id;
+            var originalCreatedAt = original.CreatedAt;
+            var originalStoredImage = original.ImagePath;
+            Assert.NotNull(originalStoredImage);
+            Assert.True(File.Exists(images.ResolvePath(originalStoredImage!)));
+
+            File.Delete(imagePath);
+            await File.WriteAllTextAsync(
+                txtPath,
+                """
+                [Negative]
+                replacement negative
+
+                [Tags]
+                replacement
+                """);
+
+            var overwritten = await service.ImportAsync(
+                txtPath,
+                PromptCategory.Character,
+                overwriteExisting: true);
+
+            Assert.Equal(originalId, overwritten.Id);
+            Assert.Equal(originalCreatedAt, overwritten.CreatedAt);
+            Assert.Equal(string.Empty, overwritten.PositivePrompt);
+            Assert.Equal("replacement negative", overwritten.NegativePrompt);
+            Assert.Equal(["replacement"], overwritten.Tags);
+            Assert.Equal(string.Empty, overwritten.Memo);
+            Assert.Null(overwritten.ImagePath);
+            Assert.False(File.Exists(images.ResolvePath(originalStoredImage!)));
+
+            var stored = await repository.GetByTitleAsync(
+                PromptCategory.Character,
+                "duplicate");
+            Assert.NotNull(stored);
+            Assert.Equal(originalId, stored.Id);
+            Assert.Equal("replacement negative", stored.NegativePrompt);
+            Assert.Equal(["replacement"], stored.Tags);
+        }
+        finally
+        {
+            Cleanup(root);
+        }
+    }
+
+    [Fact]
     public async Task SameTitleCanBeImportedIntoDifferentCategories()
     {
         var root = CreateTemporaryRoot();
