@@ -65,6 +65,7 @@ public partial class App : Application
         Prompts = new PromptRepository(Database);
         History = new HistoryRepository(Database);
         Images = new ImageStorageService(paths, Database);
+        PromptImport = new PromptImportService(Prompts, Images);
         Combination = new CombinationService();
         Settings = new SettingsService(paths);
         Backup = new BackupService(paths);
@@ -116,6 +117,7 @@ public partial class App : Application
     public PromptRepository Prompts { get; private set; } = null!;
     public HistoryRepository History { get; private set; } = null!;
     public ImageStorageService Images { get; private set; } = null!;
+    public PromptImportService PromptImport { get; private set; } = null!;
     public CombinationService Combination { get; private set; } = null!;
     public SettingsService Settings { get; private set; } = null!;
     public BackupService Backup { get; private set; } = null!;

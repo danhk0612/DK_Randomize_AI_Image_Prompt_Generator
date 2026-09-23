@@ -68,6 +68,28 @@ public sealed class PromptRepository
         return items;
     }
 
+    public async Task<bool> ExistsByTitleAsync(
+        PromptCategory category,
+        string title,
+        CancellationToken cancellationToken = default)
+    {
+        await using var connection = await _database.OpenConnectionAsync(cancellationToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT EXISTS (
+                SELECT 1
+                FROM PromptItems
+                WHERE Category = @category
+                  AND Title = @title COLLATE NOCASE
+            );
+            """;
+        command.Parameters.AddWithValue("@category", (int)category);
+        command.Parameters.AddWithValue("@title", title.Trim());
+
+        return Convert.ToInt32(
+            await command.ExecuteScalarAsync(cancellationToken)) != 0;
+    }
+
     public async Task<PromptItem?> GetByIdAsync(
         Guid id,
         CancellationToken cancellationToken = default)

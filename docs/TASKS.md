@@ -126,6 +126,20 @@
 - [x] switch RC2 packaging to native runtime launcher + framework-dependent single-file app
 - [x] create and publish `v1.0.0-rc.2` compact release candidate
 
+## Milestone 8 — Bulk prompt import
+
+- [x] Define UTF-8 TXT section format
+- [x] Require file-name title plus Positive or Negative content
+- [x] Parse optional Tags and Memo
+- [x] Match same-basename representative images
+- [x] Reject same-category duplicate titles without overwrite
+- [x] Add folder and multi-file selection
+- [x] Add per-file progress and short failure reasons
+- [x] Continue the batch after individual failures
+- [x] Clean up copied images when prompt persistence fails
+- [x] Add automated import tests
+- [x] Verify full Windows CI build/test/smoke pipeline
+
 ## Deferred
 
 - Tag-constrained random pools

@@ -1,10 +1,10 @@
 # Current State
 
-Updated: 2026-09-19
+Updated: 2026-09-23
 
 ## Repository
 
-Active development is on `feature/wpf-ui`.
+The stable and active development baseline is `main`. Feature work branches from `main` and returns through verified pull requests.
 
 The current tree contains only the active WPF application, Core library, native launcher, tests, and shared icon resources. The older WinUI implementation remains available through Git history / the historical `feature/bootstrap` branch rather than being duplicated in the active source tree.
 
@@ -76,6 +76,13 @@ The current tree contains only the active WPF application, Core library, native 
 - representative image import, preview, replace, remove, and orphan cleanup
 - editor opens at the top
 - responsive filter/editor layout
+- bulk UTF-8 TXT import from a folder or multi-file selection
+- file-name-derived titles and current-category assignment
+- Positive or Negative required for imported files; tags/memo/image optional
+- same-basename representative image auto-import
+- per-file progress, failure reason, and final batch summary
+- same-category duplicate-title protection without overwrite
+- bulk-import automated coverage for positive-only, negative-only, required prompt validation, duplicate rejection, cross-category titles, and image matching
 
 ### Mixer
 
@@ -122,7 +129,7 @@ The current WPF pipeline validates:
 
 1. Solution restore
 2. Release build
-3. 26 automated tests
+3. 31 automated tests
 4. framework-dependent single-file win-x64 WPF publish
 5. WPF routed mouse-wheel smoke
 6. native launcher/runtime detection and published-app startup smoke
