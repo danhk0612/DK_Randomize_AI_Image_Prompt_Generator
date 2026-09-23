@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v1.0.1 — 2026-09-23
 
 ### Added
 
@@ -8,6 +8,7 @@
 - `[Positive]`, `[Negative]`, `[Tags]`, and `[Memo]` import sections
 - automatic same-basename representative image matching
 - per-file import progress, success/failure results, and duplicate-title protection
+- optional force merge mode that overwrites an existing prompt with the same title in the same category
 
 ## v1.0.0 — 2026-09-19
 
