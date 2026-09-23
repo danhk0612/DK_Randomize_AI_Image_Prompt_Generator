@@ -1,10 +1,10 @@
 # Current State
 
-Updated: 2026-09-19
+Updated: 2026-09-23
 
 ## Repository
 
-Active development is on `feature/wpf-ui`.
+The stable development baseline is `main`. Bulk prompt import work is isolated on `feature/bulk-prompt-import`.
 
 The current tree contains only the active WPF application, Core library, native launcher, tests, and shared icon resources. The older WinUI implementation remains available through Git history / the historical `feature/bootstrap` branch rather than being duplicated in the active source tree.
 
@@ -76,6 +76,12 @@ The current tree contains only the active WPF application, Core library, native 
 - representative image import, preview, replace, remove, and orphan cleanup
 - editor opens at the top
 - responsive filter/editor layout
+- bulk UTF-8 TXT import from a folder or multi-file selection
+- file-name-derived titles and current-category assignment
+- Positive or Negative required for imported files; tags/memo/image optional
+- same-basename representative image auto-import
+- per-file progress, failure reason, and final batch summary
+- same-category duplicate-title protection without overwrite
 
 ### Mixer
 
