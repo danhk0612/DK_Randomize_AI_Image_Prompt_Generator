@@ -138,7 +138,7 @@
 - [x] Continue the batch after individual failures
 - [x] Clean up copied images when prompt persistence fails
 - [x] Add automated import tests
-- [ ] Verify full Windows CI build/test/smoke pipeline
+- [x] Verify full Windows CI build/test/smoke pipeline
 
 ## Deferred
 
