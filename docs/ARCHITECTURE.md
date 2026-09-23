@@ -113,6 +113,23 @@ PromptLibraryView -> PromptLibraryViewModel -> PromptRepository
           └──── add/update/delete ──────────> shared Mixer session
 ```
 
+Typical bulk-import flow:
+
+```text
+PromptLibraryView
+      ↓
+PromptImportDialog (folder/files + per-file progress)
+      ↓
+PromptImportService
+      ├─ strict UTF-8 section parsing
+      ├─ same-category title duplicate check
+      ├─ same-basename image discovery
+      ├─ ImageStorageService
+      └─ PromptRepository
+```
+
+Each file is its own import unit. A failure does not roll back earlier successful files or prevent later files from running. If an image copy succeeds but prompt persistence fails, the new unreferenced application-owned image is cleaned up.
+
 ## 6. Randomization rules
 
 Randomization is performed only by `CombinationService`.
