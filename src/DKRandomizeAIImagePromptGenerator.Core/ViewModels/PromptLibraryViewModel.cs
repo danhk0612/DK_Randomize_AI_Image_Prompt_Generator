@@ -4,18 +4,10 @@ using DKRandomizeAIImagePromptGenerator.Models;
 
 namespace DKRandomizeAIImagePromptGenerator.ViewModels;
 
-public enum PromptLibrarySortOrder
-{
-    UpdatedNewest,
-    UpdatedOldest,
-    TitleAscending,
-    TitleDescending,
-    CreatedNewest,
-    CreatedOldest
-}
-
 public sealed class PromptLibraryViewModel
 {
+    public const int PageSize = 60;
+
     private readonly PromptRepository _repository;
 
     public PromptLibraryViewModel(PromptRepository repository)
@@ -33,6 +25,19 @@ public sealed class PromptLibraryViewModel
 
     public PromptLibrarySortOrder SortOrder { get; set; } = PromptLibrarySortOrder.UpdatedNewest;
 
+    public int CurrentPageIndex { get; private set; }
+
+    public int TotalCount { get; private set; }
+
+    public int TotalPages =>
+        TotalCount == 0
+            ? 0
+            : (TotalCount + PageSize - 1) / PageSize;
+
+    public bool HasPreviousPage => CurrentPageIndex > 0;
+
+    public bool HasNextPage => CurrentPageIndex + 1 < TotalPages;
+
     public async Task SetCategoryAsync(PromptCategory category)
     {
         if (SelectedCategory == category)
@@ -41,38 +46,47 @@ public sealed class PromptLibraryViewModel
         }
 
         SelectedCategory = category;
+        ResetToFirstPage();
+        await RefreshAsync();
+    }
+
+    public void ResetToFirstPage() => CurrentPageIndex = 0;
+
+    public async Task GoToPageAsync(int pageIndex)
+    {
+        if (pageIndex < 0)
+        {
+            pageIndex = 0;
+        }
+
+        if (TotalPages > 0)
+        {
+            pageIndex = Math.Min(pageIndex, TotalPages - 1);
+        }
+
+        CurrentPageIndex = pageIndex;
         await RefreshAsync();
     }
 
     public async Task RefreshAsync()
     {
-        var results = await _repository.SearchAsync(
-            SelectedCategory,
-            SearchText,
-            TagFilter);
+        var page = await LoadCurrentPageAsync();
+        TotalCount = page.TotalCount;
 
-        var ordered = SortOrder switch
+        var lastPageIndex =
+            TotalCount == 0
+                ? 0
+                : (TotalCount - 1) / PageSize;
+
+        if (CurrentPageIndex > lastPageIndex)
         {
-            PromptLibrarySortOrder.UpdatedOldest => results
-                .OrderBy(item => item.UpdatedAt)
-                .ThenBy(item => item.Title, StringComparer.CurrentCultureIgnoreCase),
-            PromptLibrarySortOrder.TitleAscending => results
-                .OrderBy(item => item.Title, StringComparer.CurrentCultureIgnoreCase),
-            PromptLibrarySortOrder.TitleDescending => results
-                .OrderByDescending(item => item.Title, StringComparer.CurrentCultureIgnoreCase),
-            PromptLibrarySortOrder.CreatedNewest => results
-                .OrderByDescending(item => item.CreatedAt)
-                .ThenBy(item => item.Title, StringComparer.CurrentCultureIgnoreCase),
-            PromptLibrarySortOrder.CreatedOldest => results
-                .OrderBy(item => item.CreatedAt)
-                .ThenBy(item => item.Title, StringComparer.CurrentCultureIgnoreCase),
-            _ => results
-                .OrderByDescending(item => item.UpdatedAt)
-                .ThenBy(item => item.Title, StringComparer.CurrentCultureIgnoreCase)
-        };
+            CurrentPageIndex = lastPageIndex;
+            page = await LoadCurrentPageAsync();
+            TotalCount = page.TotalCount;
+        }
 
         Items.Clear();
-        foreach (var item in ordered)
+        foreach (var item in page.Items)
         {
             Items.Add(item);
         }
@@ -146,6 +160,15 @@ public sealed class PromptLibraryViewModel
         await _repository.DeleteAsync(item.Id);
         await RefreshAsync();
     }
+
+    private Task<PromptSearchPage> LoadCurrentPageAsync() =>
+        _repository.SearchPageAsync(
+            SelectedCategory,
+            SearchText,
+            TagFilter,
+            SortOrder,
+            CurrentPageIndex,
+            PageSize);
 
     private static IEnumerable<string> NormalizeTags(IEnumerable<string> tags) =>
         tags.Select(tag => tag.Trim())
