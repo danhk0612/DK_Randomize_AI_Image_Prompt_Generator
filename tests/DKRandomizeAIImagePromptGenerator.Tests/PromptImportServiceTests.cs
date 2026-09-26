@@ -214,7 +214,7 @@ public sealed class PromptImportServiceTests
             var overwritten = await service.ImportAsync(
                 txtPath,
                 PromptCategory.Character,
-                overwriteExisting: true);
+                PromptImportConflictMode.Overwrite);
 
             Assert.Equal(originalId, overwritten.Id);
             Assert.Equal(originalCreatedAt, overwritten.CreatedAt);
@@ -232,6 +232,65 @@ public sealed class PromptImportServiceTests
             Assert.Equal(originalId, stored.Id);
             Assert.Equal("replacement negative", stored.NegativePrompt);
             Assert.Equal(["replacement"], stored.Tags);
+        }
+        finally
+        {
+            Cleanup(root);
+        }
+    }
+
+    [Fact]
+    public async Task RenameModeAddsNumberedPromptWithoutChangingExistingItems()
+    {
+        var root = CreateTemporaryRoot();
+
+        try
+        {
+            var input = Path.Combine(root, "input");
+            Directory.CreateDirectory(input);
+
+            var txtPath = Path.Combine(input, "duplicate.txt");
+            await File.WriteAllTextAsync(
+                txtPath,
+                """
+                [Positive]
+                original
+                """);
+
+            var (repository, _, service) = await CreateServicesAsync(root);
+            var original = await service.ImportAsync(
+                txtPath,
+                PromptCategory.Character);
+
+            await File.WriteAllTextAsync(
+                txtPath,
+                """
+                [Positive]
+                renamed copy
+                """);
+
+            var second = await service.ImportAsync(
+                txtPath,
+                PromptCategory.Character,
+                PromptImportConflictMode.Rename);
+            var third = await service.ImportAsync(
+                txtPath,
+                PromptCategory.Character,
+                PromptImportConflictMode.Rename);
+
+            Assert.Equal("duplicate", original.Title);
+            Assert.Equal("duplicate (2)", second.Title);
+            Assert.Equal("duplicate (3)", third.Title);
+            Assert.NotEqual(original.Id, second.Id);
+            Assert.NotEqual(second.Id, third.Id);
+
+            var storedOriginal = await repository.GetByIdAsync(original.Id);
+            Assert.NotNull(storedOriginal);
+            Assert.Equal("original", storedOriginal.PositivePrompt);
+
+            var storedSecond = await repository.GetByIdAsync(second.Id);
+            Assert.NotNull(storedSecond);
+            Assert.Equal("renamed copy", storedSecond.PositivePrompt);
         }
         finally
         {
