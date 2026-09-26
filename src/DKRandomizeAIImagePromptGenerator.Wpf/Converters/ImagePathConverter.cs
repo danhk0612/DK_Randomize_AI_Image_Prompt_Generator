@@ -20,6 +20,7 @@ public sealed class ImagePathConverter : IValueConverter
             var bitmap = new BitmapImage();
             bitmap.BeginInit();
             bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.DecodePixelWidth = 300;
             bitmap.UriSource = new Uri(fullPath, UriKind.Absolute);
             bitmap.EndInit();
             bitmap.Freeze();

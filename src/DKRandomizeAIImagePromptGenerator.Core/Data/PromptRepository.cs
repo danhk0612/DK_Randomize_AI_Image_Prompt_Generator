@@ -4,6 +4,10 @@ using Microsoft.Data.Sqlite;
 
 namespace DKRandomizeAIImagePromptGenerator.Data;
 
+public sealed record PromptSearchPage(
+    IReadOnlyList<PromptItem> Items,
+    int TotalCount);
+
 public sealed class PromptRepository
 {
     private readonly DatabaseService _database;
@@ -19,35 +23,76 @@ public sealed class PromptRepository
         string? tag = null,
         CancellationToken cancellationToken = default)
     {
+        var page = await SearchPageAsync(
+            category,
+            searchText,
+            tag,
+            PromptLibrarySortOrder.UpdatedNewest,
+            pageIndex: 0,
+            pageSize: int.MaxValue,
+            cancellationToken: cancellationToken);
+
+        return page.Items;
+    }
+
+    public async Task<PromptSearchPage> SearchPageAsync(
+        PromptCategory? category,
+        string? searchText,
+        string? tag,
+        PromptLibrarySortOrder sortOrder,
+        int pageIndex,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        if (pageIndex < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(pageIndex));
+        }
+
+        if (pageSize <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(pageSize));
+        }
+
         await using var connection = await _database.OpenConnectionAsync(cancellationToken);
+
+        await using var countCommand = connection.CreateCommand();
+        var countConditions = AddSearchFilters(
+            countCommand,
+            category,
+            searchText,
+            tag);
+        countCommand.CommandText = $"""
+            SELECT COUNT(*)
+            FROM PromptItems p
+            {(countConditions.Count == 0 ? string.Empty : "WHERE " + string.Join(" AND ", countConditions))};
+            """;
+
+        var totalCount = Convert.ToInt32(
+            await countCommand.ExecuteScalarAsync(cancellationToken));
+
+        if (totalCount == 0)
+        {
+            return new PromptSearchPage([], 0);
+        }
+
         await using var command = connection.CreateCommand();
-
-        var conditions = new List<string>();
-
-        if (category is not null)
-        {
-            conditions.Add("p.Category = @category");
-            command.Parameters.AddWithValue("@category", (int)category.Value);
-        }
-
-        if (!string.IsNullOrWhiteSpace(searchText))
-        {
-            conditions.Add("(p.Title LIKE @search OR p.PositivePrompt LIKE @search OR p.NegativePrompt LIKE @search)");
-            command.Parameters.AddWithValue("@search", $"%{searchText.Trim()}%");
-        }
-
-        if (!string.IsNullOrWhiteSpace(tag))
-        {
-            conditions.Add("EXISTS (SELECT 1 FROM PromptTags pt JOIN Tags t ON t.Id = pt.TagId WHERE pt.PromptId = p.Id AND t.NormalizedName LIKE @tag)");
-            command.Parameters.AddWithValue("@tag", $"%{NormalizeTag(tag)}%");
-        }
-
+        var conditions = AddSearchFilters(
+            command,
+            category,
+            searchText,
+            tag);
+        command.Parameters.AddWithValue("@pageSize", pageSize);
+        command.Parameters.AddWithValue(
+            "@offset",
+            checked((long)pageIndex * pageSize));
         command.CommandText = $"""
             SELECT p.Id, p.Category, p.Title, p.PositivePrompt, p.NegativePrompt,
                    p.Memo, p.ImagePath, p.CreatedAtUtc, p.UpdatedAtUtc
             FROM PromptItems p
             {(conditions.Count == 0 ? string.Empty : "WHERE " + string.Join(" AND ", conditions))}
-            ORDER BY p.UpdatedAtUtc DESC, p.Title COLLATE NOCASE ASC;
+            ORDER BY {GetOrderByClause(sortOrder)}
+            LIMIT @pageSize OFFSET @offset;
             """;
 
         var items = new List<PromptItem>();
@@ -59,13 +104,9 @@ public sealed class PromptRepository
         }
 
         await reader.DisposeAsync();
+        await LoadTagsAsync(connection, items, cancellationToken);
 
-        foreach (var item in items)
-        {
-            item.Tags.AddRange(await GetTagsAsync(connection, item.Id, cancellationToken));
-        }
-
-        return items;
+        return new PromptSearchPage(items, totalCount);
     }
 
     public async Task<PromptItem?> GetByTitleAsync(
@@ -221,6 +262,101 @@ public sealed class PromptRepository
 
         await RemoveOrphanTagsAsync(connection, transaction, cancellationToken);
         transaction.Commit();
+    }
+
+    private static List<string> AddSearchFilters(
+        SqliteCommand command,
+        PromptCategory? category,
+        string? searchText,
+        string? tag)
+    {
+        var conditions = new List<string>();
+
+        if (category is not null)
+        {
+            conditions.Add("p.Category = @category");
+            command.Parameters.AddWithValue("@category", (int)category.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchText))
+        {
+            conditions.Add(
+                "(p.Title LIKE @search OR p.PositivePrompt LIKE @search OR p.NegativePrompt LIKE @search)");
+            command.Parameters.AddWithValue(
+                "@search",
+                $"%{searchText.Trim()}%");
+        }
+
+        if (!string.IsNullOrWhiteSpace(tag))
+        {
+            conditions.Add(
+                "EXISTS (SELECT 1 FROM PromptTags pt JOIN Tags t ON t.Id = pt.TagId WHERE pt.PromptId = p.Id AND t.NormalizedName LIKE @tag)");
+            command.Parameters.AddWithValue(
+                "@tag",
+                $"%{NormalizeTag(tag)}%");
+        }
+
+        return conditions;
+    }
+
+    private static string GetOrderByClause(PromptLibrarySortOrder sortOrder) =>
+        sortOrder switch
+        {
+            PromptLibrarySortOrder.UpdatedOldest =>
+                "p.UpdatedAtUtc ASC, p.Title COLLATE NOCASE ASC",
+            PromptLibrarySortOrder.TitleAscending =>
+                "p.Title COLLATE NOCASE ASC, p.UpdatedAtUtc DESC",
+            PromptLibrarySortOrder.TitleDescending =>
+                "p.Title COLLATE NOCASE DESC, p.UpdatedAtUtc DESC",
+            PromptLibrarySortOrder.CreatedNewest =>
+                "p.CreatedAtUtc DESC, p.Title COLLATE NOCASE ASC",
+            PromptLibrarySortOrder.CreatedOldest =>
+                "p.CreatedAtUtc ASC, p.Title COLLATE NOCASE ASC",
+            _ =>
+                "p.UpdatedAtUtc DESC, p.Title COLLATE NOCASE ASC"
+        };
+
+    private static async Task LoadTagsAsync(
+        SqliteConnection connection,
+        IReadOnlyList<PromptItem> items,
+        CancellationToken cancellationToken)
+    {
+        if (items.Count == 0)
+        {
+            return;
+        }
+
+        var byId = items.ToDictionary(item => item.Id);
+
+        await using var command = connection.CreateCommand();
+        var parameters = new List<string>(items.Count);
+
+        for (var index = 0; index < items.Count; index++)
+        {
+            var parameterName = $"@prompt{index}";
+            parameters.Add(parameterName);
+            command.Parameters.AddWithValue(
+                parameterName,
+                items[index].Id.ToString("D"));
+        }
+
+        command.CommandText = $"""
+            SELECT pt.PromptId, t.Name
+            FROM PromptTags pt
+            JOIN Tags t ON t.Id = pt.TagId
+            WHERE pt.PromptId IN ({string.Join(", ", parameters)})
+            ORDER BY pt.PromptId, t.Name COLLATE NOCASE ASC;
+            """;
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            if (Guid.TryParse(reader.GetString(0), out var promptId) &&
+                byId.TryGetValue(promptId, out var item))
+            {
+                item.Tags.Add(reader.GetString(1));
+            }
+        }
     }
 
     private static PromptItem ReadPrompt(SqliteDataReader reader)
