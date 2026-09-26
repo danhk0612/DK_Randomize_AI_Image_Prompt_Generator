@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Prompt Library now loads prompts in 60-item database pages instead of loading the full category at once.
+- Tags for the visible page are loaded in one batch query instead of one query per prompt.
+- Prompt thumbnails are decoded at display size, and text/tag filtering uses a 300 ms debounce.
+
 ## v1.1.0 — 2026-09-26
 
 ### Changed
