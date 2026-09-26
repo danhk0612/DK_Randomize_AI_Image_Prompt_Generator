@@ -31,20 +31,43 @@
         </StackPanel>
 
         <StackPanel Grid.Row="1"
-                    Margin="0,18,0,0"
-                    Orientation="Horizontal">
-            <Button x:Name="ChooseFolderButton"
-                    Content="폴더 선택"
-                    Click="ChooseFolder_Click" />
-            <Button x:Name="ChooseFilesButton"
-                    Content="파일 선택"
-                    Margin="8,0,0,0"
-                    Click="ChooseFiles_Click" />
-            <CheckBox x:Name="ForceMergeCheckBox"
-                      Content="강제 병합 (동일 제목 덮어쓰기)"
-                      Margin="18,0,0,0"
-                      VerticalAlignment="Center"
-                      ToolTip="같은 분류에 동일한 제목이 있으면 기존 항목을 가져온 파일 내용으로 덮어씁니다." />
+                    Margin="0,18,0,0">
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="ChooseFolderButton"
+                        Content="폴더 선택"
+                        Click="ChooseFolder_Click" />
+                <Button x:Name="ChooseFilesButton"
+                        Content="파일 선택"
+                        Margin="8,0,0,0"
+                        Click="ChooseFiles_Click" />
+            </StackPanel>
+
+            <StackPanel x:Name="ConflictModePanel"
+                        Margin="0,12,0,0"
+                        Orientation="Horizontal">
+                <TextBlock Text="동일 제목 처리:"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource TextSecondaryBrush}" />
+                <RadioButton x:Name="DefaultModeRadioButton"
+                             Content="기본"
+                             GroupName="ImportConflictMode"
+                             IsChecked="True"
+                             Margin="12,0,0,0"
+                             VerticalAlignment="Center"
+                             ToolTip="동일 제목이 있으면 해당 파일을 실패 처리합니다." />
+                <RadioButton x:Name="ForceMergeModeRadioButton"
+                             Content="강제 병합"
+                             GroupName="ImportConflictMode"
+                             Margin="14,0,0,0"
+                             VerticalAlignment="Center"
+                             ToolTip="동일 제목이 있으면 기존 항목을 가져온 파일 내용으로 덮어씁니다." />
+                <RadioButton x:Name="RenameModeRadioButton"
+                             Content="이름 변경"
+                             GroupName="ImportConflictMode"
+                             Margin="14,0,0,0"
+                             VerticalAlignment="Center"
+                             ToolTip="동일 제목이 있으면 제목 뒤에 (2), (3)처럼 번호를 붙여 새 항목으로 추가합니다." />
+            </StackPanel>
         </StackPanel>
 
         <TextBlock x:Name="SelectionSummaryText"
