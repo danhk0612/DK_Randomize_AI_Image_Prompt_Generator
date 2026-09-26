@@ -16,6 +16,10 @@ public partial class PromptLibraryView : UserControl
     private bool _removeImage;
     private bool _loaded;
     private bool _suppressSelection;
+    private readonly DispatcherTimer _filterDebounceTimer = new()
+    {
+        Interval = TimeSpan.FromMilliseconds(300)
+    };
 
     public PromptLibraryView()
     {
@@ -23,7 +27,9 @@ public partial class PromptLibraryView : UserControl
         InitializeComponent();
         DataContext = ViewModel;
         WheelScrollService.Enable(EditorScrollViewer);
+        _filterDebounceTimer.Tick += FilterDebounceTimer_Tick;
         Loaded += PromptLibraryView_Loaded;
+        Unloaded += PromptLibraryView_Unloaded;
         SizeChanged += PromptLibraryView_SizeChanged;
     }
 
@@ -35,6 +41,12 @@ public partial class PromptLibraryView : UserControl
         ApplyResponsiveLayout(ActualWidth);
         await RefreshAsync();
         SetGalleryMode(true);
+    }
+
+    private void PromptLibraryView_Unloaded(object sender, RoutedEventArgs e)
+    {
+        _loaded = false;
+        _filterDebounceTimer.Stop();
     }
 
     private void PromptLibraryView_SizeChanged(object sender, SizeChangedEventArgs e) =>
@@ -101,18 +113,36 @@ public partial class PromptLibraryView : UserControl
     private static double GetEditorWidth(double availableWidth) =>
         availableWidth < 820 ? 320 : availableWidth < 1050 ? 350 : 380;
 
-    private async void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         if (!_loaded) return;
         ViewModel.SearchText = SearchBox.Text;
-        await RefreshAsync();
+        ViewModel.ResetToFirstPage();
+        ScheduleFilterRefresh();
     }
 
-    private async void TagFilterBox_TextChanged(object sender, TextChangedEventArgs e)
+    private void TagFilterBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         if (!_loaded) return;
         ViewModel.TagFilter = TagFilterBox.Text;
-        await RefreshAsync();
+        ViewModel.ResetToFirstPage();
+        ScheduleFilterRefresh();
+    }
+
+    private void ScheduleFilterRefresh()
+    {
+        _filterDebounceTimer.Stop();
+        _filterDebounceTimer.Start();
+    }
+
+    private async void FilterDebounceTimer_Tick(object? sender, EventArgs e)
+    {
+        _filterDebounceTimer.Stop();
+
+        if (_loaded)
+        {
+            await RefreshAsync();
+        }
     }
 
     private async void SortComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -126,6 +156,7 @@ public partial class PromptLibraryView : UserControl
         }
 
         ViewModel.SortOrder = sortOrder;
+        ViewModel.ResetToFirstPage();
         await RefreshAsync();
     }
 
@@ -470,10 +501,86 @@ public partial class PromptLibraryView : UserControl
         {
             await ViewModel.RefreshAsync();
             UpdateEmptyState();
+            UpdatePagingControls();
         }
         catch (Exception ex)
         {
             ShowError("프롬프트 불러오기 실패", ex);
+        }
+    }
+
+    private async Task ChangePageAsync(int pageIndex)
+    {
+        try
+        {
+            await ViewModel.GoToPageAsync(pageIndex);
+            UpdateEmptyState();
+            UpdatePagingControls();
+        }
+        catch (Exception ex)
+        {
+            ShowError("페이지 이동 실패", ex);
+        }
+    }
+
+    private async void PreviousPage_Click(object sender, RoutedEventArgs e) =>
+        await ChangePageAsync(ViewModel.CurrentPageIndex - 1);
+
+    private async void NextPage_Click(object sender, RoutedEventArgs e) =>
+        await ChangePageAsync(ViewModel.CurrentPageIndex + 1);
+
+    private async void PageNumber_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.Tag is int pageIndex)
+        {
+            await ChangePageAsync(pageIndex);
+        }
+    }
+
+    private void UpdatePagingControls()
+    {
+        var totalCount = ViewModel.TotalCount;
+        var totalPages = ViewModel.TotalPages;
+        var currentPageIndex = ViewModel.CurrentPageIndex;
+
+        PreviousPageButton.IsEnabled = ViewModel.HasPreviousPage;
+        NextPageButton.IsEnabled = ViewModel.HasNextPage;
+        PageNumberPanel.Children.Clear();
+
+        if (totalCount == 0)
+        {
+            PageRangeText.Text = "0개";
+            return;
+        }
+
+        var firstItem = currentPageIndex * PromptLibraryViewModel.PageSize + 1;
+        var lastItem = Math.Min(
+            totalCount,
+            firstItem + ViewModel.Items.Count - 1);
+        PageRangeText.Text = $"{firstItem}-{lastItem} / 전체 {totalCount}개";
+
+        var visiblePageCount = Math.Min(5, totalPages);
+        var firstPageIndex = Math.Clamp(
+            currentPageIndex - visiblePageCount / 2,
+            0,
+            Math.Max(0, totalPages - visiblePageCount));
+        var lastPageIndex = firstPageIndex + visiblePageCount;
+
+        for (var pageIndex = firstPageIndex;
+             pageIndex < lastPageIndex;
+             pageIndex++)
+        {
+            var button = new Button
+            {
+                Content = (pageIndex + 1).ToString(),
+                Tag = pageIndex,
+                MinWidth = 32,
+                Padding = new Thickness(7, 5, 7, 5),
+                Margin = new Thickness(0, 0, 6, 0),
+                IsEnabled = pageIndex != currentPageIndex
+            };
+            button.Click += PageNumber_Click;
+            PageNumberPanel.Children.Add(button);
         }
     }
 
