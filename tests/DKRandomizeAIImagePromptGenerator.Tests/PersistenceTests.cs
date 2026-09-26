@@ -89,6 +89,60 @@ public sealed class PersistenceTests
     }
 
     [Fact]
+    public async Task PromptRepositoryReturnsPagedSortedResultsWithTags()
+    {
+        var (root, database) = await CreateDatabaseAsync();
+
+        try
+        {
+            var repository = new PromptRepository(database);
+
+            for (var index = 0; index < 65; index++)
+            {
+                var prompt = new PromptItem
+                {
+                    Category = PromptCategory.Character,
+                    Title = $"Prompt {index:D3}",
+                    PositivePrompt = $"positive {index}"
+                };
+                prompt.Tags.Add(index % 2 == 0 ? "Even" : "Odd");
+                await repository.CreateAsync(prompt);
+            }
+
+            var firstPage = await repository.SearchPageAsync(
+                PromptCategory.Character,
+                searchText: null,
+                tag: null,
+                PromptLibrarySortOrder.TitleAscending,
+                pageIndex: 0,
+                pageSize: 60);
+            var secondPage = await repository.SearchPageAsync(
+                PromptCategory.Character,
+                searchText: null,
+                tag: null,
+                PromptLibrarySortOrder.TitleAscending,
+                pageIndex: 1,
+                pageSize: 60);
+
+            Assert.Equal(65, firstPage.TotalCount);
+            Assert.Equal(60, firstPage.Items.Count);
+            Assert.Equal("Prompt 000", firstPage.Items[0].Title);
+            Assert.Equal("Prompt 059", firstPage.Items[^1].Title);
+            Assert.Equal(["Even"], firstPage.Items[0].Tags);
+
+            Assert.Equal(65, secondPage.TotalCount);
+            Assert.Equal(5, secondPage.Items.Count);
+            Assert.Equal("Prompt 060", secondPage.Items[0].Title);
+            Assert.Equal("Prompt 064", secondPage.Items[^1].Title);
+            Assert.Equal(["Even"], secondPage.Items[0].Tags);
+        }
+        finally
+        {
+            Cleanup(root);
+        }
+    }
+
+    [Fact]
     public async Task HistoryRepositoryPreservesFinalEditedTextAndSnapshots()
     {
         var (root, database) = await CreateDatabaseAsync();
