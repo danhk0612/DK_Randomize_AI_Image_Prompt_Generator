@@ -188,6 +188,7 @@ public partial class PromptLibraryView : UserControl
             HideEditor();
             await ViewModel.SetCategoryAsync(category);
             UpdateEmptyState();
+            UpdatePagingControls();
         }
         catch (Exception ex)
         {
