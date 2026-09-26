@@ -30,7 +30,7 @@ public sealed class PromptRepository
             PromptLibrarySortOrder.UpdatedNewest,
             pageIndex: 0,
             pageSize: int.MaxValue,
-            cancellationToken);
+            cancellationToken: cancellationToken);
 
         return page.Items;
     }
