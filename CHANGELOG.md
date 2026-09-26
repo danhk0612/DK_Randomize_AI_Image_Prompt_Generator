@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.1.2 — 2026-09-26
+
+### Fixed
+
+- Prompt Library paging count and page buttons now refresh immediately after switching categories.
+
 ## v1.1.1 — 2026-09-26
 
 ### Changed
