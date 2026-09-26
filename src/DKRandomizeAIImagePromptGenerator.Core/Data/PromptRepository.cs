@@ -4,6 +4,10 @@ using Microsoft.Data.Sqlite;
 
 namespace DKRandomizeAIImagePromptGenerator.Data;
 
+public sealed record PromptSearchPage(
+    IReadOnlyList<PromptItem> Items,
+    int TotalCount);
+
 public sealed class PromptRepository
 {
     private readonly DatabaseService _database;
