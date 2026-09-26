@@ -137,6 +137,7 @@ public partial class PromptImportDialog : Window
 
         var successCount = 0;
         var failureCount = Rows.Count(row => !row.CanImport);
+        var conflictMode = GetConflictMode();
 
         foreach (var row in Rows.Where(row => row.CanImport))
         {
@@ -147,9 +148,14 @@ public partial class PromptImportDialog : Window
                 var item = await _importService.ImportAsync(
                     row.SourcePath,
                     _category,
-                    ForceMergeCheckBox.IsChecked == true);
+                    conflictMode);
                 _importedItems.Add(item);
-                row.Status = "완료";
+                row.Status = string.Equals(
+                    item.Title,
+                    row.Title,
+                    StringComparison.Ordinal)
+                    ? "완료"
+                    : $"완료 - {item.Title}";
                 successCount++;
             }
             catch (Exception ex)
@@ -170,7 +176,7 @@ public partial class PromptImportDialog : Window
     {
         ChooseFolderButton.IsEnabled = enabled;
         ChooseFilesButton.IsEnabled = enabled;
-        ForceMergeCheckBox.IsEnabled = enabled;
+        ConflictModePanel.IsEnabled = enabled;
     }
 
     private void Close_Click(object sender, RoutedEventArgs e)
@@ -179,6 +185,21 @@ public partial class PromptImportDialog : Window
         {
             Close();
         }
+    }
+
+    private PromptImportConflictMode GetConflictMode()
+    {
+        if (ForceMergeModeRadioButton.IsChecked == true)
+        {
+            return PromptImportConflictMode.Overwrite;
+        }
+
+        if (RenameModeRadioButton.IsChecked == true)
+        {
+            return PromptImportConflictMode.Rename;
+        }
+
+        return PromptImportConflictMode.Fail;
     }
 
     private static string GetCategoryName(PromptCategory category) => category switch

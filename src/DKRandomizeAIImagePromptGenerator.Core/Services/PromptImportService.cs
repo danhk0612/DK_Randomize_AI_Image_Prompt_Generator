@@ -4,6 +4,13 @@ using DKRandomizeAIImagePromptGenerator.Models;
 
 namespace DKRandomizeAIImagePromptGenerator.Services;
 
+public enum PromptImportConflictMode
+{
+    Fail,
+    Overwrite,
+    Rename
+}
+
 public sealed record PromptImportPreview(
     string SourcePath,
     string Title,
@@ -50,23 +57,68 @@ public sealed class PromptImportService
             FindMatchingImage(sourcePath));
     }
 
+    public Task<PromptItem> ImportAsync(
+        string sourcePath,
+        PromptCategory category,
+        CancellationToken cancellationToken = default) =>
+        ImportAsync(
+            sourcePath,
+            category,
+            PromptImportConflictMode.Fail,
+            cancellationToken);
+
+    public Task<PromptItem> ImportAsync(
+        string sourcePath,
+        PromptCategory category,
+        bool overwriteExisting,
+        CancellationToken cancellationToken = default) =>
+        ImportAsync(
+            sourcePath,
+            category,
+            overwriteExisting
+                ? PromptImportConflictMode.Overwrite
+                : PromptImportConflictMode.Fail,
+            cancellationToken);
+
     public async Task<PromptItem> ImportAsync(
         string sourcePath,
         PromptCategory category,
-        bool overwriteExisting = false,
+        PromptImportConflictMode conflictMode,
         CancellationToken cancellationToken = default)
     {
         var preview = Inspect(sourcePath);
         var parsed = await ParseAsync(sourcePath, cancellationToken);
+        var targetTitle = preview.Title;
         var existing = await _prompts.GetByTitleAsync(
             category,
-            preview.Title,
+            targetTitle,
             cancellationToken);
 
-        if (existing is not null && !overwriteExisting)
+        if (existing is not null)
         {
-            throw new InvalidOperationException(
-                "같은 분류에 동일한 제목의 프롬프트가 이미 존재합니다.");
+            switch (conflictMode)
+            {
+                case PromptImportConflictMode.Fail:
+                    throw new InvalidOperationException(
+                        "같은 분류에 동일한 제목의 프롬프트가 이미 존재합니다.");
+
+                case PromptImportConflictMode.Overwrite:
+                    break;
+
+                case PromptImportConflictMode.Rename:
+                    targetTitle = await FindAvailableTitleAsync(
+                        category,
+                        preview.Title,
+                        cancellationToken);
+                    existing = null;
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(
+                        nameof(conflictMode),
+                        conflictMode,
+                        "지원하지 않는 가져오기 충돌 처리 방식입니다.");
+            }
         }
 
         string? storedImagePath = null;
@@ -85,9 +137,9 @@ public sealed class PromptImportService
             item = existing ?? new PromptItem
             {
                 Category = category,
-                Title = preview.Title
+                Title = targetTitle
             };
-            item.Title = preview.Title;
+            item.Title = targetTitle;
             item.PositivePrompt = parsed.PositivePrompt;
             item.NegativePrompt = parsed.NegativePrompt;
             item.Memo = parsed.Memo;
@@ -143,6 +195,26 @@ public sealed class PromptImportService
         }
 
         return item;
+    }
+
+    private async Task<string> FindAvailableTitleAsync(
+        PromptCategory category,
+        string baseTitle,
+        CancellationToken cancellationToken)
+    {
+        for (var suffix = 2; ; suffix++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var candidate = $"{baseTitle} ({suffix})";
+
+            if (!await _prompts.ExistsByTitleAsync(
+                    category,
+                    candidate,
+                    cancellationToken))
+            {
+                return candidate;
+            }
+        }
     }
 
     private static async Task<ParsedPromptFile> ParseAsync(
