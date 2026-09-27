@@ -227,6 +227,30 @@ public partial class PromptLibraryView : UserControl
         _suppressSelection = false;
     }
 
+    private async void DuplicateCheck_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var dialog = new PromptDuplicateDialog(ViewModel.SelectedCategory)
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            dialog.ShowDialog();
+            await RefreshAsync();
+
+            if (dialog.DeletedCount > 0)
+            {
+                StatusText.Text =
+                    $"중복 검사에서 {dialog.DeletedCount}개의 프롬프트를 삭제했습니다.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowError("중복 검사 실패", ex);
+        }
+    }
+
     private async void ImportPrompts_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -360,6 +384,37 @@ public partial class PromptLibraryView : UserControl
         try
         {
             var app = (App)Application.Current;
+
+            if (_editingItem is null)
+            {
+                var existingItems = await app.Prompts.SearchAsync(
+                    ViewModel.SelectedCategory);
+                var duplicateMatch = app.PromptDuplicates.FindBestMatch(
+                    PositiveBox.Text,
+                    NegativeBox.Text,
+                    existingItems);
+
+                if (duplicateMatch is { IsExact: true })
+                {
+                    MessageBox.Show(
+                        $"같은 내용의 프롬프트가 이미 있습니다.\n\n기존 프롬프트: {duplicateMatch.Item.Title}",
+                        "완전 중복 프롬프트",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                    return;
+                }
+
+                if (duplicateMatch is not null &&
+                    MessageBox.Show(
+                        $"'{duplicateMatch.Item.Title}' 프롬프트와 {duplicateMatch.Similarity:P0} 유사합니다.\n그래도 저장하시겠습니까?",
+                        "유사 프롬프트 확인",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                {
+                    return;
+                }
+            }
+
             var previousImagePath = _editingItem?.ImagePath;
             var imagePath = previousImagePath;
 
