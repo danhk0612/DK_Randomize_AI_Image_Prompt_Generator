@@ -67,7 +67,24 @@ Import rules:
 - Missing images are not errors.
 - A title already present in the same category is rejected without overwriting existing data.
 - Each source file is processed independently. One failure must not stop the remaining files.
-- The import UI reports waiting, processing, success, or a short failure reason per file and shows a final success/failure count.
+- Selected files are prechecked against existing prompts in the current category and against other files in the same selected batch.
+- Duplicate comparison ignores the title and compares Positive / Negative prompt content.
+- Exact prompt-content duplicates are excluded from the import batch by default.
+- Prompt-content similarity of 95% or higher is shown as a warning but remains importable.
+- The import UI reports waiting, processing, duplicate exclusion, similarity warning, success, or a short failure reason per file and shows a final summary.
+
+## 4.2 Duplicate and similarity management
+
+Prompt Library provides duplicate-content management for the currently selected category.
+
+- New prompt creation checks existing prompt content before saving.
+- An exact content duplicate is blocked and identifies the existing prompt title.
+- A 95% or higher similar prompt requires explicit confirmation before a new item is saved.
+- Empty Positive and Negative content is not considered duplicate content.
+- A manual duplicate scan lists exact and highly similar prompt pairs for the current category.
+- The scan displays both prompt titles, prompt previews, similarity, and match type.
+- Either item in a detected pair can be deleted with confirmation.
+- Duplicate/similarity comparison uses Positive and Negative prompt content only; title, tags, memo, image, and timestamps do not affect the result.
 
 ## 5. Mixer
 

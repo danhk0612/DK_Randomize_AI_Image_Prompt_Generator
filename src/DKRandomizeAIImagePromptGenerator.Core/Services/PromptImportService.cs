@@ -16,6 +16,13 @@ public sealed record PromptImportPreview(
     string Title,
     string? ImageSourcePath);
 
+public sealed record PromptImportContentPreview(
+    string SourcePath,
+    string Title,
+    string? ImageSourcePath,
+    string PositivePrompt,
+    string NegativePrompt);
+
 public sealed class PromptImportService
 {
     private static readonly string[] SupportedImageExtensions =
@@ -55,6 +62,21 @@ public sealed class PromptImportService
             sourcePath,
             title,
             FindMatchingImage(sourcePath));
+    }
+
+    public async Task<PromptImportContentPreview> InspectContentAsync(
+        string sourcePath,
+        CancellationToken cancellationToken = default)
+    {
+        var preview = Inspect(sourcePath);
+        var parsed = await ParseAsync(sourcePath, cancellationToken);
+
+        return new PromptImportContentPreview(
+            preview.SourcePath,
+            preview.Title,
+            preview.ImageSourcePath,
+            parsed.PositivePrompt,
+            parsed.NegativePrompt);
     }
 
     public Task<PromptItem> ImportAsync(

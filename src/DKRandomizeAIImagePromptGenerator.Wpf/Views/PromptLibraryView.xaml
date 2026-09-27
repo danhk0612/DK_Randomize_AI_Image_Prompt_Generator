@@ -111,7 +111,11 @@
             <StackPanel Grid.Column="1"
                         Orientation="Horizontal"
                         VerticalAlignment="Top">
+                <Button Content="중복 검사"
+                        Click="DuplicateCheck_Click"
+                        AutomationProperties.Name="현재 분류의 중복 및 유사 프롬프트 검사" />
                 <Button Content="가져오기"
+                        Margin="8,0,0,0"
                         Click="ImportPrompts_Click"
                         AutomationProperties.Name="텍스트 파일에서 프롬프트 가져오기" />
                 <Button Content="새 프롬프트"

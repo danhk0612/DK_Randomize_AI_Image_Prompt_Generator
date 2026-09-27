@@ -32,7 +32,7 @@ public partial class PromptImportDialog : Window
 
     public IReadOnlyList<PromptItem> ImportedItems => _importedItems;
 
-    private void ChooseFolder_Click(object sender, RoutedEventArgs e)
+    private async void ChooseFolder_Click(object sender, RoutedEventArgs e)
     {
         if (_running)
         {
@@ -59,10 +59,10 @@ public partial class PromptImportDialog : Window
             .OrderBy(path => Path.GetFileName(path), StringComparer.CurrentCultureIgnoreCase)
             .ToArray();
 
-        LoadFiles(files);
+        await LoadFilesAsync(files);
     }
 
-    private void ChooseFiles_Click(object sender, RoutedEventArgs e)
+    private async void ChooseFiles_Click(object sender, RoutedEventArgs e)
     {
         if (_running)
         {
@@ -81,46 +81,97 @@ public partial class PromptImportDialog : Window
             return;
         }
 
-        LoadFiles(dialog.FileNames);
+        await LoadFilesAsync(dialog.FileNames);
     }
 
-    private void LoadFiles(IEnumerable<string> files)
+    private async Task LoadFilesAsync(IEnumerable<string> files)
     {
+        _running = true;
+        SetSelectionButtonsEnabled(false);
+        StartImportButton.IsEnabled = false;
         Rows.Clear();
         _importedItems.Clear();
         ResultSummaryText.Text = string.Empty;
+        SelectionSummaryText.Text = "중복 / 유사 여부 검사 중...";
 
-        foreach (var path in files
-                     .Distinct(StringComparer.OrdinalIgnoreCase)
-                     .OrderBy(path => Path.GetFileName(path), StringComparer.CurrentCultureIgnoreCase))
+        try
         {
-            try
-            {
-                var preview = _importService.Inspect(path);
-                Rows.Add(new PromptImportRow(
-                    preview.SourcePath,
-                    preview.Title,
-                    Path.GetFileName(preview.SourcePath),
-                    preview.ImageSourcePath is null
-                        ? "없음"
-                        : Path.GetFileName(preview.ImageSourcePath)));
-            }
-            catch (Exception ex)
-            {
-                Rows.Add(new PromptImportRow(
-                    path,
-                    Path.GetFileNameWithoutExtension(path),
-                    Path.GetFileName(path),
-                    "없음")
-                {
-                    Status = $"실패 - {ToShortMessage(ex)}",
-                    CanImport = false
-                });
-            }
-        }
+            var app = (App)Application.Current;
+            var comparisonPool = (await app.Prompts.SearchAsync(_category)).ToList();
 
-        SelectionSummaryText.Text = $"선택된 파일 {Rows.Count}개";
-        StartImportButton.IsEnabled = Rows.Any(row => row.CanImport);
+            foreach (var path in files
+                         .Distinct(StringComparer.OrdinalIgnoreCase)
+                         .OrderBy(path => Path.GetFileName(path), StringComparer.CurrentCultureIgnoreCase))
+            {
+                try
+                {
+                    var preview = await _importService.InspectContentAsync(path);
+                    var candidate = new PromptItem
+                    {
+                        Category = _category,
+                        Title = preview.Title,
+                        PositivePrompt = preview.PositivePrompt,
+                        NegativePrompt = preview.NegativePrompt
+                    };
+
+                    var match = app.PromptDuplicates.FindBestMatch(
+                        candidate.PositivePrompt,
+                        candidate.NegativePrompt,
+                        comparisonPool);
+
+                    var row = new PromptImportRow(
+                        preview.SourcePath,
+                        preview.Title,
+                        Path.GetFileName(preview.SourcePath),
+                        preview.ImageSourcePath is null
+                            ? "없음"
+                            : Path.GetFileName(preview.ImageSourcePath));
+
+                    if (match is { IsExact: true })
+                    {
+                        row.Status = $"제외 - 완전 중복: {match.Item.Title}";
+                        row.CanImport = false;
+                        row.IsExactDuplicate = true;
+                    }
+                    else if (match is not null)
+                    {
+                        row.Status =
+                            $"주의 - {match.Similarity:P0} 유사: {match.Item.Title}";
+                        row.IsSimilarMatch = true;
+                    }
+
+                    Rows.Add(row);
+
+                    if (!row.IsExactDuplicate)
+                    {
+                        comparisonPool.Add(candidate);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Rows.Add(new PromptImportRow(
+                        path,
+                        Path.GetFileNameWithoutExtension(path),
+                        Path.GetFileName(path),
+                        "없음")
+                    {
+                        Status = $"실패 - {ToShortMessage(ex)}",
+                        CanImport = false
+                    });
+                }
+            }
+
+            var exactCount = Rows.Count(row => row.IsExactDuplicate);
+            var similarCount = Rows.Count(row => row.IsSimilarMatch);
+            SelectionSummaryText.Text =
+                $"선택된 파일 {Rows.Count}개 · 완전 중복 {exactCount}개 제외 · 매우 유사 {similarCount}개";
+            StartImportButton.IsEnabled = Rows.Any(row => row.CanImport);
+        }
+        finally
+        {
+            _running = false;
+            SetSelectionButtonsEnabled(true);
+        }
     }
 
     private async void StartImport_Click(object sender, RoutedEventArgs e)
@@ -136,7 +187,8 @@ public partial class PromptImportDialog : Window
         _importedItems.Clear();
 
         var successCount = 0;
-        var failureCount = Rows.Count(row => !row.CanImport);
+        var excludedCount = Rows.Count(row => row.IsExactDuplicate);
+        var failureCount = Rows.Count(row => !row.CanImport && !row.IsExactDuplicate);
         var conflictMode = GetConflictMode();
 
         foreach (var row in Rows.Where(row => row.CanImport))
@@ -166,7 +218,7 @@ public partial class PromptImportDialog : Window
         }
 
         ResultSummaryText.Text =
-            $"가져오기 완료 · 성공 {successCount}개 / 실패 {failureCount}개 / 전체 {Rows.Count}개";
+            $"가져오기 완료 · 성공 {successCount}개 / 중복 제외 {excludedCount}개 / 실패 {failureCount}개 / 전체 {Rows.Count}개";
 
         _running = false;
         SetSelectionButtonsEnabled(true);
@@ -246,6 +298,10 @@ public sealed class PromptImportRow : INotifyPropertyChanged
     public string ImageName { get; }
 
     public bool CanImport { get; set; } = true;
+
+    public bool IsExactDuplicate { get; set; }
+
+    public bool IsSimilarMatch { get; set; }
 
     public string Status
     {
