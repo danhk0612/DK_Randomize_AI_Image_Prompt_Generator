@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Prompt creation now prechecks Positive / Negative content for exact duplicates and 95%+ similar prompts.
+- Bulk import now prechecks selected files against existing prompts and the selected batch, excluding exact duplicates and warning on 95%+ similarity.
+- Prompt Library now includes a current-category duplicate / similarity scan with direct confirmed deletion of either detected item.
+
 ## v1.1.2 — 2026-09-26
 
 ### Fixed
