@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using DKRandomizeAIImagePromptGenerator.Models;
+using DKRandomizeAIImagePromptGenerator.Services;
 
 namespace DKRandomizeAIImagePromptGenerator.Wpf.Views;
 
@@ -127,7 +128,7 @@ public partial class PromptDuplicateDialog : Window
 public sealed class PromptDuplicatePairRow
 {
     public PromptDuplicatePairRow(
-        Services.PromptDuplicatePair pair)
+        PromptDuplicatePair pair)
     {
         First = pair.First;
         Second = pair.Second;
