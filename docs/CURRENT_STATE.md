@@ -1,6 +1,6 @@
 # Current State
 
-Updated: 2026-09-23
+Updated: 2026-09-27
 
 ## Repository
 
@@ -82,7 +82,13 @@ The current tree contains only the active WPF application, Core library, native 
 - same-basename representative image auto-import
 - per-file progress, failure reason, and final batch summary
 - same-category duplicate-title protection without overwrite
+- import selection prechecks Positive / Negative content against existing prompts and the selected batch
+- exact content duplicates are excluded; 95%+ similar prompts are warned before import
+- new prompt creation blocks exact content duplicates and confirms 95%+ similarity
+- current-category duplicate scan lists exact / highly similar pairs and supports confirmed deletion of either item
+- duplicate detection ignores title and metadata, using normalized Positive / Negative fragments with a 95% Dice-similarity threshold
 - bulk-import automated coverage for positive-only, negative-only, required prompt validation, duplicate rejection, cross-category titles, and image matching
+- duplicate comparison automated coverage for exact, highly similar, below-threshold, empty-content, and pair-scan behavior
 
 ### Mixer
 
