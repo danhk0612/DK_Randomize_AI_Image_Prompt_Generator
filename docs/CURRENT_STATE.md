@@ -135,7 +135,7 @@ The current WPF pipeline validates:
 
 1. Solution restore
 2. Release build
-3. 31 automated tests
+3. 36 automated tests
 4. framework-dependent single-file win-x64 WPF publish
 5. WPF routed mouse-wheel smoke
 6. native launcher/runtime detection and published-app startup smoke
