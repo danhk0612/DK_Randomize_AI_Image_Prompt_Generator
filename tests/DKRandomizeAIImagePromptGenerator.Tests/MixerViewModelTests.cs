@@ -263,7 +263,7 @@ public sealed class MixerViewModelTests
     }
 
     [Fact]
-    public async Task RestoreFromV2HistoryPreservesMultiSelectModesAndRandomCounts()
+    public async Task RestoreFromV3HistoryPreservesMultiSelectEnabledStateModesTagsAndCounts()
     {
         var root = Path.Combine(
             Path.GetTempPath(),
@@ -302,6 +302,8 @@ public sealed class MixerViewModelTests
                 Title = "Artist B",
                 PositivePrompt = "artist b"
             };
+            artistA.Tags.Add("SharedStyle");
+            artistB.Tags.Add("SharedStyle");
             var additional = new PromptItem
             {
                 Category = PromptCategory.Additional,
@@ -327,12 +329,13 @@ public sealed class MixerViewModelTests
             };
             history.Items.AddRange(
             [
-                new CombinationHistoryItem(PromptCategory.Character, characterB.Id, characterB.Title, 0),
-                new CombinationHistoryItem(PromptCategory.Character, characterA.Id, characterA.Title, 1),
+                new CombinationHistoryItem(PromptCategory.Character, characterB.Id, characterB.Title, 0, false),
+                new CombinationHistoryItem(PromptCategory.Character, characterA.Id, characterA.Title, 1, true),
                 new CombinationHistoryItem(PromptCategory.Artist, artistA.Id, artistA.Title, 0),
                 new CombinationHistoryItem(PromptCategory.Artist, artistB.Id, artistB.Title, 1),
                 new CombinationHistoryItem(PromptCategory.Additional, additional.Id, additional.Title, 0)
             ]);
+            history.SetRandomTags(PromptCategory.Artist, ["SharedStyle"]);
 
             await historyRepository.SaveAsync(history);
             var stored = await historyRepository.GetByIdAsync(history.Id);
@@ -353,6 +356,10 @@ public sealed class MixerViewModelTests
                 viewModel.SelectedArtists.Select(item => item.Id).ToArray());
             Assert.Equal(additional.Id, viewModel.SelectedAdditionals.Single().Id);
 
+            Assert.False(viewModel.SelectedCharacters[0].IsMixerEnabled);
+            Assert.True(viewModel.SelectedCharacters[1].IsMixerEnabled);
+            Assert.Equal(new[] { "SharedStyle" }, viewModel.GetRandomTags(PromptCategory.Artist));
+
             Assert.Equal(PromptSelectionMode.Fixed, viewModel.CharacterMode);
             Assert.Equal(PromptSelectionMode.Random, viewModel.ArtistMode);
             Assert.Equal(PromptSelectionMode.Fixed, viewModel.AdditionalMode);
@@ -367,6 +374,7 @@ public sealed class MixerViewModelTests
             Assert.Equal(
                 new[] { characterB.Id, characterA.Id },
                 viewModel.SelectedCharacters.Select(item => item.Id).ToArray());
+            Assert.False(viewModel.SelectedCharacters[0].IsMixerEnabled);
             Assert.Equal(additional.Id, viewModel.SelectedAdditionals.Single().Id);
         }
         finally
