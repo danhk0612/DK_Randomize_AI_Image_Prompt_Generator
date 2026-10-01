@@ -94,19 +94,22 @@ public sealed class HistoryRepository
                     Category,
                     PromptId,
                     SortOrder,
-                    TitleSnapshot)
+                    TitleSnapshot,
+                    IsEnabled)
                 VALUES (
                     @historyId,
                     @category,
                     @promptId,
                     @sortOrder,
-                    @title);
+                    @title,
+                    @isEnabled);
                 """;
             itemCommand.Parameters.AddWithValue("@historyId", history.Id.ToString("D"));
             itemCommand.Parameters.AddWithValue("@category", (int)item.Category);
             itemCommand.Parameters.AddWithValue("@promptId", DbGuid(item.PromptId));
             itemCommand.Parameters.AddWithValue("@sortOrder", item.SortOrder);
             itemCommand.Parameters.AddWithValue("@title", DbValue(item.TitleSnapshot));
+            itemCommand.Parameters.AddWithValue("@isEnabled", item.IsEnabled ? 1 : 0);
             await itemCommand.ExecuteNonQueryAsync(cancellationToken);
         }
 
