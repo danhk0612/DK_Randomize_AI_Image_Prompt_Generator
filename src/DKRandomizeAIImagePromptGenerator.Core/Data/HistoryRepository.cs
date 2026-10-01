@@ -307,7 +307,7 @@ public sealed class HistoryRepository
     {
         await using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT Category, PromptId, TitleSnapshot, SortOrder
+            SELECT Category, PromptId, TitleSnapshot, SortOrder, IsEnabled
             FROM CombinationHistoryItems
             WHERE HistoryId = @historyId
             ORDER BY Category ASC, SortOrder ASC;
@@ -322,7 +322,8 @@ public sealed class HistoryRepository
                 (PromptCategory)reader.GetInt32(0),
                 ReadNullableGuid(reader, 1),
                 reader.IsDBNull(2) ? null : reader.GetString(2),
-                reader.GetInt32(3)));
+                reader.GetInt32(3),
+                reader.GetInt32(4) != 0));
         }
 
         return items;
@@ -335,7 +336,7 @@ public sealed class HistoryRepository
     {
         await using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT Category, Mode, RandomCount
+            SELECT Category, Mode, RandomCount, RandomTagsJson
             FROM CombinationHistoryCategoryState
             WHERE HistoryId = @historyId;
             """;
@@ -347,6 +348,11 @@ public sealed class HistoryRepository
             var category = (PromptCategory)reader.GetInt32(0);
             var mode = (PromptSelectionMode)reader.GetInt32(1);
             var randomCount = Math.Max(1, reader.GetInt32(2));
+            history.SetRandomTags(
+                category,
+                reader.IsDBNull(3)
+                    ? Array.Empty<string>()
+                    : DeserializeTags(reader.GetString(3)));
 
             switch (category)
             {
