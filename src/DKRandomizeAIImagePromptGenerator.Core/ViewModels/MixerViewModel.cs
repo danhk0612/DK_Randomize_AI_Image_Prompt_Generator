@@ -562,6 +562,7 @@ public sealed class MixerViewModel
         target.Clear();
         foreach (var item in items)
         {
+            item.IsMixerEnabled = true;
             target.Add(item);
         }
     }
