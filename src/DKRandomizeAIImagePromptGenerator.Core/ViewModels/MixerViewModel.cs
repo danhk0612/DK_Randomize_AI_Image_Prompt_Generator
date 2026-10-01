@@ -301,6 +301,23 @@ public sealed class MixerViewModel
         return true;
     }
 
+    public bool SetSelectedItemEnabled(
+        PromptCategory category,
+        Guid promptId,
+        bool isEnabled)
+    {
+        var item = GetSelectedCollection(category)
+            .FirstOrDefault(candidate => candidate.Id == promptId);
+        if (item is null)
+        {
+            return false;
+        }
+
+        item.IsMixerEnabled = isEnabled;
+        RecomposeCurrent();
+        return true;
+    }
+
     public bool MoveSelectedItem(PromptCategory category, int fromIndex, int toIndex)
     {
         var selected = GetSelectedCollection(category);
@@ -375,6 +392,10 @@ public sealed class MixerViewModel
             NegativeText = negativeText
         };
 
+        record.SetRandomTags(PromptCategory.Character, GetRandomTags(PromptCategory.Character));
+        record.SetRandomTags(PromptCategory.Artist, GetRandomTags(PromptCategory.Artist));
+        record.SetRandomTags(PromptCategory.Additional, GetRandomTags(PromptCategory.Additional));
+
         AddHistoryItems(record, PromptCategory.Character, SelectedCharacters);
         AddHistoryItems(record, PromptCategory.Artist, SelectedArtists);
         AddHistoryItems(record, PromptCategory.Additional, SelectedAdditionals);
@@ -419,6 +440,7 @@ public sealed class MixerViewModel
                 var item = available.FirstOrDefault(candidate => candidate.Id == id);
                 if (item is not null)
                 {
+                    item.IsMixerEnabled = historyItem.IsEnabled;
                     selected.Add(item);
                 }
             }
@@ -454,7 +476,8 @@ public sealed class MixerViewModel
                 StableSelection(PromptCategory.Artist),
                 StableSelection(PromptCategory.Additional)));
 
-        Apply(result);
+        PositiveText = result.PositiveText;
+        NegativeText = result.NegativeText;
     }
 
     private IReadOnlyCollection<PromptItem> GetAllItems() =>
