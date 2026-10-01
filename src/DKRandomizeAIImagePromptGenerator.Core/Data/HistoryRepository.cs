@@ -122,17 +122,22 @@ public sealed class HistoryRepository
                     HistoryId,
                     Category,
                     Mode,
-                    RandomCount)
+                    RandomCount,
+                    RandomTagsJson)
                 VALUES (
                     @historyId,
                     @category,
                     @mode,
-                    @randomCount);
+                    @randomCount,
+                    @randomTagsJson);
                 """;
             stateCommand.Parameters.AddWithValue("@historyId", history.Id.ToString("D"));
             stateCommand.Parameters.AddWithValue("@category", (int)category);
             stateCommand.Parameters.AddWithValue("@mode", (int)history.GetMode(category));
             stateCommand.Parameters.AddWithValue("@randomCount", Math.Max(1, history.GetRandomCount(category)));
+            stateCommand.Parameters.AddWithValue(
+                "@randomTagsJson",
+                DbValue(SerializeTags(history.GetRandomTags(category))));
             await stateCommand.ExecuteNonQueryAsync(cancellationToken);
         }
 
