@@ -16,6 +16,7 @@ public partial class MixerView : UserControl
     private Point _dragStartPoint;
     private ListBox? _dragSourceList;
     private PromptItem? _draggedPrompt;
+    private readonly Dictionary<PromptCategory, string> _pickerSearchQueries = [];
 
     public MixerView()
     {
@@ -194,10 +195,81 @@ public partial class MixerView : UserControl
             return;
         }
 
+        _pickerSearchQueries.TryGetValue(category, out var previousQuery);
+
         var dialog = new PromptPickerDialog(
             category,
             ViewModel.GetAvailableItems(category),
-            ViewModel.GetSelectedItems(category))
+            ViewModel.GetSelectedItems(category),
+            previousQuery ?? string.Empty)
+        {
+            Owner = Window.GetWindow(this)
+        };
+
+        var accepted = dialog.ShowDialog() == true;
+        _pickerSearchQueries[category] = dialog.SearchQuery;
+
+        if (!accepted)
+        {
+            return;
+        }
+
+        ViewModel.SetSelectedItems(category, dialog.SelectedItems);
+        SyncControls();
+    }
+
+    private void SelectionEnabled_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not CheckBox checkBox ||
+            checkBox.DataContext is not PromptItem item)
+        {
+            return;
+        }
+
+        var list = FindVisualAncestor<ListBox>(checkBox);
+        if (list is null ||
+            !TryGetCategory(list, out var category) ||
+            ViewModel.GetMode(category) != PromptSelectionMode.Fixed)
+        {
+            return;
+        }
+
+        ViewModel.SetSelectedItemEnabled(
+            category,
+            item.Id,
+            checkBox.IsChecked == true);
+        SyncOutputs();
+    }
+
+    private void SelectedThumbnail_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is not Image image ||
+            image.DataContext is not PromptItem item ||
+            string.IsNullOrWhiteSpace(item.ImagePath))
+        {
+            return;
+        }
+
+        new ImagePreviewDialog(item)
+        {
+            Owner = Window.GetWindow(this)
+        }.ShowDialog();
+
+        e.Handled = true;
+    }
+
+    private void SelectRandomTags_Click(object sender, RoutedEventArgs e)
+    {
+        if (!TryGetCategory(sender, out var category) ||
+            ViewModel.GetMode(category) != PromptSelectionMode.Random)
+        {
+            return;
+        }
+
+        var dialog = new RandomTagPickerDialog(
+            category,
+            ViewModel.GetAvailableTags(category),
+            ViewModel.GetRandomTags(category))
         {
             Owner = Window.GetWindow(this)
         };
@@ -207,7 +279,7 @@ public partial class MixerView : UserControl
             return;
         }
 
-        ViewModel.SetSelectedItems(category, dialog.SelectedItems);
+        ViewModel.SetRandomTags(category, dialog.SelectedTags);
         SyncControls();
     }
 
@@ -289,9 +361,11 @@ public partial class MixerView : UserControl
         _dragSourceList = list;
 
         var origin = e.OriginalSource as DependencyObject;
-        _draggedPrompt = FindVisualAncestor<Button>(origin) is null
-            ? GetPromptFromElement(list, origin)
-            : null;
+        _draggedPrompt =
+            FindVisualAncestor<Button>(origin) is null &&
+            FindVisualAncestor<CheckBox>(origin) is null
+                ? GetPromptFromElement(list, origin)
+                : null;
     }
 
     private void SelectedList_PreviewMouseMove(object sender, MouseEventArgs e)
