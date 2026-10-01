@@ -132,6 +132,9 @@ public sealed class MixerViewModel
         CharacterRandomCount = Math.Max(1, history.CharacterRandomCount);
         ArtistRandomCount = Math.Max(1, history.ArtistRandomCount);
         AdditionalRandomCount = Math.Max(1, history.AdditionalRandomCount);
+        SetRandomTagsValue(PromptCategory.Character, history.GetRandomTags(PromptCategory.Character));
+        SetRandomTagsValue(PromptCategory.Artist, history.GetRandomTags(PromptCategory.Artist));
+        SetRandomTagsValue(PromptCategory.Additional, history.GetRandomTags(PromptCategory.Additional));
 
         PositiveText = history.PositiveText;
         NegativeText = history.NegativeText;
@@ -186,6 +189,7 @@ public sealed class MixerViewModel
         bool switchToDirectMode = true)
     {
         var selected = GetSelectedCollection(category);
+        var enabledById = selected.ToDictionary(item => item.Id, item => item.IsMixerEnabled);
         var normalized = items
             .Where(item => item.Category == category)
             .GroupBy(item => item.Id)
@@ -195,6 +199,9 @@ public sealed class MixerViewModel
         selected.Clear();
         foreach (var item in normalized)
         {
+            item.IsMixerEnabled = enabledById.TryGetValue(item.Id, out var enabled)
+                ? enabled
+                : true;
             selected.Add(item);
         }
 
@@ -224,6 +231,7 @@ public sealed class MixerViewModel
             return false;
         }
 
+        item.IsMixerEnabled = true;
         selected.Add(item);
 
         if (switchToDirectMode)
@@ -253,6 +261,7 @@ public sealed class MixerViewModel
         var selectedIndex = IndexOfPrompt(selected, item.Id);
         if (selectedIndex >= 0)
         {
+            item.IsMixerEnabled = selected[selectedIndex].IsMixerEnabled;
             selected[selectedIndex] = item;
         }
     }
