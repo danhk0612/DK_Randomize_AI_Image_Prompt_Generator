@@ -496,7 +496,8 @@ public partial class MixerView : UserControl
                 CharacterEmptySelectionText,
                 CharacterDirectControls,
                 CharacterRandomControls,
-                CharacterRandomCountCombo);
+                CharacterRandomCountCombo,
+                CharacterRandomTagsText);
 
             UpdateCategoryControls(
                 PromptCategory.Artist,
@@ -508,7 +509,8 @@ public partial class MixerView : UserControl
                 ArtistEmptySelectionText,
                 ArtistDirectControls,
                 ArtistRandomControls,
-                ArtistRandomCountCombo);
+                ArtistRandomCountCombo,
+                ArtistRandomTagsText);
 
             UpdateCategoryControls(
                 PromptCategory.Additional,
@@ -520,7 +522,8 @@ public partial class MixerView : UserControl
                 AdditionalEmptySelectionText,
                 AdditionalDirectControls,
                 AdditionalRandomControls,
-                AdditionalRandomCountCombo);
+                AdditionalRandomCountCombo,
+                AdditionalRandomTagsText);
 
             SyncOutputs();
         }
@@ -540,10 +543,20 @@ public partial class MixerView : UserControl
         TextBlock emptyText,
         Panel directControls,
         Panel randomControls,
-        ComboBox randomCountCombo)
+        ComboBox randomCountCombo,
+        TextBlock randomTagsText)
     {
         var mode = ViewModel.GetMode(category);
-        var selectedCount = ViewModel.GetSelectedItems(category).Count;
+        var selectedItems = ViewModel.GetSelectedItems(category);
+        var selectedCount = selectedItems.Count;
+        var enabledCount = selectedItems.Count(item => item.IsMixerEnabled);
+
+        foreach (var item in selectedItems)
+        {
+            item.IsMixerDirectControlEnabled = mode == PromptSelectionMode.Fixed;
+        }
+
+        selectedList.Items.Refresh();
 
         directRadio.IsChecked = mode == PromptSelectionMode.Fixed;
         randomRadio.IsChecked = mode == PromptSelectionMode.Random;
@@ -551,7 +564,7 @@ public partial class MixerView : UserControl
 
         summary.Text = mode switch
         {
-            PromptSelectionMode.Fixed => $"직접 선택 {selectedCount}개",
+            PromptSelectionMode.Fixed => $"직접 선택 {selectedCount}개 · 활성 {enabledCount}개",
             PromptSelectionMode.Random => $"랜덤 결과 {selectedCount}개",
             _ => "미사용"
         };
@@ -561,8 +574,8 @@ public partial class MixerView : UserControl
             : Visibility.Collapsed;
 
         selectedList.IsEnabled = true;
-        selectedList.IsHitTestVisible = mode == PromptSelectionMode.Fixed;
-        selectedList.Focusable = mode == PromptSelectionMode.Fixed;
+        selectedList.IsHitTestVisible = mode != PromptSelectionMode.Disabled;
+        selectedList.Focusable = mode != PromptSelectionMode.Disabled;
         selectedList.Opacity = mode switch
         {
             PromptSelectionMode.Fixed => 1.0,
@@ -579,10 +592,15 @@ public partial class MixerView : UserControl
         summary.Opacity = mode == PromptSelectionMode.Disabled ? 0.55 : 1.0;
         emptyText.Opacity = mode == PromptSelectionMode.Disabled ? 0.45 : 1.0;
 
+        var randomTags = ViewModel.GetRandomTags(category);
+        randomTagsText.Text = randomTags.Count == 0
+            ? "태그 조건: 전체"
+            : $"태그 AND: {string.Join(" + ", randomTags)}";
+
         var currentCount = ViewModel.GetRandomCount(category);
         var max = Math.Max(
             1,
-            Math.Max(ViewModel.GetAvailableItems(category).Count, currentCount));
+            Math.Max(ViewModel.GetRandomCandidateCount(category), currentCount));
 
         randomCountCombo.ItemsSource = Enumerable.Range(1, max).ToArray();
         randomCountCombo.SelectedItem = currentCount;
