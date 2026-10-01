@@ -441,6 +441,9 @@ public sealed class HistoryRepository
     private static string? SerializeTags(IReadOnlyList<string> tags) =>
         tags.Count == 0 ? null : JsonSerializer.Serialize(tags);
 
+    private static IReadOnlyList<string> DeserializeTags(string json) =>
+        JsonSerializer.Deserialize<string[]>(json) ?? Array.Empty<string>();
+
     private static object DbValue(string? value) =>
         value is null ? DBNull.Value : value;
 }
