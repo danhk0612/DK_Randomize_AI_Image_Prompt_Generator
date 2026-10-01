@@ -415,6 +415,7 @@ public sealed class MixerViewModel
         target.Clear();
         foreach (var item in items)
         {
+            item.IsMixerEnabled = true;
             target.Add(item);
         }
     }
@@ -501,13 +502,17 @@ public sealed class MixerViewModel
                 category,
                 PromptSelectionMode.Random,
                 fixedPromptId: null,
-                randomCount: GetRandomCount(category));
+                randomCount: GetRandomCount(category),
+                requiredTags: GetRandomTags(category));
         }
 
         return new PromptSelection(
             category,
             PromptSelectionMode.Fixed,
-            selected.Select(item => item.Id).ToArray());
+            selected
+                .Where(item => item.IsMixerEnabled)
+                .Select(item => item.Id)
+                .ToArray());
     }
 
     private PromptSelection StableSelection(PromptCategory category)
@@ -517,17 +522,35 @@ public sealed class MixerViewModel
             return new PromptSelection(category, PromptSelectionMode.Disabled);
         }
 
+        var selected = GetSelectedCollection(category);
         return new PromptSelection(
             category,
             PromptSelectionMode.Fixed,
-            GetSelectedCollection(category).Select(item => item.Id).ToArray());
+            selected
+                .Where(item =>
+                    GetMode(category) != PromptSelectionMode.Fixed ||
+                    item.IsMixerEnabled)
+                .Select(item => item.Id)
+                .ToArray());
     }
 
     private void Apply(PromptCombination combination)
     {
-        ReplaceSelected(SelectedCharacters, combination.CharacterItems);
-        ReplaceSelected(SelectedArtists, combination.ArtistItems);
-        ReplaceSelected(SelectedAdditionals, combination.AdditionalItems);
+        if (CharacterMode == PromptSelectionMode.Random)
+        {
+            ReplaceSelected(SelectedCharacters, combination.CharacterItems);
+        }
+
+        if (ArtistMode == PromptSelectionMode.Random)
+        {
+            ReplaceSelected(SelectedArtists, combination.ArtistItems);
+        }
+
+        if (AdditionalMode == PromptSelectionMode.Random)
+        {
+            ReplaceSelected(SelectedAdditionals, combination.AdditionalItems);
+        }
+
         PositiveText = combination.PositiveText;
         NegativeText = combination.NegativeText;
     }
@@ -554,7 +577,8 @@ public sealed class MixerViewModel
                     category,
                     item.Id,
                     item.Title,
-                    index)));
+                    index,
+                    item.IsMixerEnabled)));
     }
 
     private ObservableCollection<PromptItem> GetAvailableCollection(
@@ -574,6 +598,26 @@ public sealed class MixerViewModel
         PromptCategory.Additional => SelectedAdditionals,
         _ => throw new ArgumentOutOfRangeException(nameof(category))
     };
+
+    private List<string> GetRandomTagList(PromptCategory category) => category switch
+    {
+        PromptCategory.Character => _characterRandomTags,
+        PromptCategory.Artist => _artistRandomTags,
+        PromptCategory.Additional => _additionalRandomTags,
+        _ => throw new ArgumentOutOfRangeException(nameof(category))
+    };
+
+    private void SetRandomTagsValue(
+        PromptCategory category,
+        IEnumerable<string> tags)
+    {
+        var target = GetRandomTagList(category);
+        target.Clear();
+        target.AddRange(
+            tags.Where(tag => !string.IsNullOrWhiteSpace(tag))
+                .Select(tag => tag.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase));
+    }
 
     private static int IndexOfPrompt(
         ObservableCollection<PromptItem> items,
