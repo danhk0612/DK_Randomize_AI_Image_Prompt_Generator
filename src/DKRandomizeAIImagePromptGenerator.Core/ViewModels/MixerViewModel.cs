@@ -10,6 +10,9 @@ public sealed class MixerViewModel
     private readonly PromptRepository _prompts;
     private readonly HistoryRepository _history;
     private readonly CombinationService _combinationService;
+    private readonly List<string> _characterRandomTags = [];
+    private readonly List<string> _artistRandomTags = [];
+    private readonly List<string> _additionalRandomTags = [];
 
     public MixerViewModel(
         PromptRepository prompts,
@@ -85,6 +88,37 @@ public sealed class MixerViewModel
         PromptCategory.Additional => AdditionalRandomCount,
         _ => 1
     };
+
+    public IReadOnlyList<string> GetRandomTags(PromptCategory category) =>
+        GetRandomTagList(category).ToArray();
+
+    public IReadOnlyList<string> GetAvailableTags(PromptCategory category) =>
+        GetAvailableCollection(category)
+            .SelectMany(item => item.Tags)
+            .Where(tag => !string.IsNullOrWhiteSpace(tag))
+            .Select(tag => tag.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(tag => tag, StringComparer.CurrentCultureIgnoreCase)
+            .ToArray();
+
+    public int GetRandomCandidateCount(PromptCategory category)
+    {
+        var requiredTags = GetRandomTagList(category);
+        return GetAvailableCollection(category)
+            .Count(item => requiredTags.Count == 0 || requiredTags.All(requiredTag =>
+                item.Tags.Any(tag =>
+                    string.Equals(tag, requiredTag, StringComparison.OrdinalIgnoreCase))));
+    }
+
+    public void SetRandomTags(PromptCategory category, IEnumerable<string> tags)
+    {
+        SetRandomTagsValue(category, tags);
+
+        if (GetMode(category) == PromptSelectionMode.Random)
+        {
+            RandomizeCategory(category);
+        }
+    }
 
     public void RestoreFromHistory(CombinationHistory history)
     {
