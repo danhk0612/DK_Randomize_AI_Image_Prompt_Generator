@@ -247,7 +247,7 @@ public sealed class PersistenceTests
     }
 
     [Fact]
-    public async Task HistoryRepositoryPreservesMultipleItemsOrderModesAndRandomCounts()
+    public async Task HistoryRepositoryPreservesMultipleItemsModesEnabledStateAndRandomTags()
     {
         var (root, database) = await CreateDatabaseAsync();
 
@@ -301,12 +301,13 @@ public sealed class PersistenceTests
 
             history.Items.AddRange(
             [
-                new CombinationHistoryItem(PromptCategory.Character, characterB.Id, characterB.Title, 0),
-                new CombinationHistoryItem(PromptCategory.Character, characterA.Id, characterA.Title, 1),
+                new CombinationHistoryItem(PromptCategory.Character, characterB.Id, characterB.Title, 0, false),
+                new CombinationHistoryItem(PromptCategory.Character, characterA.Id, characterA.Title, 1, true),
                 new CombinationHistoryItem(PromptCategory.Artist, artist.Id, artist.Title, 0),
                 new CombinationHistoryItem(PromptCategory.Additional, additionalB.Id, additionalB.Title, 0),
                 new CombinationHistoryItem(PromptCategory.Additional, additionalA.Id, additionalA.Title, 1)
             ]);
+            history.SetRandomTags(PromptCategory.Artist, ["Anime", "Soft"]);
 
             await historyRepository.SaveAsync(history);
 
@@ -319,6 +320,11 @@ public sealed class PersistenceTests
             Assert.Equal(
                 new Guid?[] { additionalB.Id, additionalA.Id },
                 loaded.GetItems(PromptCategory.Additional).Select(item => item.PromptId).ToArray());
+            Assert.False(loaded.GetItems(PromptCategory.Character)[0].IsEnabled);
+            Assert.True(loaded.GetItems(PromptCategory.Character)[1].IsEnabled);
+            Assert.Equal(
+                new[] { "Anime", "Soft" },
+                loaded.GetRandomTags(PromptCategory.Artist));
 
             Assert.Equal(PromptSelectionMode.Fixed, loaded.CharacterMode);
             Assert.Equal(PromptSelectionMode.Random, loaded.ArtistMode);
@@ -341,7 +347,7 @@ public sealed class PersistenceTests
     }
 
     [Fact]
-    public async Task Version1HistoryMigratesToVersion2WithoutLosingSelections()
+    public async Task Version1HistoryMigratesToVersion3WithoutLosingSelections()
     {
         var root = Path.Combine(
             Path.GetTempPath(),
@@ -445,7 +451,7 @@ public sealed class PersistenceTests
             {
                 await using var versionCommand = connection.CreateCommand();
                 versionCommand.CommandText = "PRAGMA user_version;";
-                Assert.Equal(2L, (long)(await versionCommand.ExecuteScalarAsync() ?? 0L));
+                Assert.Equal(3L, (long)(await versionCommand.ExecuteScalarAsync() ?? 0L));
             }
 
             var historyRepository = new HistoryRepository(database);
@@ -461,6 +467,10 @@ public sealed class PersistenceTests
             Assert.Equal(1, loaded.CharacterRandomCount);
             Assert.Equal(1, loaded.ArtistRandomCount);
             Assert.Equal(1, loaded.AdditionalRandomCount);
+            Assert.All(loaded.Items, item => Assert.True(item.IsEnabled));
+            Assert.Empty(loaded.GetRandomTags(PromptCategory.Character));
+            Assert.Empty(loaded.GetRandomTags(PromptCategory.Artist));
+            Assert.Empty(loaded.GetRandomTags(PromptCategory.Additional));
             Assert.Equal("legacy positive", loaded.PositiveText);
             Assert.Equal("legacy negative", loaded.NegativeText);
         }
