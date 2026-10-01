@@ -438,6 +438,9 @@ public sealed class HistoryRepository
     private static object DbGuid(Guid? value) =>
         value is null ? DBNull.Value : value.Value.ToString("D");
 
+    private static string? SerializeTags(IReadOnlyList<string> tags) =>
+        tags.Count == 0 ? null : JsonSerializer.Serialize(tags);
+
     private static object DbValue(string? value) =>
         value is null ? DBNull.Value : value;
 }
