@@ -76,6 +76,78 @@ public sealed class MixerViewModelTests
     }
 
     [Fact]
+    public async Task DirectDisabledItemStaysRegisteredButIsExcludedFromOutput()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "DKRandomizeAIImagePromptGenerator.Tests",
+            Guid.NewGuid().ToString("N"));
+
+        var database = new DatabaseService(AppDataPaths.Create(root));
+        await database.InitializeAsync();
+
+        try
+        {
+            var prompts = new PromptRepository(database);
+            var historyRepository = new HistoryRepository(database);
+
+            var first = new PromptItem
+            {
+                Category = PromptCategory.Character,
+                Title = "First",
+                PositivePrompt = "first"
+            };
+            var second = new PromptItem
+            {
+                Category = PromptCategory.Character,
+                Title = "Second",
+                PositivePrompt = "second"
+            };
+
+            await prompts.CreateAsync(first);
+            await prompts.CreateAsync(second);
+
+            var viewModel = new MixerViewModel(
+                prompts,
+                historyRepository,
+                new CombinationService());
+            await viewModel.LoadAsync();
+
+            viewModel.SetSelectedItems(
+                PromptCategory.Character,
+                new[] { first, second });
+            viewModel.SetMode(PromptCategory.Artist, PromptSelectionMode.Disabled);
+            viewModel.SetMode(PromptCategory.Additional, PromptSelectionMode.Disabled);
+
+            Assert.True(viewModel.SetSelectedItemEnabled(
+                PromptCategory.Character,
+                second.Id,
+                false));
+
+            Assert.Equal(2, viewModel.SelectedCharacters.Count);
+            Assert.False(
+                viewModel.SelectedCharacters.Single(item => item.Id == second.Id)
+                    .IsMixerEnabled);
+            Assert.Equal("first", viewModel.PositiveText);
+
+            viewModel.RandomizeCategory(PromptCategory.Artist);
+
+            Assert.Equal(2, viewModel.SelectedCharacters.Count);
+            Assert.False(
+                viewModel.SelectedCharacters.Single(item => item.Id == second.Id)
+                    .IsMixerEnabled);
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task RandomCountSelectsMultipleUniquePrompts()
     {
         var root = Path.Combine(
