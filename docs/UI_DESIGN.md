@@ -43,13 +43,15 @@ Every card uses one radio mode:
 - Random
 - Disabled
 
-The card contains an ordered multi-selection list. Each selected/result row shows representative image, title, memo, and tags.
+The card contains an ordered multi-selection list. Each selected/result row shows representative image, title, memo, and tags. Clicking a representative-image thumbnail opens a larger image preview.
 
 In Direct mode:
 
 - **Search to select** opens a category-scoped picker.
 - The picker searches title, tags, memo, Positive, and Negative together.
+- Each category remembers its last picker search query during the current application session, so closing and reopening the picker restores the same filtered result set.
 - Multiple prompts can be added before Apply.
+- Each registered prompt has an active/inactive toggle; inactive prompts stay registered but do not contribute Positive/Negative text.
 - Selected prompts can be removed and moved up/down.
 - Adding an existing Prompt Library item to Mixer also switches that category to Direct mode.
 - Duplicate add requests are ignored.
@@ -57,7 +59,10 @@ In Direct mode:
 In Random mode:
 
 - manual selection controls are disabled
-- Random count can be chosen from 1 up to the available item count
+- Random count can be chosen from 1 up to the available eligible count
+- zero or more tag filters can be selected
+- multiple selected tags use AND semantics: every tag must exist on a prompt for it to be eligible
+- no selected tags means the full category is eligible
 - reroll chooses unique prompts
 - the current random result remains visible in the ordered list
 
@@ -167,7 +172,7 @@ Selecting a record opens the detail area below. Detail shows:
 - Restore to Mixer
 - Delete
 
-Restore reproduces selection order, category modes, random counts, and exact final edited text. Deleted source prompts keep title snapshots and final output even when their current thumbnail is no longer available.
+Restore reproduces selection order, Direct item enabled state, category modes, random counts, random tag filters, and exact final edited text. Deleted source prompts keep title snapshots and final output even when their current thumbnail is no longer available.
 
 ## 7. Settings
 
