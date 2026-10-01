@@ -18,7 +18,8 @@ public partial class PromptPickerDialog : Window
     public PromptPickerDialog(
         PromptCategory category,
         IReadOnlyList<PromptItem> availableItems,
-        IReadOnlyList<PromptItem> selectedItems)
+        IReadOnlyList<PromptItem> selectedItems,
+        string initialSearchQuery = "")
     {
         _category = category;
         _allItems = availableItems
@@ -30,6 +31,7 @@ public partial class PromptPickerDialog : Window
         HeadingText.Text = $"{CategoryLabel(category)} 프롬프트 선택";
         SearchResultsList.ItemsSource = _filteredItems;
         SelectedList.ItemsSource = _selectedItems;
+        SearchBox.Text = initialSearchQuery;
 
         foreach (var item in selectedItems.Where(item => item.Category == category))
         {
@@ -46,6 +48,9 @@ public partial class PromptPickerDialog : Window
 
     public IReadOnlyList<PromptItem> SelectedItems =>
         _selectedItems.ToArray();
+
+    public string SearchQuery =>
+        SearchBox.Text?.Trim() ?? string.Empty;
 
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e) =>
         RefreshSearchResults();
