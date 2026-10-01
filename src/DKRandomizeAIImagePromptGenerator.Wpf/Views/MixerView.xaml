@@ -14,14 +14,30 @@
         <DataTemplate x:Key="SelectedPromptTemplate">
             <Grid Margin="2" MinHeight="62">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="30" />
                     <ColumnDefinition Width="56" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="34" />
                 </Grid.ColumnDefinitions>
-                <Border Width="52" Height="52" CornerRadius="6" Background="{DynamicResource SurfaceSecondaryBrush}">
-                    <Image Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}}" Stretch="Uniform" />
+                <CheckBox Grid.Column="0"
+                          VerticalAlignment="Center"
+                          HorizontalAlignment="Center"
+                          IsChecked="{Binding IsMixerEnabled, Mode=OneWay}"
+                          IsEnabled="{Binding IsMixerDirectControlEnabled}"
+                          Click="SelectionEnabled_Click"
+                          ToolTip="이 프롬프트를 현재 직접 조합에 포함/제외"
+                          AutomationProperties.Name="직접 선택 활성 상태" />
+                <Border Grid.Column="1"
+                        Width="52" Height="52"
+                        CornerRadius="6"
+                        Background="{DynamicResource SurfaceSecondaryBrush}"
+                        ToolTip="클릭해서 이미지 크게 보기">
+                    <Image Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}}"
+                           Stretch="Uniform"
+                           Cursor="Hand"
+                           MouseLeftButtonUp="SelectedThumbnail_MouseLeftButtonUp" />
                 </Border>
-                <StackPanel Grid.Column="1" Margin="9,0,6,0" VerticalAlignment="Center">
+                <StackPanel Grid.Column="2" Margin="9,0,6,0" VerticalAlignment="Center">
                     <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                     <TextBlock Text="{Binding Memo}" FontSize="11"
                                Foreground="{DynamicResource TextSecondaryBrush}"
@@ -40,8 +56,9 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </StackPanel>
-                <Button Grid.Column="2"
+                <Button Grid.Column="3"
                         Content="✕"
+                        IsEnabled="{Binding IsMixerDirectControlEnabled}"
                         Style="{StaticResource DangerIconButtonStyle}"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
