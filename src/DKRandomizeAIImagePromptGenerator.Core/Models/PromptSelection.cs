@@ -6,12 +6,14 @@ public sealed record PromptSelection
         PromptCategory category,
         PromptSelectionMode mode,
         Guid? fixedPromptId = null,
-        int randomCount = 1)
+        int randomCount = 1,
+        IReadOnlyList<string>? requiredTags = null)
         : this(
             category,
             mode,
             fixedPromptId is Guid id ? new[] { id } : Array.Empty<Guid>(),
-            randomCount)
+            randomCount,
+            requiredTags)
     {
     }
 
@@ -19,7 +21,8 @@ public sealed record PromptSelection
         PromptCategory category,
         PromptSelectionMode mode,
         IReadOnlyList<Guid> fixedPromptIds,
-        int randomCount = 1)
+        int randomCount = 1,
+        IReadOnlyList<string>? requiredTags = null)
     {
         Category = category;
         Mode = mode;
@@ -27,6 +30,11 @@ public sealed record PromptSelection
             .Distinct()
             .ToArray();
         RandomCount = Math.Max(1, randomCount);
+        RequiredTags = (requiredTags ?? Array.Empty<string>())
+            .Where(tag => !string.IsNullOrWhiteSpace(tag))
+            .Select(tag => tag.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     public PromptCategory Category { get; }
@@ -39,4 +47,6 @@ public sealed record PromptSelection
         FixedPromptIds.Count == 0 ? null : FixedPromptIds[0];
 
     public int RandomCount { get; }
+
+    public IReadOnlyList<string> RequiredTags { get; }
 }

@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Mixer Direct selections can stay registered while individual items are activated or deactivated.
+- Random mode can be restricted by multiple tags using AND semantics.
+- Mixer selected/result thumbnails can open a larger representative-image preview.
+
+### Changed
+
+- Each Mixer category remembers its Direct-picker search query while the application is running.
+- History schema v3 preserves Direct item enabled state and Random tag filters for exact restore.
+
 ## v1.2.0 — 2026-09-27
 
 ### Added

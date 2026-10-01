@@ -65,6 +65,18 @@ public sealed class CombinationService
             return selected;
         }
 
+        if (selection.RequiredTags.Count > 0)
+        {
+            candidates = candidates
+                .Where(item => selection.RequiredTags.All(requiredTag =>
+                    item.Tags.Any(tag =>
+                        string.Equals(
+                            tag,
+                            requiredTag,
+                            StringComparison.OrdinalIgnoreCase))))
+                .ToArray();
+        }
+
         if (candidates.Length == 0)
         {
             return Array.Empty<PromptItem>();

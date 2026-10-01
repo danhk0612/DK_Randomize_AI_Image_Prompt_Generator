@@ -16,6 +16,7 @@ public partial class MixerView : UserControl
     private Point _dragStartPoint;
     private ListBox? _dragSourceList;
     private PromptItem? _draggedPrompt;
+    private readonly Dictionary<PromptCategory, string> _pickerSearchQueries = [];
 
     public MixerView()
     {
@@ -194,10 +195,81 @@ public partial class MixerView : UserControl
             return;
         }
 
+        _pickerSearchQueries.TryGetValue(category, out var previousQuery);
+
         var dialog = new PromptPickerDialog(
             category,
             ViewModel.GetAvailableItems(category),
-            ViewModel.GetSelectedItems(category))
+            ViewModel.GetSelectedItems(category),
+            previousQuery ?? string.Empty)
+        {
+            Owner = Window.GetWindow(this)
+        };
+
+        var accepted = dialog.ShowDialog() == true;
+        _pickerSearchQueries[category] = dialog.SearchQuery;
+
+        if (!accepted)
+        {
+            return;
+        }
+
+        ViewModel.SetSelectedItems(category, dialog.SelectedItems);
+        SyncControls();
+    }
+
+    private void SelectionEnabled_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not CheckBox checkBox ||
+            checkBox.DataContext is not PromptItem item)
+        {
+            return;
+        }
+
+        var list = FindVisualAncestor<ListBox>(checkBox);
+        if (list is null ||
+            !TryGetCategory(list, out var category) ||
+            ViewModel.GetMode(category) != PromptSelectionMode.Fixed)
+        {
+            return;
+        }
+
+        ViewModel.SetSelectedItemEnabled(
+            category,
+            item.Id,
+            checkBox.IsChecked == true);
+        SyncOutputs();
+    }
+
+    private void SelectedThumbnail_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is not Image image ||
+            image.DataContext is not PromptItem item ||
+            string.IsNullOrWhiteSpace(item.ImagePath))
+        {
+            return;
+        }
+
+        new ImagePreviewDialog(item)
+        {
+            Owner = Window.GetWindow(this)
+        }.ShowDialog();
+
+        e.Handled = true;
+    }
+
+    private void SelectRandomTags_Click(object sender, RoutedEventArgs e)
+    {
+        if (!TryGetCategory(sender, out var category) ||
+            ViewModel.GetMode(category) != PromptSelectionMode.Random)
+        {
+            return;
+        }
+
+        var dialog = new RandomTagPickerDialog(
+            category,
+            ViewModel.GetAvailableTags(category),
+            ViewModel.GetRandomTags(category))
         {
             Owner = Window.GetWindow(this)
         };
@@ -207,7 +279,7 @@ public partial class MixerView : UserControl
             return;
         }
 
-        ViewModel.SetSelectedItems(category, dialog.SelectedItems);
+        ViewModel.SetRandomTags(category, dialog.SelectedTags);
         SyncControls();
     }
 
@@ -289,9 +361,11 @@ public partial class MixerView : UserControl
         _dragSourceList = list;
 
         var origin = e.OriginalSource as DependencyObject;
-        _draggedPrompt = FindVisualAncestor<Button>(origin) is null
-            ? GetPromptFromElement(list, origin)
-            : null;
+        _draggedPrompt =
+            FindVisualAncestor<Button>(origin) is null &&
+            FindVisualAncestor<CheckBox>(origin) is null
+                ? GetPromptFromElement(list, origin)
+                : null;
     }
 
     private void SelectedList_PreviewMouseMove(object sender, MouseEventArgs e)
@@ -422,7 +496,8 @@ public partial class MixerView : UserControl
                 CharacterEmptySelectionText,
                 CharacterDirectControls,
                 CharacterRandomControls,
-                CharacterRandomCountCombo);
+                CharacterRandomCountCombo,
+                CharacterRandomTagsText);
 
             UpdateCategoryControls(
                 PromptCategory.Artist,
@@ -434,7 +509,8 @@ public partial class MixerView : UserControl
                 ArtistEmptySelectionText,
                 ArtistDirectControls,
                 ArtistRandomControls,
-                ArtistRandomCountCombo);
+                ArtistRandomCountCombo,
+                ArtistRandomTagsText);
 
             UpdateCategoryControls(
                 PromptCategory.Additional,
@@ -446,7 +522,8 @@ public partial class MixerView : UserControl
                 AdditionalEmptySelectionText,
                 AdditionalDirectControls,
                 AdditionalRandomControls,
-                AdditionalRandomCountCombo);
+                AdditionalRandomCountCombo,
+                AdditionalRandomTagsText);
 
             SyncOutputs();
         }
@@ -466,10 +543,20 @@ public partial class MixerView : UserControl
         TextBlock emptyText,
         Panel directControls,
         Panel randomControls,
-        ComboBox randomCountCombo)
+        ComboBox randomCountCombo,
+        TextBlock randomTagsText)
     {
         var mode = ViewModel.GetMode(category);
-        var selectedCount = ViewModel.GetSelectedItems(category).Count;
+        var selectedItems = ViewModel.GetSelectedItems(category);
+        var selectedCount = selectedItems.Count;
+        var enabledCount = selectedItems.Count(item => item.IsMixerEnabled);
+
+        foreach (var item in selectedItems)
+        {
+            item.IsMixerDirectControlEnabled = mode == PromptSelectionMode.Fixed;
+        }
+
+        selectedList.Items.Refresh();
 
         directRadio.IsChecked = mode == PromptSelectionMode.Fixed;
         randomRadio.IsChecked = mode == PromptSelectionMode.Random;
@@ -477,7 +564,7 @@ public partial class MixerView : UserControl
 
         summary.Text = mode switch
         {
-            PromptSelectionMode.Fixed => $"직접 선택 {selectedCount}개",
+            PromptSelectionMode.Fixed => $"직접 선택 {selectedCount}개 · 활성 {enabledCount}개",
             PromptSelectionMode.Random => $"랜덤 결과 {selectedCount}개",
             _ => "미사용"
         };
@@ -487,8 +574,8 @@ public partial class MixerView : UserControl
             : Visibility.Collapsed;
 
         selectedList.IsEnabled = true;
-        selectedList.IsHitTestVisible = mode == PromptSelectionMode.Fixed;
-        selectedList.Focusable = mode == PromptSelectionMode.Fixed;
+        selectedList.IsHitTestVisible = mode != PromptSelectionMode.Disabled;
+        selectedList.Focusable = mode != PromptSelectionMode.Disabled;
         selectedList.Opacity = mode switch
         {
             PromptSelectionMode.Fixed => 1.0,
@@ -505,10 +592,15 @@ public partial class MixerView : UserControl
         summary.Opacity = mode == PromptSelectionMode.Disabled ? 0.55 : 1.0;
         emptyText.Opacity = mode == PromptSelectionMode.Disabled ? 0.45 : 1.0;
 
+        var randomTags = ViewModel.GetRandomTags(category);
+        randomTagsText.Text = randomTags.Count == 0
+            ? "태그 조건: 전체"
+            : $"태그 AND: {string.Join(" + ", randomTags)}";
+
         var currentCount = ViewModel.GetRandomCount(category);
         var max = Math.Max(
             1,
-            Math.Max(ViewModel.GetAvailableItems(category).Count, currentCount));
+            Math.Max(ViewModel.GetRandomCandidateCount(category), currentCount));
 
         randomCountCombo.ItemsSource = Enumerable.Range(1, max).ToArray();
         randomCountCombo.SelectedItem = currentCount;

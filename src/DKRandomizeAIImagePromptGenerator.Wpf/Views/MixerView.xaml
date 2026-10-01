@@ -14,14 +14,30 @@
         <DataTemplate x:Key="SelectedPromptTemplate">
             <Grid Margin="2" MinHeight="62">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="30" />
                     <ColumnDefinition Width="56" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="34" />
                 </Grid.ColumnDefinitions>
-                <Border Width="52" Height="52" CornerRadius="6" Background="{DynamicResource SurfaceSecondaryBrush}">
-                    <Image Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}}" Stretch="Uniform" />
+                <CheckBox Grid.Column="0"
+                          VerticalAlignment="Center"
+                          HorizontalAlignment="Center"
+                          IsChecked="{Binding IsMixerEnabled, Mode=OneWay}"
+                          IsEnabled="{Binding IsMixerDirectControlEnabled}"
+                          Click="SelectionEnabled_Click"
+                          ToolTip="이 프롬프트를 현재 직접 조합에 포함/제외"
+                          AutomationProperties.Name="직접 선택 활성 상태" />
+                <Border Grid.Column="1"
+                        Width="52" Height="52"
+                        CornerRadius="6"
+                        Background="{DynamicResource SurfaceSecondaryBrush}"
+                        ToolTip="클릭해서 이미지 크게 보기">
+                    <Image Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}}"
+                           Stretch="Uniform"
+                           Cursor="Hand"
+                           MouseLeftButtonUp="SelectedThumbnail_MouseLeftButtonUp" />
                 </Border>
-                <StackPanel Grid.Column="1" Margin="9,0,6,0" VerticalAlignment="Center">
+                <StackPanel Grid.Column="2" Margin="9,0,6,0" VerticalAlignment="Center">
                     <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                     <TextBlock Text="{Binding Memo}" FontSize="11"
                                Foreground="{DynamicResource TextSecondaryBrush}"
@@ -40,8 +56,9 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </StackPanel>
-                <Button Grid.Column="2"
+                <Button Grid.Column="3"
                         Content="✕"
+                        IsEnabled="{Binding IsMixerDirectControlEnabled}"
                         Style="{StaticResource DangerIconButtonStyle}"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
@@ -131,20 +148,30 @@
                             <Button Content="아래" Tag="Character" Margin="6,0,0,0" Click="MoveDown_Click" />
                         </WrapPanel>
 
-                        <WrapPanel x:Name="CharacterRandomControls" Margin="0,10,0,0">
-                            <TextBlock Text="랜덤 개수" VerticalAlignment="Center" />
-                            <ComboBox x:Name="CharacterRandomCountCombo"
-                                      Width="72"
-                                      Margin="8,0,0,0"
-                                      Tag="Character"
-                                      SelectionChanged="RandomCountCombo_SelectionChanged"
-                                      AutomationProperties.Name="캐릭터 랜덤 개수" />
-                            <Button Content="다시"
-                                    Tag="Character"
-                                    Margin="8,0,0,0"
-                                    Click="RandomizeCategory_Click"
-                                    AutomationProperties.Name="캐릭터 다시 랜덤 선택" />
-                        </WrapPanel>
+                        <StackPanel x:Name="CharacterRandomControls" Margin="0,10,0,0">
+                            <WrapPanel>
+                                <TextBlock Text="랜덤 개수" VerticalAlignment="Center" />
+                                <ComboBox x:Name="CharacterRandomCountCombo"
+                                          Width="72"
+                                          Margin="8,0,0,0"
+                                          Tag="Character"
+                                          SelectionChanged="RandomCountCombo_SelectionChanged"
+                                          AutomationProperties.Name="캐릭터 랜덤 개수" />
+                                <Button Content="태그 선택"
+                                        Tag="Character"
+                                        Margin="8,0,0,0"
+                                        Click="SelectRandomTags_Click" />
+                                <Button Content="다시"
+                                        Tag="Character"
+                                        Margin="8,0,0,0"
+                                        Click="RandomizeCategory_Click"
+                                        AutomationProperties.Name="캐릭터 다시 랜덤 선택" />
+                            </WrapPanel>
+                            <TextBlock x:Name="CharacterRandomTagsText"
+                                       Margin="0,6,0,0"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 
@@ -202,20 +229,30 @@
                             <Button Content="아래" Tag="Artist" Margin="6,0,0,0" Click="MoveDown_Click" />
                         </WrapPanel>
 
-                        <WrapPanel x:Name="ArtistRandomControls" Margin="0,10,0,0">
-                            <TextBlock Text="랜덤 개수" VerticalAlignment="Center" />
-                            <ComboBox x:Name="ArtistRandomCountCombo"
-                                      Width="72"
-                                      Margin="8,0,0,0"
-                                      Tag="Artist"
-                                      SelectionChanged="RandomCountCombo_SelectionChanged"
-                                      AutomationProperties.Name="작가 스타일 랜덤 개수" />
-                            <Button Content="다시"
-                                    Tag="Artist"
-                                    Margin="8,0,0,0"
-                                    Click="RandomizeCategory_Click"
-                                    AutomationProperties.Name="작가 스타일 다시 랜덤 선택" />
-                        </WrapPanel>
+                        <StackPanel x:Name="ArtistRandomControls" Margin="0,10,0,0">
+                            <WrapPanel>
+                                <TextBlock Text="랜덤 개수" VerticalAlignment="Center" />
+                                <ComboBox x:Name="ArtistRandomCountCombo"
+                                          Width="72"
+                                          Margin="8,0,0,0"
+                                          Tag="Artist"
+                                          SelectionChanged="RandomCountCombo_SelectionChanged"
+                                          AutomationProperties.Name="작가 스타일 랜덤 개수" />
+                                <Button Content="태그 선택"
+                                        Tag="Artist"
+                                        Margin="8,0,0,0"
+                                        Click="SelectRandomTags_Click" />
+                                <Button Content="다시"
+                                        Tag="Artist"
+                                        Margin="8,0,0,0"
+                                        Click="RandomizeCategory_Click"
+                                        AutomationProperties.Name="작가 스타일 다시 랜덤 선택" />
+                            </WrapPanel>
+                            <TextBlock x:Name="ArtistRandomTagsText"
+                                       Margin="0,6,0,0"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 
@@ -273,20 +310,30 @@
                             <Button Content="아래" Tag="Additional" Margin="6,0,0,0" Click="MoveDown_Click" />
                         </WrapPanel>
 
-                        <WrapPanel x:Name="AdditionalRandomControls" Margin="0,10,0,0">
-                            <TextBlock Text="랜덤 개수" VerticalAlignment="Center" />
-                            <ComboBox x:Name="AdditionalRandomCountCombo"
-                                      Width="72"
-                                      Margin="8,0,0,0"
-                                      Tag="Additional"
-                                      SelectionChanged="RandomCountCombo_SelectionChanged"
-                                      AutomationProperties.Name="추가 프롬프트 랜덤 개수" />
-                            <Button Content="다시"
-                                    Tag="Additional"
-                                    Margin="8,0,0,0"
-                                    Click="RandomizeCategory_Click"
-                                    AutomationProperties.Name="추가 프롬프트 다시 랜덤 선택" />
-                        </WrapPanel>
+                        <StackPanel x:Name="AdditionalRandomControls" Margin="0,10,0,0">
+                            <WrapPanel>
+                                <TextBlock Text="랜덤 개수" VerticalAlignment="Center" />
+                                <ComboBox x:Name="AdditionalRandomCountCombo"
+                                          Width="72"
+                                          Margin="8,0,0,0"
+                                          Tag="Additional"
+                                          SelectionChanged="RandomCountCombo_SelectionChanged"
+                                          AutomationProperties.Name="추가 프롬프트 랜덤 개수" />
+                                <Button Content="태그 선택"
+                                        Tag="Additional"
+                                        Margin="8,0,0,0"
+                                        Click="SelectRandomTags_Click" />
+                                <Button Content="다시"
+                                        Tag="Additional"
+                                        Margin="8,0,0,0"
+                                        Click="RandomizeCategory_Click"
+                                        AutomationProperties.Name="추가 프롬프트 다시 랜덤 선택" />
+                            </WrapPanel>
+                            <TextBlock x:Name="AdditionalRandomTagsText"
+                                       Margin="0,6,0,0"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
                     </StackPanel>
                 </Border>
             </Grid>

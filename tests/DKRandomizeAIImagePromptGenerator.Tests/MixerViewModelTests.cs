@@ -76,6 +76,78 @@ public sealed class MixerViewModelTests
     }
 
     [Fact]
+    public async Task DirectDisabledItemStaysRegisteredButIsExcludedFromOutput()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "DKRandomizeAIImagePromptGenerator.Tests",
+            Guid.NewGuid().ToString("N"));
+
+        var database = new DatabaseService(AppDataPaths.Create(root));
+        await database.InitializeAsync();
+
+        try
+        {
+            var prompts = new PromptRepository(database);
+            var historyRepository = new HistoryRepository(database);
+
+            var first = new PromptItem
+            {
+                Category = PromptCategory.Character,
+                Title = "First",
+                PositivePrompt = "first"
+            };
+            var second = new PromptItem
+            {
+                Category = PromptCategory.Character,
+                Title = "Second",
+                PositivePrompt = "second"
+            };
+
+            await prompts.CreateAsync(first);
+            await prompts.CreateAsync(second);
+
+            var viewModel = new MixerViewModel(
+                prompts,
+                historyRepository,
+                new CombinationService());
+            await viewModel.LoadAsync();
+
+            viewModel.SetSelectedItems(
+                PromptCategory.Character,
+                new[] { first, second });
+            viewModel.SetMode(PromptCategory.Artist, PromptSelectionMode.Disabled);
+            viewModel.SetMode(PromptCategory.Additional, PromptSelectionMode.Disabled);
+
+            Assert.True(viewModel.SetSelectedItemEnabled(
+                PromptCategory.Character,
+                second.Id,
+                false));
+
+            Assert.Equal(2, viewModel.SelectedCharacters.Count);
+            Assert.False(
+                viewModel.SelectedCharacters.Single(item => item.Id == second.Id)
+                    .IsMixerEnabled);
+            Assert.Equal("first", viewModel.PositiveText);
+
+            viewModel.RandomizeCategory(PromptCategory.Artist);
+
+            Assert.Equal(2, viewModel.SelectedCharacters.Count);
+            Assert.False(
+                viewModel.SelectedCharacters.Single(item => item.Id == second.Id)
+                    .IsMixerEnabled);
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task RandomCountSelectsMultipleUniquePrompts()
     {
         var root = Path.Combine(
@@ -129,7 +201,69 @@ public sealed class MixerViewModelTests
     }
 
     [Fact]
-    public async Task RestoreFromV2HistoryPreservesMultiSelectModesAndRandomCounts()
+    public async Task RandomTagsUseAndSemanticsAndExposeEligibleCount()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "DKRandomizeAIImagePromptGenerator.Tests",
+            Guid.NewGuid().ToString("N"));
+
+        var database = new DatabaseService(AppDataPaths.Create(root));
+        await database.InitializeAsync();
+
+        try
+        {
+            var prompts = new PromptRepository(database);
+            var historyRepository = new HistoryRepository(database);
+
+            var both = new PromptItem
+            {
+                Category = PromptCategory.Additional,
+                Title = "Both",
+                PositivePrompt = "both"
+            };
+            both.Tags.AddRange(["Outdoor", "Night"]);
+
+            var outdoorOnly = new PromptItem
+            {
+                Category = PromptCategory.Additional,
+                Title = "Outdoor",
+                PositivePrompt = "outdoor"
+            };
+            outdoorOnly.Tags.Add("Outdoor");
+
+            await prompts.CreateAsync(both);
+            await prompts.CreateAsync(outdoorOnly);
+
+            var viewModel = new MixerViewModel(
+                prompts,
+                historyRepository,
+                new CombinationService());
+            await viewModel.LoadAsync();
+
+            viewModel.SetMode(PromptCategory.Character, PromptSelectionMode.Disabled);
+            viewModel.SetMode(PromptCategory.Artist, PromptSelectionMode.Disabled);
+            viewModel.SetMode(PromptCategory.Additional, PromptSelectionMode.Random);
+            viewModel.SetRandomTags(PromptCategory.Additional, ["outdoor", "NIGHT"]);
+
+            Assert.Equal(1, viewModel.GetRandomCandidateCount(PromptCategory.Additional));
+            Assert.Equal(new[] { "outdoor", "NIGHT" }, viewModel.GetRandomTags(PromptCategory.Additional));
+            Assert.Single(viewModel.SelectedAdditionals);
+            Assert.Equal(both.Id, viewModel.SelectedAdditionals[0].Id);
+            Assert.Equal("both", viewModel.PositiveText);
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task RestoreFromV3HistoryPreservesMultiSelectEnabledStateModesTagsAndCounts()
     {
         var root = Path.Combine(
             Path.GetTempPath(),
@@ -168,6 +302,8 @@ public sealed class MixerViewModelTests
                 Title = "Artist B",
                 PositivePrompt = "artist b"
             };
+            artistA.Tags.Add("SharedStyle");
+            artistB.Tags.Add("SharedStyle");
             var additional = new PromptItem
             {
                 Category = PromptCategory.Additional,
@@ -193,12 +329,13 @@ public sealed class MixerViewModelTests
             };
             history.Items.AddRange(
             [
-                new CombinationHistoryItem(PromptCategory.Character, characterB.Id, characterB.Title, 0),
-                new CombinationHistoryItem(PromptCategory.Character, characterA.Id, characterA.Title, 1),
+                new CombinationHistoryItem(PromptCategory.Character, characterB.Id, characterB.Title, 0, false),
+                new CombinationHistoryItem(PromptCategory.Character, characterA.Id, characterA.Title, 1, true),
                 new CombinationHistoryItem(PromptCategory.Artist, artistA.Id, artistA.Title, 0),
                 new CombinationHistoryItem(PromptCategory.Artist, artistB.Id, artistB.Title, 1),
                 new CombinationHistoryItem(PromptCategory.Additional, additional.Id, additional.Title, 0)
             ]);
+            history.SetRandomTags(PromptCategory.Artist, ["SharedStyle"]);
 
             await historyRepository.SaveAsync(history);
             var stored = await historyRepository.GetByIdAsync(history.Id);
@@ -219,6 +356,10 @@ public sealed class MixerViewModelTests
                 viewModel.SelectedArtists.Select(item => item.Id).ToArray());
             Assert.Equal(additional.Id, viewModel.SelectedAdditionals.Single().Id);
 
+            Assert.False(viewModel.SelectedCharacters[0].IsMixerEnabled);
+            Assert.True(viewModel.SelectedCharacters[1].IsMixerEnabled);
+            Assert.Equal(new[] { "SharedStyle" }, viewModel.GetRandomTags(PromptCategory.Artist));
+
             Assert.Equal(PromptSelectionMode.Fixed, viewModel.CharacterMode);
             Assert.Equal(PromptSelectionMode.Random, viewModel.ArtistMode);
             Assert.Equal(PromptSelectionMode.Fixed, viewModel.AdditionalMode);
@@ -233,6 +374,7 @@ public sealed class MixerViewModelTests
             Assert.Equal(
                 new[] { characterB.Id, characterA.Id },
                 viewModel.SelectedCharacters.Select(item => item.Id).ToArray());
+            Assert.False(viewModel.SelectedCharacters[0].IsMixerEnabled);
             Assert.Equal(additional.Id, viewModel.SelectedAdditionals.Single().Id);
         }
         finally

@@ -117,6 +117,38 @@ public sealed class CombinationServiceTests
     }
 
     [Fact]
+    public void RandomSelectionRequiresEverySelectedTag()
+    {
+        var both = Item(PromptCategory.Character, "Both", "both", string.Empty);
+        both.Tags.AddRange(["Portrait", "Night"]);
+
+        var portraitOnly = Item(PromptCategory.Character, "Portrait", "portrait", string.Empty);
+        portraitOnly.Tags.Add("Portrait");
+
+        var nightOnly = Item(PromptCategory.Character, "Night", "night", string.Empty);
+        nightOnly.Tags.Add("Night");
+
+        var request = new PromptCombinationRequest(
+            new PromptSelection(
+                PromptCategory.Character,
+                PromptSelectionMode.Random,
+                fixedPromptId: null,
+                randomCount: 3,
+                requiredTags: ["portrait", "NIGHT"]),
+            new PromptSelection(PromptCategory.Artist, PromptSelectionMode.Disabled),
+            new PromptSelection(PromptCategory.Additional, PromptSelectionMode.Disabled));
+
+        var result = _service.Combine(
+            new[] { both, portraitOnly, nightOnly },
+            request,
+            new Random(3));
+
+        Assert.Single(result.CharacterItems);
+        Assert.Same(both, result.CharacterItems[0]);
+        Assert.Equal("both", result.PositiveText);
+    }
+
+    [Fact]
     public void RandomCountIsCappedAtAvailableCandidates()
     {
         var a = Item(PromptCategory.Additional, "A", "a", string.Empty);

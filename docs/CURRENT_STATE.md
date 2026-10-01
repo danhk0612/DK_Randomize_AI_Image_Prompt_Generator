@@ -1,6 +1,6 @@
 # Current State
 
-Updated: 2026-09-27
+Updated: 2026-10-01
 
 ## Repository
 
@@ -54,7 +54,7 @@ The current tree contains only the active WPF application, Core library, native 
 
 ### Local persistence
 
-- SQLite schema version 2 with automatic v1 history migration
+- SQLite schema version 3 with automatic v1/v2 history migration
 - prompt CRUD
 - tag persistence and filtering
 - title/prompt search
@@ -96,8 +96,12 @@ The current tree contains only the active WPF application, Core library, native 
 - multi-select result lists with per-item remove, ordering controls, and drag reorder
 - per-category random count
 - integrated category search dialog across title/tags/memo/Positive/Negative
+- per-category picker search query survives closing/reopening the dialog during the current app session
 - picker supports double-click add/remove and drag reorder
 - direct selection with thumbnail, title, memo, and tags
+- Direct items can be individually active/inactive while remaining registered in the ordered selection list
+- Random mode supports zero or more tag filters using AND semantics
+- selected/result thumbnails open a larger representative-image preview
 - per-category randomize
 - randomize all
 - selected image/title/memo/tags display
@@ -111,7 +115,7 @@ The current tree contains only the active WPF application, Core library, native 
 
 - top full-width recent-history list with 20-item paging
 - multi-selection summaries and current representative-image thumbnails
-- exact selection mode/order/random-count restore into Mixer
+- exact selection mode/order/random-count/direct-enabled/random-tag-filter restore into Mixer
 - restore history to Mixer
 - delete one history record or clear all history with confirmation
 - System / Light / Dark theme persistence

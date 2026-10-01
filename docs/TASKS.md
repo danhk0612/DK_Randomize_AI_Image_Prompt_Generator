@@ -140,9 +140,19 @@
 - [x] Add automated import tests
 - [x] Verify full Windows CI build/test/smoke pipeline
 
+## Milestone 9 — Mixer workflow improvements
+
+- [x] Preserve per-category Direct-picker search query while the app is running
+- [x] Allow registered Direct items to be individually active/inactive
+- [x] Exclude inactive Direct items from composition without removing them
+- [x] Add per-category multi-tag Random filters with AND semantics
+- [x] Persist Direct enabled state and Random tag filters in history schema v3
+- [x] Restore schema-v1/v2 history safely into schema v3 defaults
+- [x] Add large selected/result thumbnail preview
+- [x] Add automated coverage for AND random tags, Direct toggles, history state, and migration
+
 ## Deferred
 
-- Tag-constrained random pools
 - Direct image generation
 - OpenRouter integration
 - Prompt rewriting/conversion

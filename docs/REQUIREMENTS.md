@@ -99,7 +99,10 @@ V1 permits multiple selected items in every category.
 For each category:
 
 - Direct selection keeps an ordered list of manually selected prompts.
+- Each Direct item can be individually activated or deactivated without removing it from the list; only active items contribute prompt text.
 - Random selection chooses a user-selected number of unique prompts.
+- Random selection may be restricted by one or more tags. When multiple tags are selected, a prompt must contain every selected tag (AND semantics) to be eligible.
+- With no random tags selected, every prompt in the category remains eligible.
 - Disabled omits the category.
 - Selection order is preserved and controls prompt composition order within that category.
 
@@ -110,7 +113,10 @@ The user can:
 - Randomize one category independently.
 - Randomize all Random-mode categories at once.
 - Set the random item count per category.
-- Keep Direct selections unchanged while other categories are randomized.
+- Select one or more AND tag filters per Random category.
+- Keep Direct selections, including inactive registered items, unchanged while other categories are randomized.
+- Reopen the Direct picker with the previous search query/results preserved for that category during the current application session.
+- Click a selected/result thumbnail to open a larger representative-image preview.
 
 ## 6. Output composition
 
@@ -147,11 +153,13 @@ Each history record contains:
 - Ordered selected prompt IDs and title snapshots for every category
 - Selection mode for every category
 - Random-count setting for every category
+- Random tag filters for every category
+- Direct-item enabled/disabled state for every saved selected item
 - Final positive text
 - Final negative text
 - Created date
 
-History must store the final edited text, selection order, mode, and random-count state so a saved result can be restored exactly. If a source prompt is later deleted, the title snapshot and final output remain readable.
+History must store the final edited text, selection order, mode, random-count state, random tag filters, and Direct-item enabled state so a saved result can be restored exactly. If a source prompt is later deleted, the title snapshot and final output remain readable.
 
 V1 displays history newest-first in a paged list with 20 records per page. Selecting a record shows the currently available representative thumbnails for its source prompts.
 

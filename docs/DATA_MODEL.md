@@ -43,9 +43,9 @@ NegativeText
 CreatedAtUtc
 ```
 
-Legacy schema-v1 Character/Artist snapshot columns remain for compatibility, but schema-v2 readers use the generic item relation below as the source of truth.
+Legacy schema-v1 Character/Artist snapshot columns remain for compatibility, but current readers use the generic item relation below as the source of truth.
 
-## 4. CombinationHistoryItems — schema v2
+## 4. CombinationHistoryItems — schema v3
 
 Stores every selected source prompt in category and selection order.
 
@@ -55,12 +55,13 @@ Category
 PromptId nullable
 SortOrder
 TitleSnapshot nullable
+IsEnabled     INTEGER boolean, default 1
 PRIMARY KEY (HistoryId, Category, SortOrder)
 ```
 
 `PromptId` uses `ON DELETE SET NULL`. `TitleSnapshot` remains so history stays readable if the source prompt is deleted.
 
-## 5. CombinationHistoryCategoryState — schema v2
+## 5. CombinationHistoryCategoryState — schema v3
 
 Stores the Mixer behavior that produced the saved result.
 
@@ -69,10 +70,11 @@ HistoryId
 Category
 Mode        Direct(Fixed) | Random | Disabled
 RandomCount
+RandomTagsJson nullable JSON string array
 PRIMARY KEY (HistoryId, Category)
 ```
 
-The saved selected items remain the exact result shown at save time even for Random mode. `RandomCount` is restored so the next reroll uses the same requested count.
+The saved selected items remain the exact result shown at save time even for Random mode. `RandomCount` and the AND-based random tag filter are restored so the next reroll uses the same candidate rule. In Direct mode, `IsEnabled` preserves registered-but-temporarily-disabled items.
 
 ## 6. Legacy history compatibility
 
@@ -82,7 +84,7 @@ Schema version 1 used:
 - `CombinationHistory.ArtistPromptId`
 - `CombinationHistoryAdditional`
 
-The schema-v2 migration copies those rows into the generic item/state tables and then sets `PRAGMA user_version = 2`. The legacy tables are retained so older compatibility paths do not require destructive migration.
+The schema-v2 migration copies those rows into the generic item/state tables. Schema v3 adds per-item `IsEnabled` and per-category `RandomTagsJson`; older records default to enabled items with no tag restriction. The legacy tables are retained so older compatibility paths do not require destructive migration.
 
 ## 7. Mixer session state
 
@@ -92,7 +94,10 @@ Current Mixer state is application-session state rather than durable prompt cont
 Per category:
 - Mode
 - Ordered SelectedPromptIds[]
+- Direct item enabled/disabled state
 - RandomCount
+- RandomTags[] (AND semantics)
+- Last Direct-picker search query per category (UI-session state only)
 
 Current editable:
 - Positive output
@@ -112,7 +117,7 @@ Theme  System | Light | Dark
 ## 9. Database rules
 
 - Foreign keys are enabled.
-- Current schema version is 2.
+- Current schema version is 3.
 - Migrations are forward-only and tested.
 - Prompt deletion must not delete saved history output or title snapshots.
 - Tag cleanup may remove orphan tags after prompt updates/deletion.

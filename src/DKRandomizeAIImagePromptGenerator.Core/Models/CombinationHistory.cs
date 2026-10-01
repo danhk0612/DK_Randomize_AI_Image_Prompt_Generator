@@ -29,6 +29,12 @@ public sealed class CombinationHistory
 
     public int AdditionalRandomCount { get; set; } = 1;
 
+    public List<string> CharacterRandomTags { get; } = [];
+
+    public List<string> ArtistRandomTags { get; } = [];
+
+    public List<string> AdditionalRandomTags { get; } = [];
+
     public required string PositiveText { get; init; }
 
     public required string NegativeText { get; init; }
@@ -74,13 +80,39 @@ public sealed class CombinationHistory
         PromptCategory.Additional => AdditionalRandomCount,
         _ => 1
     };
+
+    public IReadOnlyList<string> GetRandomTags(PromptCategory category) => category switch
+    {
+        PromptCategory.Character => CharacterRandomTags,
+        PromptCategory.Artist => ArtistRandomTags,
+        PromptCategory.Additional => AdditionalRandomTags,
+        _ => Array.Empty<string>()
+    };
+
+    public void SetRandomTags(PromptCategory category, IEnumerable<string> tags)
+    {
+        var target = category switch
+        {
+            PromptCategory.Character => CharacterRandomTags,
+            PromptCategory.Artist => ArtistRandomTags,
+            PromptCategory.Additional => AdditionalRandomTags,
+            _ => throw new ArgumentOutOfRangeException(nameof(category))
+        };
+
+        target.Clear();
+        target.AddRange(
+            tags.Where(tag => !string.IsNullOrWhiteSpace(tag))
+                .Select(tag => tag.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase));
+    }
 }
 
 public sealed record CombinationHistoryItem(
     PromptCategory Category,
     Guid? PromptId,
     string? TitleSnapshot,
-    int SortOrder);
+    int SortOrder,
+    bool IsEnabled = true);
 
 public sealed record CombinationHistoryAdditional(
     Guid? PromptId,

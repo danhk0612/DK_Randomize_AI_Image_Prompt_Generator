@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using DKRandomizeAIImagePromptGenerator.Models;
 using Microsoft.Data.Sqlite;
 
@@ -93,19 +94,22 @@ public sealed class HistoryRepository
                     Category,
                     PromptId,
                     SortOrder,
-                    TitleSnapshot)
+                    TitleSnapshot,
+                    IsEnabled)
                 VALUES (
                     @historyId,
                     @category,
                     @promptId,
                     @sortOrder,
-                    @title);
+                    @title,
+                    @isEnabled);
                 """;
             itemCommand.Parameters.AddWithValue("@historyId", history.Id.ToString("D"));
             itemCommand.Parameters.AddWithValue("@category", (int)item.Category);
             itemCommand.Parameters.AddWithValue("@promptId", DbGuid(item.PromptId));
             itemCommand.Parameters.AddWithValue("@sortOrder", item.SortOrder);
             itemCommand.Parameters.AddWithValue("@title", DbValue(item.TitleSnapshot));
+            itemCommand.Parameters.AddWithValue("@isEnabled", item.IsEnabled ? 1 : 0);
             await itemCommand.ExecuteNonQueryAsync(cancellationToken);
         }
 
@@ -118,17 +122,22 @@ public sealed class HistoryRepository
                     HistoryId,
                     Category,
                     Mode,
-                    RandomCount)
+                    RandomCount,
+                    RandomTagsJson)
                 VALUES (
                     @historyId,
                     @category,
                     @mode,
-                    @randomCount);
+                    @randomCount,
+                    @randomTagsJson);
                 """;
             stateCommand.Parameters.AddWithValue("@historyId", history.Id.ToString("D"));
             stateCommand.Parameters.AddWithValue("@category", (int)category);
             stateCommand.Parameters.AddWithValue("@mode", (int)history.GetMode(category));
             stateCommand.Parameters.AddWithValue("@randomCount", Math.Max(1, history.GetRandomCount(category)));
+            stateCommand.Parameters.AddWithValue(
+                "@randomTagsJson",
+                DbValue(SerializeTags(history.GetRandomTags(category))));
             await stateCommand.ExecuteNonQueryAsync(cancellationToken);
         }
 
@@ -298,7 +307,7 @@ public sealed class HistoryRepository
     {
         await using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT Category, PromptId, TitleSnapshot, SortOrder
+            SELECT Category, PromptId, TitleSnapshot, SortOrder, IsEnabled
             FROM CombinationHistoryItems
             WHERE HistoryId = @historyId
             ORDER BY Category ASC, SortOrder ASC;
@@ -313,7 +322,8 @@ public sealed class HistoryRepository
                 (PromptCategory)reader.GetInt32(0),
                 ReadNullableGuid(reader, 1),
                 reader.IsDBNull(2) ? null : reader.GetString(2),
-                reader.GetInt32(3)));
+                reader.GetInt32(3),
+                reader.GetInt32(4) != 0));
         }
 
         return items;
@@ -326,7 +336,7 @@ public sealed class HistoryRepository
     {
         await using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT Category, Mode, RandomCount
+            SELECT Category, Mode, RandomCount, RandomTagsJson
             FROM CombinationHistoryCategoryState
             WHERE HistoryId = @historyId;
             """;
@@ -338,6 +348,11 @@ public sealed class HistoryRepository
             var category = (PromptCategory)reader.GetInt32(0);
             var mode = (PromptSelectionMode)reader.GetInt32(1);
             var randomCount = Math.Max(1, reader.GetInt32(2));
+            history.SetRandomTags(
+                category,
+                reader.IsDBNull(3)
+                    ? Array.Empty<string>()
+                    : DeserializeTags(reader.GetString(3)));
 
             switch (category)
             {
@@ -422,6 +437,12 @@ public sealed class HistoryRepository
 
     private static object DbGuid(Guid? value) =>
         value is null ? DBNull.Value : value.Value.ToString("D");
+
+    private static string? SerializeTags(IReadOnlyList<string> tags) =>
+        tags.Count == 0 ? null : JsonSerializer.Serialize(tags);
+
+    private static IReadOnlyList<string> DeserializeTags(string json) =>
+        JsonSerializer.Deserialize<string[]>(json) ?? Array.Empty<string>();
 
     private static object DbValue(string? value) =>
         value is null ? DBNull.Value : value;
