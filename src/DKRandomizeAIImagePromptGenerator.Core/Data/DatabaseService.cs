@@ -4,7 +4,7 @@ namespace DKRandomizeAIImagePromptGenerator.Data;
 
 public sealed class DatabaseService
 {
-    public const int CurrentSchemaVersion = 2;
+    public const int CurrentSchemaVersion = 3;
 
     private readonly AppDataPaths _paths;
     private readonly string _connectionString;
@@ -42,6 +42,12 @@ public sealed class DatabaseService
         if (version < 2)
         {
             await MigrateToVersion2Async(connection, cancellationToken);
+            version = 2;
+        }
+
+        if (version < 3)
+        {
+            await MigrateToVersion3Async(connection, cancellationToken);
         }
     }
 
@@ -222,6 +228,27 @@ public sealed class DatabaseService
             FROM CombinationHistory h;
 
             PRAGMA user_version = 2;
+            """;
+
+        await command.ExecuteNonQueryAsync(cancellationToken);
+        transaction.Commit();
+    }
+
+    private static async Task MigrateToVersion3Async(
+        SqliteConnection connection,
+        CancellationToken cancellationToken)
+    {
+        using var transaction = connection.BeginTransaction();
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = """
+            ALTER TABLE CombinationHistoryItems
+                ADD COLUMN IsEnabled INTEGER NOT NULL DEFAULT 1;
+
+            ALTER TABLE CombinationHistoryCategoryState
+                ADD COLUMN RandomTagsJson TEXT NULL;
+
+            PRAGMA user_version = 3;
             """;
 
         await command.ExecuteNonQueryAsync(cancellationToken);
