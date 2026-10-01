@@ -201,6 +201,68 @@ public sealed class MixerViewModelTests
     }
 
     [Fact]
+    public async Task RandomTagsUseAndSemanticsAndExposeEligibleCount()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "DKRandomizeAIImagePromptGenerator.Tests",
+            Guid.NewGuid().ToString("N"));
+
+        var database = new DatabaseService(AppDataPaths.Create(root));
+        await database.InitializeAsync();
+
+        try
+        {
+            var prompts = new PromptRepository(database);
+            var historyRepository = new HistoryRepository(database);
+
+            var both = new PromptItem
+            {
+                Category = PromptCategory.Additional,
+                Title = "Both",
+                PositivePrompt = "both"
+            };
+            both.Tags.AddRange(["Outdoor", "Night"]);
+
+            var outdoorOnly = new PromptItem
+            {
+                Category = PromptCategory.Additional,
+                Title = "Outdoor",
+                PositivePrompt = "outdoor"
+            };
+            outdoorOnly.Tags.Add("Outdoor");
+
+            await prompts.CreateAsync(both);
+            await prompts.CreateAsync(outdoorOnly);
+
+            var viewModel = new MixerViewModel(
+                prompts,
+                historyRepository,
+                new CombinationService());
+            await viewModel.LoadAsync();
+
+            viewModel.SetMode(PromptCategory.Character, PromptSelectionMode.Disabled);
+            viewModel.SetMode(PromptCategory.Artist, PromptSelectionMode.Disabled);
+            viewModel.SetMode(PromptCategory.Additional, PromptSelectionMode.Random);
+            viewModel.SetRandomTags(PromptCategory.Additional, ["outdoor", "NIGHT"]);
+
+            Assert.Equal(1, viewModel.GetRandomCandidateCount(PromptCategory.Additional));
+            Assert.Equal(new[] { "outdoor", "NIGHT" }, viewModel.GetRandomTags(PromptCategory.Additional));
+            Assert.Single(viewModel.SelectedAdditionals);
+            Assert.Equal(both.Id, viewModel.SelectedAdditionals[0].Id);
+            Assert.Equal("both", viewModel.PositiveText);
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task RestoreFromV2HistoryPreservesMultiSelectModesAndRandomCounts()
     {
         var root = Path.Combine(
